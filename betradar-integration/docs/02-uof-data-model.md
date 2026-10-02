@@ -1100,8 +1100,10 @@ CREATE INDEX market_cancellation_event_idx  ON market_cancellation (event_id);
 -- =====================================================================
 -- Feed audit / replay
 -- =====================================================================
+-- identity column partitioned ცხრილზე მხოლოდ PG17+-ში მუშაობს, ამიტომ PG15/16-ისთვის ვიყენებთ sequence-ს
+CREATE SEQUENCE feed_message_log_id_seq AS bigint;
 CREATE TABLE feed_message_log (
-  id               bigint GENERATED ALWAYS AS IDENTITY,
+  id               bigint NOT NULL DEFAULT nextval('feed_message_log_id_seq'),
   received_at      timestamptz NOT NULL DEFAULT now(),
   provider_id      smallint NOT NULL,
   producer_id      smallint,

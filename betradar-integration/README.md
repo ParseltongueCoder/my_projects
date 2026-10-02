@@ -1,0 +1,57 @@
+# Betradar UOF ინტეგრაცია — სამაგისტრო გეგმა (Master Plan)
+
+> სტატუსი: დაგეგმვის ეტაპი · თარიღი: 2026-10-02
+> მიდგომა: **„simulator-first, contract-second"** — ჯერ ვაშენებთ UOF-თავსებად სიმულატორს და მთელ პაიპლაინს უფასოდ, შემდეგ მუშა დემოთი მივდივართ Sportradar-თან.
+
+## დოკუმენტები
+
+| # | დოკუმენტი | რას მოიცავს |
+|---|---|---|
+| 01 | [Roadmap, წვდომა, ბიზნესი](docs/01-roadmap-and-access.md) | ფაზები და DoD, გუნდი, Sportradar-თან მიდგომა + 15+ კითხვა, უფასო რესურსები, ალტერნატიული პროვაიდერები, ლიცენზირება, გრანტები, რისკები, ბიუჯეტი |
+| 02 | [UOF დატა მოდელი და მარკეტის სქემა](docs/02-uof-data-model.md) | შეტყობინებების ტიპები, XML ნიმუშები, URN-ები, market descriptions/specifiers/variants, **canonical ERD + PostgreSQL DDL**, state machine-ები, UOF → canonical mapping |
+| 03 | [Feed Simulator](docs/03-feed-simulator.md) | არქიტექტურა (L1/L2/L3), რეპოს სტრუქტურა, YAML სცენარის DSL, Python კოდის ჩონჩხები, recovery, chaos კატალოგი, docker-compose, Java SDK compatibility checklist, მაილსტოუნები |
+| 04 | [პლატფორმის არქიტექტურა](docs/04-platform-architecture.md) | სერვისები, UOF adapter-ის შიდა მოწყობა, admin, მონიტორინგი (მეტრიკები/alert-ები), stack, ინფრა და ხარჯები, უსაფრთხოება, Phase 2+, monorepo |
+
+## ძირითადი გადაწყვეტილებები (შეჯერებული 4 დოკუმენტს შორის)
+
+| საკითხი | გადაწყვეტილება |
+|---|---|
+| Production ენა | Java 21/25 + Spring Boot + **ოფიციალური Sportradar Java SDK** (როგორც ბიბლიოთეკა, მოდიფიკაციის გარეშე) |
+| სიმულატორი / tooling | Python 3.12 (FastAPI, aio-pika, numpy) |
+| Feed transport (სიმულატორი) | RabbitMQ, exchange `unifiedfeed` (topic), vhost `/unifiedfeed/{bookmaker_id}`, TLS 5671 |
+| შიდა event bus | NATS JetStream (`UOF_RAW` → normalizer); Kafka მხოლოდ Phase 2-ის კრიტერიუმებით |
+| DB / cache | PostgreSQL 18 / Valkey 8 (სიმულატორის შიდა state-ისთვის Redis-თავსებადი ნებისმიერი) |
+| Admin | React + Refine + Ant Design, Keycloak |
+| Monitoring | OpenTelemetry, Prometheus, Loki, Tempo, Grafana, Alertmanager → Telegram |
+| Infra | docker-compose → Hetzner Cloud (CX/CAX) → Phase 2-ში k3s |
+| ბიზნეს-მოდელი სტარტზე | ოპერატორს აქვს **საკუთარი** Sportradar კონტრაქტი, ჩვენ — ტექნოლოგიური მიმწოდებელი (რედისტრიბუციის რისკის თავიდან ასაცილებლად) |
+
+## ლიცენზიის წესი (სავალდებულო ყველასთვის)
+
+Sportradar-ის SDK რეპოები (`UnifiedOddsSdkJava`, `UnifiedOddsSdkNetCore`) **არ არის open source** — მოქმედებს Sportradar SDK License Agreement (მოდიფიკაცია/რედისტრიბუცია/derivative works აკრძალულია).
+- SDK-ს ვიყენებთ როგორც დამოკიდებულებას (Maven), მის კოდს არ ვცვლით.
+- XSD-ებს და SDK-ის ნიმუშ-XML-ებს **ჩვენს რეპოში არ ვინახავთ** — XSD იტვირთება ლოკალური `UOF_XSD_DIR`-დან.
+- ყველა fixture/ნიმუში — ჩვენი გენერირებული, სინთეტიკური ID-ებით.
+
+## 14-კვირიანი გეგმა (დაწყება 2026-10-05)
+
+| კვირა | ფოკუსი | შედეგი |
+|---|---|---|
+| 0–2 | ფაზა 0: სწავლა | UOF ლექსიკონი, ADR-001..003, canonical DDL-ის დამტკიცება, სიმულატორის სცენარების სია |
+| 2–3 | სიმულატორი S1 | docker-compose, routing keys, alive, whoami/producers/markets mock, L1 replay |
+| 3–4 | სიმულატორი S2 + adapter-ის ჩონჩხი | YAML DSL, ყველა შეტყობინების builder, Control API; Java adapter უკავშირდება სიმულატორს SDK-ით |
+| 4–5 | S3 + canonical store | producer/recovery სიმულაცია, SDK smoke test CI-ში; normalizer → Postgres/Valkey |
+| **5** | **Sportradar outreach** | პირველი მიმართვა, discovery call |
+| 5–7 | S4 + admin + monitoring | Poisson odds engine, admin MVP, Grafana „UOF Feed Health", alert-ები |
+| 7–8 | S5 + დემო | chaos/load ტესტები, E2E დემო-ვიდეო, ერთგვერდიანი ტექ. აღწერა |
+| 8–14 | ფაზა 2: Integration env | კონფიგით გადართვა, divergence report, Replay რეგრესიული სუიტი, hardening, integration review |
+| 14+ | ფაზა 3 | პირველი ოპერატორის პილოტი, მეორე პროვაიდერი (LSports — აქვს trial/sandbox), სტრიმები, ვიჯეტები |
+
+## ღია საკითხები (გადასაწყვეტი / გადასამოწმებელი)
+
+1. **იურისტი:** სჭირდება თუ არა B2B მიმწოდებელს ქართული ნებართვა; რომელი საერთაშორისო ლიცენზია (MGA / Curaçao) და როდის.
+2. **Sportradar:** trial/integration token-ის ხანგრძლივობა (ერთ წყაროში ~2 კვირა), რედისტრიბუციის უფლებები, Replay წვდომა, XSD-ების გამოყენების პირობები, ფასები.
+3. **ტექნიკური:** Live Odds recovery window (10სთ vs 72სთ), recovery rate limit-ები, `-2` (handed over) სტატუსის დამუშავება, player outcome ID-ების ფორმატი, ქართული ენის მხარდაჭერა descriptions-ში.
+4. **GITA:** ვრცელდება თუ არა გრანტი iGaming-თან დაკავშირებულ B2B პროდუქტზე.
+
+ყველა `⚠ გადასამოწმებელი` პუნქტი დოკუმენტებშია მონიშნული; docs.sportradar.com კვლევისას მიუწვდომელი იყო, ამიტომ ფაქტები გადამოწმებულია SDK-ის კოდით და საძიებო ამონარიდებით.
