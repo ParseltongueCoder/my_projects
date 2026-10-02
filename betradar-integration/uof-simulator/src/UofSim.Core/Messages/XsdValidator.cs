@@ -38,7 +38,13 @@ public sealed class XsdValidator
     public IReadOnlyList<string> Validate(byte[] xml)
     {
         var errors = new List<string>();
-        var settings = new XmlReaderSettings { ValidationType = ValidationType.Schema, Schemas = _schemas };
+        var settings = new XmlReaderSettings
+        {
+            ValidationType = ValidationType.Schema,
+            Schemas = _schemas,
+            // Without this, elements the schema set does not know (e.g. wrong namespace) pass silently.
+            ValidationFlags = XmlSchemaValidationFlags.ReportValidationWarnings,
+        };
         settings.ValidationEventHandler += (_, e) => errors.Add($"{e.Severity}: {e.Message}");
         using var reader = XmlReader.Create(new MemoryStream(xml), settings);
         while (reader.Read())

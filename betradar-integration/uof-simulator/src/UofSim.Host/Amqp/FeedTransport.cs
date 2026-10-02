@@ -5,13 +5,20 @@ using UofSim.Core.Messages;
 
 namespace UofSim.Host.Amqp;
 
+/// <summary>What the simulator's services publish through (see <see cref="FeedPipeline"/>).</summary>
 public interface IFeedPublisher
 {
     Task PublishAsync(string routingKey, byte[] body, CancellationToken ct = default);
 }
 
+/// <summary>The wire: RabbitMQ, or nothing when AMQP is disabled. Tests replace it with a capturing fake.</summary>
+public interface IFeedTransport
+{
+    Task PublishAsync(string routingKey, byte[] body, CancellationToken ct = default);
+}
+
 /// <summary>Swallows messages; used when AMQP is disabled (REST-only runs and tests).</summary>
-public sealed class NullFeedPublisher(ILogger<NullFeedPublisher> log) : IFeedPublisher
+public sealed class NullFeedTransport(ILogger<NullFeedTransport> log) : IFeedTransport
 {
     public Task PublishAsync(string routingKey, byte[] body, CancellationToken ct = default)
     {
@@ -25,8 +32,8 @@ public sealed class NullFeedPublisher(ILogger<NullFeedPublisher> log) : IFeedPub
 /// <c>timestamp_in_ms</c> header on every message. Outgoing bodies are XSD-validated when
 /// <see cref="SimOptions.XsdDir"/> is set.
 /// </summary>
-public sealed class RabbitFeedPublisher(IOptions<SimOptions> options, ILogger<RabbitFeedPublisher> log)
-    : IFeedPublisher, IAsyncDisposable
+public sealed class RabbitFeedTransport(IOptions<SimOptions> options, ILogger<RabbitFeedTransport> log)
+    : IFeedTransport, IAsyncDisposable
 {
     private readonly SimOptions _opt = options.Value;
     private readonly SemaphoreSlim _lock = new(1, 1);

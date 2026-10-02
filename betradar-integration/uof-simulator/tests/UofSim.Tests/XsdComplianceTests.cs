@@ -45,4 +45,12 @@ public class XsdComplianceTests
             Assert.True(errors.Count == 0, $"{Path.GetFileName(file)}: {string.Join("; ", errors)}");
         }
     }
+
+    [XsdFact]
+    public void Validator_rejects_invalid_and_unknown_documents()
+    {
+        var validator = XsdValidator.TryLoad(XsdFactAttribute.XsdDir, XsdValidator.FeedSchema)!;
+        Assert.NotEmpty(validator.Validate(Encoding.UTF8.GetBytes("<alive product=\"1\" timestamp=\"1\"/>")));
+        Assert.NotEmpty(validator.Validate(Encoding.UTF8.GetBytes("<not_a_feed_message/>")));
+    }
 }

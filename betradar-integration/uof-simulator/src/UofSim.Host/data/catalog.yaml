@@ -1,0 +1,43 @@
+# UofSim synthetic sports catalog served by the mock Sports API (/v1/sports/...).
+# Every id and name here is invented; ids use the 900000+ range to avoid clashing with real Betradar ids.
+sports:
+  - id: sr:sport:1
+    name: Soccer
+    categories:
+      - id: sr:category:900001
+        name: Georgia (Sim)
+        country_code: GEO
+        tournaments:
+          - id: sr:tournament:900001
+            name: Sim Premier League
+            season:
+              id: sr:season:900001
+              name: Sim Premier League 2026
+              start_date: "2026-03-01"
+              end_date: "2026-12-01"
+              year: "2026"
+
+competitors:
+  - { id: sr:competitor:900001, name: Tbilisi Lions, abbreviation: TBL, country: Georgia, country_code: GEO }
+  - { id: sr:competitor:900002, name: Batumi Waves, abbreviation: BTW, country: Georgia, country_code: GEO }
+  - { id: sr:competitor:900003, name: Kutaisi Eagles, abbreviation: KTE, country: Georgia, country_code: GEO }
+  - { id: sr:competitor:900004, name: Rustavi Steel, abbreviation: RST, country: Georgia, country_code: GEO }
+
+events:
+  # Used by recordings/demo_match.jsonl
+  - id: sr:match:900000001
+    tournament: sr:tournament:900001
+    home: sr:competitor:900001
+    away: sr:competitor:900002
+    scheduled_offset_minutes: 0
+  # Used by scenarios/*.yaml
+  - id: sr:match:900000002
+    tournament: sr:tournament:900001
+    home: sr:competitor:900003
+    away: sr:competitor:900004
+    scheduled_offset_minutes: 5
+  - id: sr:match:900000003
+    tournament: sr:tournament:900001
+    home: sr:competitor:900002
+    away: sr:competitor:900003
+    scheduled_offset_minutes: 120

@@ -11,7 +11,7 @@ namespace UofSim.Tests;
 public sealed record Published(string RoutingKey, string Body);
 
 /// <summary>Captures everything the simulator would publish to RabbitMQ.</summary>
-public sealed class CapturingPublisher : IFeedPublisher
+public sealed class CapturingPublisher : IFeedPublisher, IFeedTransport
 {
     public ConcurrentQueue<Published> Messages { get; } = new();
 
@@ -51,8 +51,8 @@ public sealed class SimFactory : WebApplicationFactory<Program>
         builder.UseSetting("Sim:DataDir", DataDir);
         builder.ConfigureServices(services =>
         {
-            services.RemoveAll<IFeedPublisher>();
-            services.AddSingleton<IFeedPublisher>(Publisher);
+            services.RemoveAll<IFeedTransport>();
+            services.AddSingleton<IFeedTransport>(Publisher);
         });
     }
 

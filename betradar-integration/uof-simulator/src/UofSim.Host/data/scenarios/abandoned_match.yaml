@@ -1,0 +1,10 @@
+# Batumi Waves v Kutaisi Eagles: match abandoned after kick-off, all markets cancelled.
+name: Abandoned match
+event: sr:match:900000003
+strength: { home: 1.20, away: 1.30 }
+steps:
+  - { at: 0s,  action: prematch_odds }
+  - { at: 3s,  action: kickoff }
+  - { at: 6s,  action: odds_update, minute: 20 }
+  - { at: 9s,  action: bet_stop }
+  - { at: 12s, action: cancel, void_reason: 0 }

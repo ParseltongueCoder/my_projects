@@ -109,6 +109,24 @@ public static class FeedMessageBuilder
         return Serialize(root);
     }
 
+    public static byte[] RollbackBetSettlement(
+        int product, string eventUrn, long timestampMs, IEnumerable<(int Id, string? Specifiers)> markets) =>
+        Serialize(MarketList("rollback_bet_settlement", product, eventUrn, timestampMs, markets));
+
+    public static byte[] BetCancel(
+        int product, string eventUrn, long timestampMs, IEnumerable<(int Id, string? Specifiers)> markets, int? voidReason = null)
+    {
+        var root = MarketList("bet_cancel", product, eventUrn, timestampMs, markets);
+        if (voidReason is not null)
+        {
+            foreach (var market in root.Elements("market"))
+            {
+                market.Add(new XAttribute("void_reason", voidReason));
+            }
+        }
+        return Serialize(root);
+    }
+
     /// <summary>Replaces the root <c>timestamp</c> attribute (used by the replayer to make recordings "live").</summary>
     public static byte[] WithTimestamp(string xml, long timestampMs)
     {
@@ -138,6 +156,16 @@ public static class FeedMessageBuilder
             new XAttribute("event_id", eventUrn),
             new XAttribute("timestamp", timestampMs),
             Optional("request_id", requestId));
+
+    private static XElement MarketList(
+        string name, int product, string eventUrn, long timestampMs, IEnumerable<(int Id, string? Specifiers)> markets)
+    {
+        var root = MessageRoot(name, product, eventUrn, timestampMs, null);
+        root.Add(markets.Select(m => new XElement("market",
+            new XAttribute("id", m.Id),
+            Optional("specifiers", m.Specifiers))));
+        return root;
+    }
 
     private static XElement SportEventStatus(SportEventStatusSnapshot s)
     {

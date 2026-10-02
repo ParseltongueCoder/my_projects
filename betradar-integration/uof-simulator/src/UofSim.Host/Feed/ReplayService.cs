@@ -5,7 +5,7 @@ using UofSim.Host.Amqp;
 
 namespace UofSim.Host.Feed;
 
-public sealed record ReplayStatus(string? File, double Speed, bool Loop, int Published, int Total, bool Running);
+public sealed record ReplayStatus(string? Source, double Speed, bool Loop, int Published, int Total, bool Running);
 
 /// <summary>
 /// L1 fidelity: publishes a JSONL recording with its original spacing (divided by speed),
@@ -25,20 +25,22 @@ public sealed class ReplayService(
     public ReplayStatus Status => _status;
 
     /// <summary>Starts (or restarts) a replay. <paramref name="file"/> is relative to the data directory.</summary>
-    public ReplayStatus Start(string file, double speed, bool loop)
+    public ReplayStatus Start(string file, double speed, bool loop) =>
+        Play(file, Recording.Read(ResolvePath(file)), speed, loop);
+
+    /// <summary>Plays an in-memory message list (e.g. a compiled scenario), replacing any running replay.</summary>
+    public ReplayStatus Play(string source, IReadOnlyList<RecordedMessage> messages, double speed, bool loop)
     {
         if (speed <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(speed), "speed must be > 0");
         }
-        var path = ResolvePath(file);
-        var messages = Recording.Read(path);
 
         lock (_gate)
         {
             _current?.Cancel();
             _current = CancellationTokenSource.CreateLinkedTokenSource(_stopping);
-            _status = new ReplayStatus(file, speed, loop, 0, messages.Count, true);
+            _status = new ReplayStatus(source, speed, loop, 0, messages.Count, true);
             var token = _current.Token;
             _ = Task.Run(() => RunAsync(messages, speed, loop, token), token);
             return _status;
@@ -84,7 +86,7 @@ public sealed class ReplayService(
                     await publisher.PublishAsync(m.RoutingKey, body, ct);
                     _status = _status with { Published = i + 1 };
                 }
-                log.LogInformation("Replay of {File} finished ({Count} messages)", _status.File, messages.Count);
+                log.LogInformation("Replay of {Source} finished ({Count} messages)", _status.Source, messages.Count);
             }
             while (loop && !ct.IsCancellationRequested);
         }
@@ -93,7 +95,7 @@ public sealed class ReplayService(
         }
         catch (Exception ex)
         {
-            log.LogError(ex, "Replay of {File} failed", _status.File);
+            log.LogError(ex, "Replay of {Source} failed", _status.Source);
         }
         finally
         {
@@ -110,12 +112,7 @@ public sealed class ReplayService(
 
     private string ResolvePath(string file)
     {
-        var dataDir = Path.GetFullPath(options.Value.DataDir);
-        var path = Path.GetFullPath(Path.Combine(dataDir, file));
-        if (!path.StartsWith(dataDir + Path.DirectorySeparatorChar, StringComparison.Ordinal))
-        {
-            throw new ArgumentException("Recording must be inside the data directory", nameof(file));
-        }
+        var path = DataPaths.Resolve(options.Value.DataDir, file);
         if (!File.Exists(path))
         {
             throw new FileNotFoundException($"Recording '{file}' not found", path);

@@ -1,0 +1,23 @@
+# Kutaisi Eagles v Rustavi Steel: full lifecycle including a settlement that is rolled back
+# (e.g. result corrected after review) and settled again with certainty 2.
+name: Derby with settlement rollback
+event: sr:match:900000002
+strength: { home: 1.55, away: 1.10 }
+margin: 0.05
+steps:
+  - { at: 0s,  action: prematch_odds }
+  - { at: 4s,  action: kickoff }
+  - { at: 8s,  action: odds_update, minute: 12 }
+  - { at: 11s, action: bet_stop }                       # possible goal
+  - { at: 12s, action: goal, team: home, minute: 23 }
+  - { at: 16s, action: odds_update, minute: 35 }
+  - { at: 20s, action: halftime }
+  - { at: 24s, action: second_half }
+  - { at: 28s, action: bet_stop }
+  - { at: 29s, action: goal, team: away, minute: 61 }
+  - { at: 33s, action: bet_stop }
+  - { at: 34s, action: goal, team: home, minute: 88 }
+  - { at: 38s, action: full_time }
+  - { at: 40s, action: settle, certainty: 1 }
+  - { at: 44s, action: rollback_settlement }
+  - { at: 47s, action: settle, certainty: 2 }

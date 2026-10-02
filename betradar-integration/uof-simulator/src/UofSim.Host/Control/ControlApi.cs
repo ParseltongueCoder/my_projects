@@ -1,9 +1,16 @@
+using Microsoft.Extensions.Options;
+using UofSim.Core.Catalog;
 using UofSim.Core.Producers;
+using UofSim.Core.Scenarios;
 using UofSim.Host.Feed;
 
 namespace UofSim.Host.Control;
 
 public sealed record ReplayRequest(string File, double Speed = 1.0, bool Loop = false);
+
+public sealed record PlayRequest(double Speed = 1.0, bool Loop = false);
+
+public sealed record RecordRequest(string File);
 
 /// <summary>Runtime control of the simulator (no token): producer chaos and recording replay.</summary>
 public static class ControlApi
@@ -62,5 +69,55 @@ public static class ControlApi
         });
 
         sim.MapGet("/producers", () => Producers.All);
+
+        sim.MapGet("/scenarios", (IOptions<SimOptions> o) =>
+            Directory.EnumerateFiles(Path.Combine(o.Value.DataDir, "scenarios"), "*.yaml")
+                .Select(f => Path.GetFileNameWithoutExtension(f))
+                .Order());
+
+        sim.MapPost("/scenarios/{name}", (string name, PlayRequest? request, IOptions<SimOptions> o,
+            SimCatalog catalog, ReplayService replay) =>
+        {
+            try
+            {
+                var (scenario, sportId) = LoadScenario(name, o.Value, catalog);
+                var messages = ScenarioCompiler.Compile(scenario, sportId);
+                return Results.Ok(replay.Play($"scenario:{name}", messages, request?.Speed ?? 1.0, request?.Loop ?? false));
+            }
+            catch (Exception ex) when (ex is ArgumentException or FileNotFoundException or InvalidDataException
+                                           or YamlDotNet.Core.YamlException)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        });
+
+        sim.MapPost("/recorder/start", (RecordRequest request, FeedRecorder recorder) =>
+        {
+            try
+            {
+                return Results.Ok(recorder.Start(request.File));
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        });
+
+        sim.MapPost("/recorder/stop", (FeedRecorder recorder) => Results.Ok(recorder.Stop()));
+        sim.MapGet("/recorder", (FeedRecorder recorder) => Results.Ok(recorder.Status));
+    }
+
+    /// <summary>Loads <c>data/scenarios/{name}.yaml</c> and finds the sport of its event in the catalog.</summary>
+    public static (Scenario Scenario, int SportId) LoadScenario(string name, SimOptions options, SimCatalog catalog)
+    {
+        var path = DataPaths.Resolve(options.DataDir, Path.Combine("scenarios", name + ".yaml"));
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException($"Scenario '{name}' not found");
+        }
+        var scenario = Scenario.Load(path);
+        var ev = catalog.FindEvent(scenario.Event)
+            ?? throw new InvalidDataException($"Event {scenario.Event} is not in data/catalog.yaml");
+        return (scenario, catalog.FindTournament(ev.Tournament)!.Value.Sport.NumericId);
     }
 }

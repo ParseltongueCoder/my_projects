@@ -1,7 +1,9 @@
 // SDK smoke test: runs the official Sportradar .NET SDK against the simulator and checks that
 //   1. the SDK starts (whoami, producers, descriptions) and both producers go UP after recovery,
 //   2. a replayed match reaches the SDK as odds_change / bet_stop / bet_settlement,
-//   3. (--chaos) a silent producer is reported DOWN and comes back UP via recovery.
+//   3. market and outcome names resolve through the mock Sports API ("{$competitor1}" → team name),
+//   4. a YAML scenario delivers a settlement rollback,
+//   5. (--chaos) a silent producer is reported DOWN and comes back UP via recovery.
 // Exit code 0 = pass. Requires `docker compose up` (or the simulator + RabbitMQ running locally).
 
 using System.Collections.Concurrent;
@@ -13,6 +15,7 @@ using Sportradar.OddsFeed.SDK.Api;
 using Sportradar.OddsFeed.SDK.Api.Config;
 using Sportradar.OddsFeed.SDK.Api.EventArguments;
 using Sportradar.OddsFeed.SDK.Common.Extensions;
+using Sportradar.OddsFeed.SDK.Entities;
 using Sportradar.OddsFeed.SDK.Entities.Rest;
 
 var apiHost = Env("UOF_API_HOST", "localhost:8080");
@@ -47,6 +50,9 @@ var up = new ConcurrentDictionary<int, bool>();
 var received = new ConcurrentQueue<string>();
 var downSeen = new TaskCompletionSource();
 var settlementSeen = new TaskCompletionSource();
+var rollbackSeen = new TaskCompletionSource();
+var liveMarkets = new TaskCompletionSource<IReadOnlyList<IMarketWithOdds>>();
+var en = CultureInfo.GetCultureInfo("en");
 
 sdk.ProducerUp += (_, e) =>
 {
@@ -66,6 +72,10 @@ session.OnOddsChange += (_, e) =>
     var m = e.GetOddsChange();
     received.Enqueue("odds_change");
     Log($"odds_change {m.Event.Id} producer={m.Producer.Id} markets={m.Markets.Count()}");
+    if (m.Event.Id.ToString() == "sr:match:900000001" && m.Producer.Id == 1)
+    {
+        liveMarkets.TrySetResult(m.Markets.ToList());
+    }
 };
 session.OnBetStop += (_, e) =>
 {
@@ -78,6 +88,11 @@ session.OnBetSettlement += (_, e) =>
     received.Enqueue("bet_settlement");
     Log($"bet_settlement {m.Event.Id} markets={m.Markets.Count()}");
     settlementSeen.TrySetResult();
+};
+session.OnRollbackBetSettlement += (_, e) =>
+{
+    Log($"rollback_bet_settlement {e.GetBetSettlementRollback().Event.Id}");
+    rollbackSeen.TrySetResult();
 };
 session.OnUnparsableMessageReceived += (_, e) => Log($"UNPARSABLE {e.MessageType}");
 
@@ -94,6 +109,19 @@ try
     replay.EnsureSuccessStatusCode();
     await settlementSeen.Task.WaitAsync(timeout);
     Check(received.Contains("odds_change") && received.Contains("bet_stop"), "odds_change and bet_stop received");
+
+    var markets = await liveMarkets.Task.WaitAsync(timeout);
+    var oneXTwo = markets.Single(m => m.Id == 1);
+    var total = markets.Single(m => m.Id == 18);
+    var homeName = await oneXTwo.OutcomeOdds.Single(o => o.Id == "1").GetNameAsync(en);
+    var overName = await total.OutcomeOdds.Single(o => o.Id == "12").GetNameAsync(en);
+    Log($"names: '{await oneXTwo.GetNameAsync(en)}' home='{homeName}', '{await total.GetNameAsync(en)}' over='{overName}'");
+    Check(homeName == "Tbilisi Lions", "outcome {$competitor1} resolved to the home team");
+    Check(overName == "over 2.5", "outcome {total} specifier resolved");
+
+    var scenario = await control.PostAsJsonAsync("/sim/scenarios/derby_settlement_rollback", new { speed = 10.0 });
+    scenario.EnsureSuccessStatusCode();
+    await rollbackSeen.Task.WaitAsync(timeout);
 
     if (chaos)
     {

@@ -68,7 +68,7 @@ public static partial class BetradarApi
                 AcceptRecovery(product, request_id, null, node_id, eventUrn, recovery));
     }
 
-    private static async ValueTask<object?> RequireToken(EndpointFilterInvocationContext ctx, EndpointFilterDelegate next)
+    internal static async ValueTask<object?> RequireToken(EndpointFilterInvocationContext ctx, EndpointFilterDelegate next)
     {
         var expected = ctx.HttpContext.RequestServices.GetRequiredService<IOptions<SimOptions>>().Value.AccessToken;
         var actual = ctx.HttpContext.Request.Headers["x-access-token"].ToString();
@@ -118,9 +118,9 @@ public static partial class BetradarApi
             new XElement("action", message),
             new XElement("message", message)), statusCode);
 
-    private static IResult XmlResult(XElement root, int statusCode = StatusCodes.Status200OK) =>
+    internal static IResult XmlResult(XElement root, int statusCode = StatusCodes.Status200OK) =>
         Results.Text(Encoding.UTF8.GetString(FeedMessageBuilder.Serialize(root)), Xml, Encoding.UTF8, statusCode);
 
     [GeneratedRegex("^[a-z]{2}(-[a-z]{2})?$")]
-    private static partial Regex LanguageCode();
+    internal static partial Regex LanguageCode();
 }
