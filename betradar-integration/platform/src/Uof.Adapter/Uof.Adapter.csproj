@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <!-- The SDK works with real cultures (languages of names / descriptions). -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Official Sportradar SDK, used as an unmodified dependency (SDK License Agreement). -->
+    <PackageReference Include="Sportradar.OddsFeed.SDKCore" Version="3.12.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
+    <!-- Lift the SDK's transitive OpenTelemetry 1.11.2 past known advisories (NU1902). -->
+    <PackageReference Include="OpenTelemetry.Api" Version="1.19.1" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.19.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Platform.Canonical\Platform.Canonical.csproj" />
+  </ItemGroup>
+
+</Project>

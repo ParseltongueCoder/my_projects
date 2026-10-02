@@ -758,6 +758,8 @@ erDiagram
 
 ### 6.2 PostgreSQL DDL
 
+> **განახლება 2026-10-02:** ეს DDL უცვლელად გაეშვა PostgreSQL 18-ზე (`platform/db/migrations/V001`). რეალურმა adapter-მა დამატებით მოითხოვა `V002`: `feed_message_log`-ის DEFAULT partition, უსარგებლო dedup unique index-ის ჩანაცვლება, და `settlement.superseded_by_id` FK → DEFERRABLE (certainty upgrade partial unique index-თან ერთად). იხ. [`platform/README.md`](../platform/README.md).
+
 > სამიზნე: PostgreSQL 15+. Schema: `sb` (sportsbook core). ყველა timestamp ინახება `timestamptz`-ში (UTC). UOF ms-epoch-ები გარდაიქმნება `to_timestamp(ms/1000.0)`-ით.
 
 ```sql

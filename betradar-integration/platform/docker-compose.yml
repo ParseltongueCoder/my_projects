@@ -1,0 +1,41 @@
+# Platform dev stack: simulator (RabbitMQ + mock Betradar API) + PostgreSQL + UOF adapter.
+#   ../uof-simulator/tools/gen-tls.sh && docker compose up -d --build
+name: uof-platform
+
+include:
+  - ../uof-simulator/docker-compose.yml
+
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: platform
+      POSTGRES_PASSWORD: platform
+      POSTGRES_DB: platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U platform"]
+      interval: 5s
+      retries: 20
+
+  uof-adapter:
+    build: .
+    restart: on-failure     # the SDK refuses to start until the (mock) API answers
+    environment:
+      ConnectionStrings__Platform: Host=postgres;Database=platform;Username=platform;Password=platform
+      Uof__Environment: Custom
+      Uof__ApiHost: uofsim:8080
+      Uof__MessagingHost: rabbitmq
+      Uof__MessagingPort: "5671"
+      Uof__MessagingPassword: sim
+    depends_on:
+      postgres:
+        condition: service_healthy
+      uofsim:
+        condition: service_started
+
+volumes:
+  pgdata:

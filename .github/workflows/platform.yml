@@ -1,0 +1,33 @@
+name: platform
+
+on:
+  push:
+    paths: ["betradar-integration/platform/**", "betradar-integration/uof-simulator/src/UofSim.Core/**", ".github/workflows/platform.yml"]
+  pull_request:
+    paths: ["betradar-integration/platform/**", "betradar-integration/uof-simulator/src/UofSim.Core/**", ".github/workflows/platform.yml"]
+
+defaults:
+  run:
+    working-directory: betradar-integration/platform
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: platform
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - run: dotnet build Platform.sln -c Release
+      # Parser tests always run; store tests run against the service container (real PostgreSQL 18).
+      - run: dotnet test tests/Platform.Tests -c Release --no-build
+        env:
+          PLATFORM_TEST_PG: Host=localhost;Port=5432;Username=postgres;Password=platform

@@ -23,6 +23,8 @@
 | CI/CD | **GitHub Actions + GHCR (ან self-hosted registry)** | უფასო ლიმიტები საკმარისია სტარტაპისთვის. |
 | Secrets | **SOPS + age** (repo-ში დაშიფრული) → Phase 2: **OpenBao/Vault** | ნულოვანი ხარჯი, git-ზე დაფუძნებული, აუდიტირებადი. |
 
+> **განახლება 2026-10-02 (პირველი რეალიზაცია, [`../platform/`](../platform/README.md)):** .NET SDK თითოეულ event შეტყობინებაზე raw XML-ს იძლევა (`IEventMessage.RawMessage`), ამიტომ raw-first მეორე AMQP consumer-ის გარეშე მუშაობს. Phase 1-ის პირველ ვერსიაში NATS ჯერ არ არის — adapter in-process queue-თ პირდაპირ PostgreSQL-ში წერს; NATS `UOF_RAW` შემდეგი ნაბიჯია.
+
 **ძირითადი პრინციპი — „raw-first“:** ყოველი UOF შეტყობინება ჯერ **უცვლელად** იწერება durable stream-ში (`UOF_RAW`), და მხოლოდ ამის შემდეგ ხდება მისი დამუშავება. ეს გვაძლევს replay-ს, debugging-ს, აუდიტს და B2B კლიენტებთან დავების გადაჭრის საშუალებას.
 
 ---

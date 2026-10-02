@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.89" />
+    <PackageReference Include="Npgsql" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Migrations ship inside the assembly so every service and test applies the same schema. -->
+    <EmbeddedResource Include="..\..\db\migrations\*.sql" LinkBase="Migrations" />
+  </ItemGroup>
+
+</Project>
