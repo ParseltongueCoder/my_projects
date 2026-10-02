@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- UofSim placeholder values; replace with the real list from the Integration API. -->
+<void_reasons_descriptions response_code="OK">
+  <void_reason id="0" description="OTHER"/>
+  <void_reason id="1" description="NO_GOALSCORER"/>
+  <void_reason id="2" description="CORRECT_SCORE_MISSING"/>
+</void_reasons_descriptions>

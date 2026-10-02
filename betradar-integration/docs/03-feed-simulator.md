@@ -1,6 +1,7 @@
 # 03 — UOF Feed Simulator (Betradar Unified Odds Feed-თან თავსებადი სიმულატორი)
 
 > **სტატუსი:** Draft v0.1 · **ფაზა:** 1 · **მფლობელი:** Feed/Integration გუნდი
+> **განახლება 2026-10-02:** სიმულატორი რეალიზებულია **.NET 10**-ზე (არა Python) — [ADR-001](adr/ADR-001-dotnet-stack.md), კოდი: [`../uof-simulator/`](../uof-simulator/README.md). ქვემოთ Python ჩონჩხები დიზაინის რეფერენსად რჩება. §11-ის checklist იგივე ვრცელდება .NET SDK-ზე (path-ები SDK-ის კოდით გადამოწმებულია); S1 დასრულებულია.
 > **დაკავშირებული დოკუმენტები:** `01-…` (ბიზნეს-მიზნები), `02-…` (consumer-ის არქიტექტურა) — ⚠ გადასამოწმებელი (ფაილების სახელები ჯერ არ არის დაფიქსირებული)
 >
 > ნიშანი **⚠ გადასამოწმებელი** ნიშნავს, რომ ფაქტი აღებულია საჯარო წყაროებიდან / SDK-ის კოდიდან / მეხსიერებიდან და Betradar-ის ოფიციალურ დოკუმენტაციასთან (docs.sportradar.com) ან რეალურ Integration გარემოსთან უნდა შემოწმდეს, სანამ მასზე ბიზნეს-ლოგიკას დავაშენებთ.
@@ -1396,7 +1397,16 @@ Replay Server — Betradar-ის სერვისი, რომელიც �
 
 ---
 
-## 11. Java SDK compatibility checklist
+## 11. SDK compatibility checklist (Java → .NET)
+
+> **.NET SDK-ზე (v3.12.0) smoke ტესტით აღმოჩენილი (2026-10-02):**
+> - startup-ზე იძახებს იმავე endpoint-ებს, რაც ქვემოთაა (whoami, producers, markets, variants, match_status, betstop_reasons, betting_status, void_reasons) — ყველა დაფარულია.
+> - **ცარიელ `variants.xml`-ზე SDK ვარდება** (`ArgumentNullException` mapper-ში) → სიმულატორი ყოველთვის აბრუნებს მინიმუმ ერთ variant-ს.
+> - ფონურად იძახებს: `/v1/sports/{lang}/sports.xml`, `/tournaments.xml`, `/schedules/{date}/schedule.xml` (გუშინ/დღეს/ხვალ) და **`/v1/wns/{lang}/lotteries.xml`** — 404 SDK-ს არ აჩერებს; S2 backlog.
+> - `api_url`: .NET SDK `Custom` რეჟიმში ტოვებს URL-ს, თუ ის შეიცავს კონფიგურირებულ API host-ს — ამიტომ სიმულატორი `api_url`-ს მოთხოვნის `Host` header-იდან აწყობს.
+> - SDK `SetMessagingPassword(null)`-ს ცარიელ სტრიქონად აქცევს; ლოკალური RabbitMQ ცარიელ პაროლს არ იღებს → dev-ში `sim`.
+> - TLS: SDK იღებს self-signed სერტიფიკატს (chain/name errors დაშვებულია) — ✅ დადასტურდა.
+
 
 **კონტექსტი:** production UOF adapter = **Java 21 + ოფიციალური Sportradar Java SDK** (Maven dependency), რომელიც dev/test-ში კონფიგურირდება `selectCustom()`-ით ჩვენს სიმულატორზე. ქვემოთ ჩამოთვლილი path-ები და ქცევები აღებულია SDK-ის საჯარო რეპოს კოდის **წაკითხვით** (რეფერენსი, არა ასლი; §1.4). `{lang}` = SDK-ში კონფიგურირებული ენები (მინიმუმ `en`); mock-rest ყველა ენაზე აბრუნებს ერთსა და იმავე (ინგლისურ) კონტენტს.
 

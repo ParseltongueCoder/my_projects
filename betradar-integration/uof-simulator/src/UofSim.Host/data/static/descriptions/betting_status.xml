@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- UofSim placeholder values; replace with the real list from the Integration API. -->
+<betting_status_descriptions response_code="OK">
+  <betting_status id="0" description="UNKNOWN"/>
+  <betting_status id="1" description="POSSIBLE_GOAL"/>
+  <betting_status id="2" description="GOAL"/>
+</betting_status_descriptions>

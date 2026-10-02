@@ -1,0 +1,10 @@
+bin/
+obj/
+*.user
+.vs/
+.idea/
+.env
+# TLS material is generated locally by tools/gen-tls.sh
+config/tls/
+# Sportradar XSDs stay outside the repo (SDK License Agreement) - see README
+schemas/

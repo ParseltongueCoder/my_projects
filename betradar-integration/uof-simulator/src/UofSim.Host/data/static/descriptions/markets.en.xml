@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- UofSim synthetic subset. Structure follows UnifiedFeedDescriptions.xsd; content is ours.
+     Market/outcome ids mirror what we expect from Betradar and MUST be re-checked against the
+     real markets.xml once Integration access is available (docs/02 §5, docs/03 Appendix B). -->
+<market_descriptions response_code="OK">
+  <market id="1" name="1x2" groups="all|score|regular_play">
+    <outcomes>
+      <outcome id="1" name="{$competitor1}"/>
+      <outcome id="2" name="draw"/>
+      <outcome id="3" name="{$competitor2}"/>
+    </outcomes>
+  </market>
+  <market id="10" name="Double chance" groups="all|score|regular_play">
+    <outcomes>
+      <outcome id="9" name="{$competitor1} or draw"/>
+      <outcome id="10" name="{$competitor1} or {$competitor2}"/>
+      <outcome id="11" name="draw or {$competitor2}"/>
+    </outcomes>
+  </market>
+  <market id="11" name="Draw no bet" groups="all|score|regular_play">
+    <outcomes>
+      <outcome id="4" name="{$competitor1}"/>
+      <outcome id="5" name="{$competitor2}"/>
+    </outcomes>
+  </market>
+  <market id="16" name="Handicap {hcp}" groups="all|score|regular_play">
+    <outcomes>
+      <outcome id="1714" name="{$competitor1} ({+hcp})"/>
+      <outcome id="1715" name="{$competitor2} ({-hcp})"/>
+    </outcomes>
+    <specifiers>
+      <specifier name="hcp" type="decimal"/>
+    </specifiers>
+  </market>
+  <market id="18" name="Total" groups="all|score|regular_play">
+    <outcomes>
+      <outcome id="12" name="over {total}"/>
+      <outcome id="13" name="under {total}"/>
+    </outcomes>
+    <specifiers>
+      <specifier name="total" type="decimal"/>
+    </specifiers>
+  </market>
+  <market id="29" name="Both teams to score" groups="all|score|regular_play">
+    <outcomes>
+      <outcome id="74" name="yes"/>
+      <outcome id="76" name="no"/>
+    </outcomes>
+  </market>
+</market_descriptions>

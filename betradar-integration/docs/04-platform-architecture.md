@@ -12,7 +12,7 @@
 
 | საკითხი | გადაწყვეტილება | რატომ (ერთი წინადადებით) |
 |---|---|---|
-| Production სერვისების ენა | **Java (LTS: 21 ან 25) + Spring Boot** | Sportradar-ის ოფიციალური UOF SDK Java-ზეა (recovery/alive/caching მზადაა); .NET — თანაბარი ალტერნატივა, თუ გუნდი .NET-ზეა. |
+| Production სერვისების ენა | **.NET 10 (LTS) + ASP.NET Core** — იხ. [ADR-001](adr/ADR-001-dotnet-stack.md) | გუნდი .NET-ზეა; ოფიციალური .NET SDK (`Sportradar.OddsFeed.SDKCore`) recovery/alive/caching-ს იძლევა. (თავდაპირველი რეკომენდაცია — Java — შეიცვალა.) |
 | Event bus | **NATS JetStream** | ერთი პატარა binary, persistence + replay + ჩაშენებული dedup, subject-based routing; Kafka-ზე გადასვლის მკაფიო კრიტერიუმები Phase 2-ში. |
 | მთავარი DB | **PostgreSQL 18** | canonical model, ტრანზაქციები, partitioning — უფასო და საკმარისი Phase 1-2-ისთვის. |
 | Hot cache | **Valkey 8** (Redis-თავსებადი, BSD ლიცენზია) | მიმდინარე odds/market state < 1 ms წაკითხვით; ლიცენზიის რისკის გარეშე. |
@@ -509,7 +509,9 @@ Routing: `critical` → Telegram on-call ჯგუფი + Email, განმ�
 | დაქირავება საქართველოში | კარგი (ბანკები, fintech, outsourcing) | კარგი (ბანკების დიდი ნაწილი .NET) | მზარდი, ნაკლები | კარგი, მაგრამ backend-iGaming გამოცდილება ნაკლები |
 | Phase 2 (bet engine, settlement) | ✅ | ✅ | ✅ | ⚠️ |
 
-**რეკომენდაცია: Java (LTS) + Spring Boot ყველა core სერვისისთვის.**
+> **განახლება 2026-10-02:** გუნდი .NET-ზეა → მიღებულია **.NET 10 + ოფიციალური .NET SDK** ([ADR-001](adr/ADR-001-dotnet-stack.md)). ქვემოთ მოცემული Java-ს არგუმენტაცია ისტორიისთვის რჩება; არქიტექტურა უცვლელია.
+
+**თავდაპირველი რეკომენდაცია: Java (LTS) + Spring Boot ყველა core სერვისისთვის.**
 - მთავარი არგუმენტი — ოფიციალური SDK ამცირებს ყველაზე რისკიან ნაწილს (session/recovery) და Sportradar-ის support-თან კომუნიკაცია SDK-ზე უფრო მარტივია.
 - ერთი ენა backend-ზე = ნაკლები cognitive load პატარა გუნდისთვის; საერთო ბიბლიოთეკები (`canonical-model`, `bus-client`, `observability`).
 - **თუ დამფუძნებელი გუნდი .NET-ზეა** — აირჩიეთ .NET (LTS) + ოფიციალური .NET SDK; არქიტექტურა უცვლელია. **ნუ შეურევთ ორივეს.**

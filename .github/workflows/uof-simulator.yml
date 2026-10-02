@@ -1,0 +1,40 @@
+name: uof-simulator
+
+on:
+  push:
+    paths: ["betradar-integration/uof-simulator/**", ".github/workflows/uof-simulator.yml"]
+  pull_request:
+    paths: ["betradar-integration/uof-simulator/**", ".github/workflows/uof-simulator.yml"]
+
+defaults:
+  run:
+    working-directory: betradar-integration/uof-simulator
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - run: dotnet build UofSim.sln -c Release
+      - run: dotnet test tests/UofSim.Tests -c Release --no-build
+
+  sdk-smoke:
+    # Runs the official Sportradar .NET SDK against the simulator (RabbitMQ over TLS + mock REST).
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - run: ./tools/gen-tls.sh
+      - run: docker compose up -d --build --wait
+      - run: timeout 60 bash -c 'until curl -sf localhost:8080/healthz; do sleep 2; done'
+      - run: dotnet run --project tests/UofSim.SdkSmoke -c Release -- --chaos
+        env:
+          SMOKE_TIMEOUT_SECONDS: "150"
+      - if: failure()
+        run: docker compose logs

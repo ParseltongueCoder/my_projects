@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- UofSim placeholder values; replace with the real list from the Integration API. -->
+<betstop_reasons_descriptions response_code="OK">
+  <betstop_reason id="0" description="UNKNOWN"/>
+  <betstop_reason id="1" description="POSSIBLE_GOAL"/>
+  <betstop_reason id="2" description="GOAL"/>
+  <betstop_reason id="3" description="POSSIBLE_RED_CARD"/>
+  <betstop_reason id="4" description="RED_CARD"/>
+  <betstop_reason id="5" description="POSSIBLE_PENALTY"/>
+</betstop_reasons_descriptions>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- UofSim synthetic variant list (ids/outcomes are ours). The official SDK fails to map an empty list,
+     so at least one variant is always served. Full variant support arrives with the L3 engine (S4). -->
+<variant_descriptions response_code="OK">
+  <variant id="sr:exact_goals:4+">
+    <outcomes>
+      <outcome id="sr:exact_goals:4+:0" name="0"/>
+      <outcome id="sr:exact_goals:4+:1" name="1"/>
+      <outcome id="sr:exact_goals:4+:2" name="2"/>
+      <outcome id="sr:exact_goals:4+:3" name="3"/>
+      <outcome id="sr:exact_goals:4+:4" name="4+"/>
+    </outcomes>
+  </variant>
+</variant_descriptions>

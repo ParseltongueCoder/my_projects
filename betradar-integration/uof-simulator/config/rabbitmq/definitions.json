@@ -1,0 +1,28 @@
+{
+  "vhosts": [{ "name": "/unifiedfeed/99999" }],
+  "users": [
+    { "name": "sim-token-0000000000", "password": "sim", "tags": [] },
+    { "name": "uofsim-publisher", "password": "publisher", "tags": [] },
+    { "name": "admin", "password": "admin", "tags": ["administrator"] }
+  ],
+  "permissions": [
+    {
+      "user": "sim-token-0000000000", "vhost": "/unifiedfeed/99999",
+      "configure": "^amq\\.gen.*", "write": "^amq\\.gen.*", "read": "^(amq\\.gen.*|unifiedfeed)$"
+    },
+    {
+      "user": "uofsim-publisher", "vhost": "/unifiedfeed/99999",
+      "configure": "^unifiedfeed$", "write": "^unifiedfeed$", "read": ""
+    },
+    {
+      "user": "admin", "vhost": "/unifiedfeed/99999",
+      "configure": ".*", "write": ".*", "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "unifiedfeed", "vhost": "/unifiedfeed/99999", "type": "topic",
+      "durable": true, "auto_delete": false, "internal": false, "arguments": {}
+    }
+  ]
+}

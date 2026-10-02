@@ -12,12 +12,15 @@
 | 03 | [Feed Simulator](docs/03-feed-simulator.md) | არქიტექტურა (L1/L2/L3), რეპოს სტრუქტურა, YAML სცენარის DSL, Python კოდის ჩონჩხები, recovery, chaos კატალოგი, docker-compose, Java SDK compatibility checklist, მაილსტოუნები |
 | 04 | [პლატფორმის არქიტექტურა](docs/04-platform-architecture.md) | სერვისები, UOF adapter-ის შიდა მოწყობა, admin, მონიტორინგი (მეტრიკები/alert-ები), stack, ინფრა და ხარჯები, უსაფრთხოება, Phase 2+, monorepo |
 
+| — | [UofSim — სიმულატორის კოდი](uof-simulator/README.md) | .NET სიმულატორი: mock REST + RabbitMQ feed, replay, recovery, chaos, SDK smoke ტესტი |
+| ADR | [ADR-001: .NET stack](docs/adr/ADR-001-dotnet-stack.md) | Java → .NET გადაწყვეტილება |
+
 ## ძირითადი გადაწყვეტილებები (შეჯერებული 4 დოკუმენტს შორის)
 
 | საკითხი | გადაწყვეტილება |
 |---|---|
-| Production ენა | Java 21/25 + Spring Boot + **ოფიციალური Sportradar Java SDK** (როგორც ბიბლიოთეკა, მოდიფიკაციის გარეშე) |
-| სიმულატორი / tooling | Python 3.12 (FastAPI, aio-pika, numpy) |
+| Production ენა | **.NET 10 + ASP.NET Core + ოფიციალური Sportradar .NET SDK** (`Sportradar.OddsFeed.SDKCore`, მოდიფიკაციის გარეშე) — [ADR-001](docs/adr/ADR-001-dotnet-stack.md) |
+| სიმულატორი | .NET 10 — [`uof-simulator/`](uof-simulator/README.md) (S1 მზადაა) |
 | Feed transport (სიმულატორი) | RabbitMQ, exchange `unifiedfeed` (topic), vhost `/unifiedfeed/{bookmaker_id}`, TLS 5671 |
 | შიდა event bus | NATS JetStream (`UOF_RAW` → normalizer); Kafka მხოლოდ Phase 2-ის კრიტერიუმებით |
 | DB / cache | PostgreSQL 18 / Valkey 8 (სიმულატორის შიდა state-ისთვის Redis-თავსებადი ნებისმიერი) |
@@ -38,8 +41,8 @@ Sportradar-ის SDK რეპოები (`UnifiedOddsSdkJava`, `UnifiedOddsS
 | კვირა | ფოკუსი | შედეგი |
 |---|---|---|
 | 0–2 | ფაზა 0: სწავლა | UOF ლექსიკონი, ADR-001..003, canonical DDL-ის დამტკიცება, სიმულატორის სცენარების სია |
-| 2–3 | სიმულატორი S1 | docker-compose, routing keys, alive, whoami/producers/markets mock, L1 replay |
-| 3–4 | სიმულატორი S2 + adapter-ის ჩონჩხი | YAML DSL, ყველა შეტყობინების builder, Control API; Java adapter უკავშირდება სიმულატორს SDK-ით |
+| 2–3 | სიმულატორი S1 ✅ | docker-compose, routing keys, alive, whoami/producers/descriptions mock, recovery, L1 replay, chaos, **.NET SDK smoke ტესტი** |
+| 3–4 | სიმულატორი S2 + adapter-ის ჩონჩხი | sports/fixture/summary/schedule mock, YAML DSL, recorder; .NET adapter უკავშირდება სიმულატორს SDK-ით |
 | 4–5 | S3 + canonical store | producer/recovery სიმულაცია, SDK smoke test CI-ში; normalizer → Postgres/Valkey |
 | **5** | **Sportradar outreach** | პირველი მიმართვა, discovery call |
 | 5–7 | S4 + admin + monitoring | Poisson odds engine, admin MVP, Grafana „UOF Feed Health", alert-ები |

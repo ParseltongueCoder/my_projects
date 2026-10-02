@@ -1,0 +1,39 @@
+name: uof-sim
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    hostname: rabbitmq
+    ports:
+      - "5671:5671"     # AMQPS - what the SDK / our adapter connects to
+      - "5672:5672"     # plain AMQP, local debugging only
+      - "15672:15672"   # management UI: http://localhost:15672 (admin/admin)
+    volumes:
+      - ./config/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./config/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+      - ./config/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./config/tls:/etc/rabbitmq/tls:ro
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+
+  uofsim:
+    build: .
+    ports:
+      - "8080:8080"     # mock Betradar REST (/v1/...) + control API (/sim/...)
+    environment:
+      Sim__AmqpHost: rabbitmq
+      Sim__AmqpPort: "5671"
+      Sim__AmqpUseTls: "true"
+      Sim__ReplayOnStart: ${SIM_REPLAY_ON_START:-}
+      Sim__ReplaySpeed: ${SIM_REPLAY_SPEED:-1}
+      Sim__ReplayLoop: ${SIM_REPLAY_LOOP:-false}
+      Sim__XsdDir: /xsd
+    volumes:
+      # Optional: a local folder with the Sportradar XSDs enables validation of every published message.
+      - ${UOF_XSD_HOST_DIR:-./schemas}:/xsd:ro
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
