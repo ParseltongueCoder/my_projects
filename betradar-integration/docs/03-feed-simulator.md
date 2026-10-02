@@ -12,7 +12,8 @@
 - ვაშენებთ **საკუთარ UOF-თავსებად სიმულატორს**, რომელიც ასახავს ორივე არხს: **AMQP feed-ს** (RabbitMQ, topic exchange `unifiedfeed`, Betradar-ის routing key-ებით) და **REST API-ს** (FastAPI, იგივე path-ებით და XML სტრუქტურით).
 - ჩვენი consumer სერვისი იწერება ისე, რომ **სიმულატორიდან რეალურ Betradar Integration გარემოზე გადასვლა მხოლოდ კონფიგურაციის ცვლილებაა** (host, port, token, bookmaker_id/vhost, TLS CA).
 - სიმულატორს აქვს 3 სიზუსტის დონე: **L1** (სტატიკური XML replay), **L2** (YAML სცენარის ძრავა), **L3** (სტოქასტიკური მატჩის ძრავა + Poisson-ზე დაფუძნებული odds მოდელი).
-- ყველა გამავალი შეტყობინება **XSD-ით მოწმდება** (ოფიციალური `UnifiedFeed.xsd` Sportradar-ის SDK რეპოდან) და **იწერება Recorder-ში** დეტერმინისტული replay-სთვის.
+- ყველა გამავალი შეტყობინება **XSD-ით მოწმდება** და **იწერება Recorder-ში** დეტერმინისტული replay-სთვის. XSD ფაილები **ჩვენს რეპოში არ ინახება** — იტვირთება დეველოპერის მიერ მითითებული ლოკალური path-დან (`UOF_XSD_DIR`), იხ. §1.4.
+- **Production adapter = Java 21 + ოფიციალური Sportradar Java SDK** (`Environment.Custom` → ჩვენი სიმულატორი). ამიტომ სიმულატორის REST+AMQP უნდა აკმაყოფილებდეს ყველაფერს, რასაც SDK startup-ზე და recovery-ზე იძახებს — იხ. **§11 SDK compatibility checklist**. Python consumer-ები რჩება სიმულატორის საკუთარი ტესტებისთვის.
 - Chaos რეჟიმი: duplicate, out-of-order, delay, missing alive, producer down, `subscribed=0`, rollback, void/dead-heat, load test.
 
 ### ვერიფიცირებული საბაზისო ფაქტები (წყარო: Sportradar SDK-ების კოდი და საჯარო დოკ.)
@@ -55,6 +56,7 @@
 - არ ვქმნით „production-quality" trading მოდელს — odds მხოლოდ დამაჯერებელი/შინაგანად თანმიმდევრული უნდა იყოს.
 - სიმულატორი **არ არის** Betradar-ის სახელით გამოსაქვეყნებელი სერვისი: შიდა გამოყენება, dev/test.
 - Betradar-ის ოფიციალურ `markets.xml` კონტენტს არ ვაკოპირებთ ლიცენზიის გარეშე — ვქმნით საკუთარ მცირე subset-ს იგივე **სტრუქტურით** (XSD), ID-ები ვერიფიკაციამდე ⚠.
+- Sportradar SDK-ების (UnifiedOddsSdkJava, UnifiedOddsSdkNetCore) XSD-ებს, sample XML-ებს და კოდს **არ ვაკოპირებთ / არ ვავრცელებთ** (იხ. §1.4).
 
 ### 1.3 სიზუსტის დონეები (Fidelity levels)
 
@@ -65,6 +67,20 @@
 | **L3 — Stochastic match engine + odds model** | Poisson პროცესით აგენერირებს მატჩის მოვლენებს, odds-ს ითვლის მიმდინარე მდგომარეობიდან, მარჟით; მრავალი მატჩი პარალელურად | `seed`, xG, ლიგის პროფილი | load test, soak test, trading/risk ლოგიკის ტესტი | მაღალი |
 
 L2 და L3 კომბინირებადია: სცენარი შეიძლება იყოს „L3 მატჩი, მაგრამ 63'-ზე იძულებითი გოლი და 70'-ზე producer down".
+
+### 1.4 ლიცენზიის შეზღუდვები (Sportradar SDK)
+
+Sportradar-ის SDK რეპოები (UnifiedOddsSdkJava, UnifiedOddsSdkNetCore) ვრცელდება Sportradar-ის **proprietary SDK License Agreement**-ით (derivative work-ისა და გადანაწილების აკრძალვით). აქედან გამომდინარე:
+
+| წესი | რას ნიშნავს პრაქტიკაში |
+|---|---|
+| **არ ვავრცელებთ (no vendoring)** | `UnifiedFeed.xsd`, `UnifiedFeedDescriptions.xsd`, sample XML-ები და SDK-ის კოდი **არ ემატება** ჩვენს git რეპოს, Docker image-ს ან build artifact-ებს |
+| **XSD — ლოკალური path-დან** | `UOF_XSD_DIR` (მაგ. `~/sportradar/UnifiedOddsSdkJava/sdk-core/src/main/resources/xsd`) — თითოეული დეველოპერი თვითონ აკეთებს SDK-ის checkout-ს და მიუთითებს path-ს; docker-compose-ში read-only bind mount; `schemas/` დირექტორია `.gitignore`-შია |
+| **XSD არ არის სავალდებულო runtime-ისთვის** | თუ `UOF_XSD_DIR` არ არის მითითებული → validator გამორთულია (WARN ლოგი); CI-ში XSD ვალიდაცია მხოლოდ იმ runner-ზე, სადაც XSD ლოკალურად ხელმისაწვდომია |
+| **საკუთარი fixtures** | ყველა sample/golden XML **ჩვენი builder-ით გენერირდება** (`scenarios/` + Recorder), არა SDK-ის test resources-დან კოპირებით |
+| **SDK — მხოლოდ რეფერენსი** | SDK-ის კოდს ვკითხულობთ ქცევის გასაგებად (hosts, routing key, timeouts, endpoint-ები), ჩვენი კოდი დამოუკიდებლად იწერება |
+| **SDK როგორც dependency** | Java adapter-ი SDK-ს იყენებს Maven dependency-ად (ეს გამოყენებაა, არა გადანაწილება); SDK smoke-ტესტი (§11) ასევე Maven-იდან იღებს |
+| **სამართლებრივი შემოწმება** | კომერციულ კონტრაქტამდე იურისტმა უნდა დაადასტუროს, რომ XSD-ის ლოკალური გამოყენება შიდა ტესტირებისთვის დასაშვებია ⚠ გადასამოწმებელი |
 
 ---
 
@@ -188,12 +204,8 @@ uof-simulator/
 │   │   ├── enabled_plugins         # rabbitmq_management (+ optional rabbitmq_auth_backend_http)
 │   │   └── definitions.json        # vhost /unifiedfeed/99999, users, permissions, exchange unifiedfeed
 │   └── tls/                        # tools/gen_tls.sh-ით გენერირებული CA + server cert (git-ignored)
-├── schemas/
-│   └── xsd/
-│       ├── UnifiedFeed.xsd                 # AMQP შეტყობინებები (SDK: sdk-core/src/main/resources/xsd/messages/)
-│       ├── UnifiedFeedDescriptions.xsd     # markets/variants/producers descriptions
-│       ├── UnifiedFeedResponse.xsd         # REST <response response_code=...>
-│       └── sports/*.xsd                    # fixture/summary/schedule (SDK-დან) ⚠ გადასამოწმებელი ზუსტი ფაილები
+├── schemas/                        # .gitignore-შია! XSD-ები აქ არასოდეს commit-დება (§1.4)
+│   └── README.txt                  # ინსტრუქცია: UOF_XSD_DIR → ლოკალური SDK checkout (messages/UnifiedFeed.xsd, UnifiedFeedDescriptions.xsd ...)
 ├── data/
 │   ├── static/
 │   │   ├── producers.xml           # producers 1 (LO) და 3 (Ctrl) + optional 6 (VF)
@@ -219,7 +231,7 @@ uof-simulator/
 ├── src/uofsim/
 │   ├── __init__.py
 │   ├── __main__.py                 # `python -m uofsim` → cli
-│   ├── config.py                   # pydantic-settings: AMQP/REST/Redis/PG/sim პარამეტრები
+│   ├── config.py                   # pydantic-settings: AMQP/REST/Redis/PG/sim პარამეტრები, UOF_XSD_DIR (optional)
 │   ├── clock.py                    # SimClock: real | accelerated(xN) | stepped; now_ms(), sleep_until()
 │   ├── ids.py                      # URN გენერატორი (sr:match:9xxxxxxxx), request_id, seq
 │   ├── rng.py                      # seeded numpy Generator per event (დეტერმინიზმი)
@@ -244,7 +256,7 @@ uof-simulator/
 │   ├── messages/
 │   │   ├── builder.py              # odds_change, bet_stop, bet_settlement, rollback_*, bet_cancel, fixture_change, alive, snapshot_complete
 │   │   ├── routing.py              # routing key builder (8 სეგმენტი) + binding pattern helper-ები
-│   │   └── validator.py            # lxml XMLSchema validation, სტრიქტული/sampling რეჟიმი
+│   │   └── validator.py            # lxml XMLSchema validation UOF_XSD_DIR-დან; არ არის → no-op + WARN
 │   ├── transport/
 │   │   ├── publisher.py            # aio-pika publisher, confirms, reconnect, headers
 │   │   ├── chaos.py                # Chaos middleware (dup/reorder/delay/drop/corrupt)
@@ -258,7 +270,7 @@ uof-simulator/
 │   │   ├── xml.py                  # XMLResponse helper, <response response_code=...>
 │   │   └── routes/
 │   │       ├── users.py            # /v1/users/whoami.xml
-│   │       ├── descriptions.py     # producers.xml, markets.xml, variants, market variant single
+│   │       ├── descriptions.py     # producers.xml, markets.xml, variants, single variant, match_status, betstop_reasons, betting_status, void_reasons
 │   │       ├── sports.py           # sports.xml, fixture.xml, summary.xml, schedules (live/pre/date), fixtures/changes
 │   │       ├── recovery.py         # /v1/{product}/recovery/..., odds/events/..., stateful_messages/...
 │   │       ├── replay.py           # /v1/replay/* (Replay Server-თან თავსებადი)
@@ -280,10 +292,11 @@ uof-simulator/
 │   ├── unit/                       # routing, poisson, margin, builder+XSD, DSL parsing
 │   ├── contract/                   # REST path-ები/სტატუსები/XML ფორმა vs. რეალური sample-ები (როცა გვექნება)
 │   ├── scenario/                   # golden-file ტესტები: scenario → normalized JSONL diff
-│   └── e2e/                        # docker compose-ში: consumer-ის placeholder + assertions
+│   ├── e2e/                        # docker compose-ში: consumer-ის placeholder + assertions
+│   └── sdk-smoke/                  # მინიმალური Java 21 პროექტი: ოფიციალური SDK (Maven) → selectCustom() → სიმულატორი (§11)
 └── tools/
     ├── gen_tls.sh                  # self-signed CA + server cert (CN=rabbitmq, SAN=localhost)
-    ├── fetch_xsd.sh                # XSD-ების ჩამოტვირთვა Sportradar SDK რეპოდან (pinned commit)
+    ├── check_xsd_dir.sh            # ამოწმებს, რომ UOF_XSD_DIR-ში საჭირო XSD-ები არსებობს (არაფერს აკოპირებს რეპოში)
     └── capture_real.py             # მომავალში: Integration env-დან sample-ების ჩაწერა contract ტესტებისთვის
 ```
 
@@ -700,18 +713,29 @@ def build_snapshot_complete(product: int, timestamp_ms: int, request_id: int) ->
 
 ```python
 # messages/validator.py
+import logging
 import random
 from pathlib import Path
 from lxml import etree
 
+log = logging.getLogger(__name__)
+
 class InvalidMessage(ValueError): ...
 
 class XsdValidator:
-    def __init__(self, xsd_path: Path, sample_rate: float = 1.0) -> None:
-        self._schema = etree.XMLSchema(etree.parse(str(xsd_path)))
+    """XSD იტვირთება დეველოპერის ლოკალური SDK checkout-იდან (UOF_XSD_DIR) — რეპოში არ ინახება."""
+    def __init__(self, xsd_dir: Path | None, sample_rate: float = 1.0,
+                 rel_path: str = "messages/UnifiedFeed.xsd") -> None:
+        self._schema = None
+        if xsd_dir and (xsd_dir / rel_path).exists():
+            self._schema = etree.XMLSchema(etree.parse(str(xsd_dir / rel_path)))
+        else:
+            log.warning("UOF_XSD_DIR not set or XSD missing - XSD validation disabled")
         self._sample = sample_rate
 
     def validate(self, body: bytes) -> None:
+        if self._schema is None:
+            return
         if self._sample < 1.0 and random.random() > self._sample:
             return
         doc = etree.fromstring(body)
@@ -862,7 +886,7 @@ class UofPublisher:
             body,
             content_type="text/xml",
             delivery_mode=DeliveryMode.NOT_PERSISTENT,          # ⚠ რეალური feed-ის persistence
-            headers={"timestamp_in_ms": timestamp_ms},          # ⚠ header-ის სახელი გადასამოწმებელი
+            headers={"timestamp_in_ms": timestamp_ms},          # Java SDK კითხულობს ამ header-ს (sentAt)
         )
         await self._ex.publish(msg, routing_key=routing_key)   # confirm-ს ელოდება
         if self._recorder:
@@ -1155,6 +1179,7 @@ x-sim-env: &sim-env
   RABBIT_MGMT_URL: http://rabbitmq:15672
   SIM_SPEED: ${SIM_SPEED:-10}
   SIM_SEED: ${SIM_SEED:-42}
+  UOF_XSD_DIR: /xsd            # optional; ცარიელი mount → validation off
 
 services:
   rabbitmq:
@@ -1211,6 +1236,7 @@ services:
       - ./scenarios:/app/scenarios:ro
       - ./data:/app/data
       - ./config/tls:/certs:ro
+      - ${UOF_XSD_HOST_DIR:-./schemas}:/xsd:ro   # ლოკალური SDK checkout-ის xsd დირექტორია (არ commit-დება)
     depends_on:
       rabbitmq: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -1305,6 +1331,17 @@ volumes:
 | `UOF_MAX_INACTIVITY_S` | `20` | `20` | `20` | `20` |
 | `UOF_DB_SCHEMA` | `uof_sim` | `uof_int` | `uof_replay` | `uof_prod` |
 
+**გარემოების ხელმისაწვდომობა (დაგეგმვისთვის მნიშვნელოვანი):**
+
+| გარემო | ხელმისაწვდომობა / შინაარსი | რას ნიშნავს ჩვენთვის |
+|---|---|---|
+| Simulator | 24/7, ლოკალურად, ნებისმიერი სცენარი | ძირითადი dev/CI გარემო; weekend-ზე და ღამით ტესტები მხოლოდ აქ |
+| Betradar **Integration** (`stgmq`/`stgapi`) | მუშაობს **24/5** (weekend-ზე მიუწვდომელია) | e2e/contract ტესტები სამუშაო დღეებში; weekend-ის პიკური დატვირთვის ტესტი Integration-ზე **ვერ** ჩატარდება → load ტესტები სიმულატორზე; CI job-ები, რომლებიც Integration-ს ეყრდნობა, weekend-ზე skip/allow-failure |
+| Betradar **Replay Server** (`replaymq`) | უკრავს მხოლოდ **48 საათზე ძველ** event-ებს; default speed **10x** (`max_delay` default 10s) | ახლახან მომხდარი მატჩის სატესტოდ ≥48 სთ ლოდინი; ახალი edge case-ები — მხოლოდ სიმულატორში; ჩვენი mock `/v1/replay/*` იგივე default-ებს იყენებს (speed=10, max_delay=10000) |
+| Production (`mq`/`api`) | 24/7, კომერციული კონტრაქტით | — |
+
+**Java SDK-ზე გადართვა** (production adapter): `selectCustom()` → სიმულატორი; `selectIntegration()` → Betradar Integration; `selectReplay()` → Replay; production → `selectProduction()` ⚠ (ზუსტი მეთოდის სახელები SDK v3-ის migration guide-ით გადასამოწმებელი). დეტალები — §11.
+
 **წესები, რომ გადართვა მხოლოდ კონფიგი იყოს:**
 1. consumer-ი `bookmaker_id`/`vhost`-ს **ყოველთვის** `GET /v1/users/whoami.xml`-დან იღებს (სიმულატორიც აბრუნებს).
 2. არავითარი hardcoded host/port/path-prefix; producer-ების სია `producers.xml`-დან.
@@ -1314,7 +1351,7 @@ volumes:
 
 ### 9.2 Betradar Replay Server-ზე გადასვლა
 
-Replay Server — Betradar-ის სერვისი, რომელიც წარსულ მატჩებს/სცენარებს უკრავს ჩვენს ექსკლუზიურ replay feed-ში (საჭიროებს Betradar-ის ანგარიშს/token-ს).
+Replay Server — Betradar-ის სერვისი, რომელიც წარსულ მატჩებს (**მხოლოდ 48 სთ-ზე ძველს**) და წინასწარ მომზადებულ სცენარებს უკრავს ჩვენს ექსკლუზიურ replay feed-ში, default სიჩქარით **10x** (საჭიროებს Betradar-ის ანგარიშს/token-ს).
 
 | ოპერაცია | Betradar endpoint (REST host: `stgapi.betradar.com`) | ჩვენი სიმულატორი (mock-rest) |
 |---|---|---|
@@ -1329,6 +1366,8 @@ Replay Server — Betradar-ის სერვისი, რომელიც �
 | სტატუსი | `GET /v1/replay/status` ⚠ | ✅ |
 
 - Replay-ზე alive მოდის producer 1 და 3-ისთვის ყოველ 10 წამში **მიმდინარე დროში** (დოკ.) — სიმულატორიც ასე იქცევა.
+- ჩვენი mock `PUT /v1/replay/events/{urn}` ასევე ამოწმებს ≥48 სთ წესს (კონფიგურირებადი `replay.min_event_age_h`, default 48; სიმულატორის სცენარებზე შეიძლება გამოირთოს), რომ QA სკრიპტებმა ეს შეზღუდვა ადრევე იგრძნოს.
+- Java SDK replay რეჟიმში ასევე იძახებს `/v1/replay/sports/{lang}/sport_events/{urn}/fixture.xml|summary.xml|timeline.xml` — mock-rest-ში ეს alias-ებია ჩვეულებრივ sports endpoint-ებზე.
 - ჩვენი CLI: `uofsim replay add sr:match:…`, `uofsim replay play --speed 20` — ერთნაირად მუშაობს ორივე backend-ზე (`--target sim|betradar`), რათა QA-ს სკრიპტები ორივეზე გაეშვას.
 
 ---
@@ -1337,12 +1376,12 @@ Replay Server — Betradar-ის სერვისი, რომელიც �
 
 | # | Milestone | შედეგი (Definition of Done) | შეფასება (person-days) |
 |---|---|---|---|
-| **S1** | Infra + L1 | docker-compose (RabbitMQ TLS, PG, Redis); definitions.json; XSD-ების fetch; routing key builder + unit ტესტები; L1 replayer (JSONL → AMQP); alive loop; mock-rest: `whoami.xml`, `producers.xml`, სტატიკური `markets.xml`; consumer-ს შეუძლია დაკავშირება და შეტყობინებების მიღება | **5–6** |
+| **S1** | Infra + L1 | docker-compose (RabbitMQ TLS, PG, Redis); definitions.json; `UOF_XSD_DIR` ლოკალური mount + `check_xsd_dir.sh` (vendoring-ის გარეშე); routing key builder + unit ტესტები; L1 replayer (JSONL → AMQP); alive loop; mock-rest: `whoami.xml`, `producers.xml`, სტატიკური `markets.xml`; consumer-ს შეუძლია დაკავშირება და შეტყობინებების მიღება | **5–6** |
 | **S2** | L2 Scenario engine | YAML DSL (pydantic) + loader; SimClock; Message Builder ყველა ტიპზე + XSD validation; Control API + CLI (start, goal, card, bet_stop, suspend, settle, rollback, cancel); Recorder (PG+JSONL); golden-file ტესტები; mock-rest: fixture/summary/schedules (live/pre/date), fixtures/changes | **8–10** |
-| **S3** | Producers & Recovery | Producer manager (UP/DOWN_SILENT/UNSUBSCRIBED), queue_watch → `subscribed=0`; recovery (after/full), event odds recovery, stateful messages recovery, request_id/node_id routing, snapshot_complete; rate limit/403/429; Redis command stream; e2e ტესტი C04–C08 | **6–7** |
+| **S3** | Producers & Recovery | Producer manager (UP/DOWN_SILENT/UNSUBSCRIBED), queue_watch → `subscribed=0`; recovery (after/full), event odds recovery, stateful messages recovery, request_id/node_id routing, snapshot_complete; rate limit/403/429; Redis command stream; e2e ტესტი C04–C08; **§11 checklist-ის სრული დაფარვა + `tests/sdk-smoke` (Java SDK `selectCustom()` → producer UP)** | **8–9** |
 | **S4** | L3 Match + Odds engine | ფეხბურთის state machine + Poisson მოვლენები; odds engine (1,10,11,16,18,29,41) + მარჟა (power/proportional) + ladder; market status transitions (handover −2); settlement (void_factor 0.5/1, dead heat test market), certainty 1→2; მრავალი პარალელური მატჩი; variant market + unknown market | **10–12** |
 | **S5** | Chaos, Load, Replay API, Hardening | Chaos middleware სრულად (§4.3); load generator + პროფილები (§7.1) + Grafana/Prometheus მეტრიკები; `/v1/replay/*` თავსებადი API; `rabbitmq_auth_backend_http` (ცარიელი პაროლი); გადართვის runbook (§9); CI pipeline; ⚠ პუნქტების დახურვა რეალურ sample-ებზე (როგორც კი წვდომა გვექნება) | **7–9** |
-| | **სულ** | | **≈ 36–44 person-day** (1 senior + 1 mid ≈ 4–5 კალენდარული კვირა) |
+| | **სულ** | | **≈ 38–46 person-day** (1 senior + 1 mid ≈ 4–5 კალენდარული კვირა) |
 
 ### 10.1 რისკები
 
@@ -1351,7 +1390,99 @@ Replay Server — Betradar-ის სერვისი, რომელიც �
 | სიმულატორი „ცრუ თავდაჯერებას" იძლევა (რეალური feed განსხვავდება) | მაღალი | ⚠ სია, contract ტესტები რეალურ sample-ებზე, ადრეული Integration წვდომის მოთხოვნა Betradar-თან (trial ⚠) |
 | markets.xml ID-ები/outcome ID-ები არ ემთხვევა | საშუალო | consumer-ი ID-ებს არ hardcode-ავს; ყველაფერი descriptions-დან |
 | Python publisher-ის throughput load-ისთვის არ კმარა | საშუალო | multiprocess, pre-built bodies; საჭიროებისას Go load generator |
-| ლიცენზია: XSD/descriptions-ის გამოყენება | დაბალი/საშუალო | XSD-ები ღია SDK რეპოებიდან (ლიცენზიის შემოწმება ⚠); descriptions — საკუთარი subset |
+| ლიცენზია: Sportradar SDK (proprietary, no derivatives/redistribution) | საშუალო | XSD/sample-ები არ vendor-დება; XSD — ლოკალური path-დან (`UOF_XSD_DIR`); fixtures — საკუთარი გენერაცია; descriptions — საკუთარი subset; იურიდიული დადასტურება ⚠ |
+| Integration 24/5, Replay მხოლოდ >48 სთ event-ები | საშუალო | weekend/ახალი edge case-ები სიმულატორზე; CI-ში Integration job-ები weekend-ზე optional |
+| Java SDK-ს სიმულატორზე მოულოდნელი მოთხოვნა (lazy endpoint) | საშუალო | mock-rest ლოგავს ყველა 404-ს → `sdk-smoke` CI-ში fail-დება უცნობ path-ზე; §11 checklist განახლდება |
+
+---
+
+## 11. Java SDK compatibility checklist
+
+**კონტექსტი:** production UOF adapter = **Java 21 + ოფიციალური Sportradar Java SDK** (Maven dependency), რომელიც dev/test-ში კონფიგურირდება `selectCustom()`-ით ჩვენს სიმულატორზე. ქვემოთ ჩამოთვლილი path-ები და ქცევები აღებულია SDK-ის საჯარო რეპოს კოდის **წაკითხვით** (რეფერენსი, არა ასლი; §1.4). `{lang}` = SDK-ში კონფიგურირებული ენები (მინიმუმ `en`); mock-rest ყველა ენაზე აბრუნებს ერთსა და იმავე (ინგლისურ) კონტენტს.
+
+### 11.1 SDK-ის კონფიგურაცია სიმულატორზე
+
+```java
+UofConfiguration config = UofSdk.getUofConfigurationBuilder()      // ⚠ ზუსტი builder API SDK-ის ვერსიის მიხედვით
+    .setAccessToken(System.getenv("UOF_ACCESS_TOKEN"))               // sim-token-0000000000
+    .selectCustom()
+        .setApiHost("mock-rest").setApiPort(8080).setApiUseSsl(false)    // REST: http://mock-rest:8080/v1/...
+        .setMessagingHost("rabbitmq").setMessagingPort(5671).setMessagingUseSsl(true)
+        .setMessagingUsername(System.getenv("UOF_ACCESS_TOKEN"))     // default-ადაც token-ია
+        .setMessagingPassword(System.getenv("UOF_AMQP_PASSWORD"))     // sim: "sim"; Betradar: ცარიელი
+        // setMessagingVirtualHost(...) არ ვაყენებთ → SDK იღებს "/unifiedfeed/" + bookmaker_id (whoami-დან)
+    .setNodeId(1)
+    .setDefaultLanguage(Locale.ENGLISH)
+    .build();
+```
+
+### 11.2 Startup — რას იძახებს SDK (სავალდებულო)
+
+| # | Endpoint | Method | რა უნდა დააბრუნოს სიმულატორმა | კრიტიკული დეტალი | სტატუსი |
+|---|---|---|---|---|---|
+| 1 | `/v1/users/whoami.xml` | GET | `<bookmaker_details response_code="OK" bookmaker_id="99999" virtual_host="/unifiedfeed/99999" expire_at="…"/>` | SDK იყენებს HTTP **`Date` header**-ს server time difference-ისთვის → mock-rest-მა სწორი `Date` უნდა გაგზავნოს; whoami-ს პასუხს SDK კითხულობს 403-ზეც (არასწორი token-ის შემთხვევაში body-ში მიზეზი) | ☐ |
+| 2 | `/v1/descriptions/producers.xml` | GET | `<producers response_code="OK"><producer id="1" name="LO" description="Live Odds" api_url="https://…/v1/liveodds/" active="true" scope="live" stateful_recovery_window_in_minutes="600"/>…</producers>` | `Custom` გარემოში SDK `api_url`-დან იღებს **მხოლოდ path-ს** (`/v1/liveodds/`) და უერთებს `apiHost:apiPort`-ს → path **აუცილებლად `/` -ით უნდა მთავრდებოდეს**, რადგან recovery URL = `api_url + "recovery/initiate_request?..."` | ☐ |
+| 3 | `/v1/descriptions/{lang}/markets.xml?include_mappings=true` | GET | ჩვენი markets subset (UnifiedFeedDescriptions სტრუქტურა) | query param უნდა მიიღოს (ignore-ც შეიძლება) | ☐ |
+| 4 | `/v1/descriptions/{lang}/variants.xml?include_mappings=true` | GET | variant descriptions (შეიძლება ცარიელი `<variant_descriptions response_code="OK"/>` ⚠ root სახელი) | | ☐ |
+| 5 | `/v1/descriptions/{lang}/markets/{id}/variants/{variant}?include_mappings=true` | GET | single variant market | **`.xml` გაფართოების გარეშე**; lazy — უცნობ variant-ზე | ☐ |
+| 6 | `/v1/descriptions/{lang}/match_status.xml` | GET | match status-ების აღწერები (0, 6, 7, 31, 100 …) | | ☐ |
+| 7 | `/v1/descriptions/betstop_reasons.xml` | GET | betstop reason-ების სია | ენის გარეშე | ☐ |
+| 8 | `/v1/descriptions/betting_status.xml` | GET | betting status-ების სია | ენის გარეშე | ☐ |
+| 9 | `/v1/descriptions/void_reasons.xml` | GET | void reason-ების სია | ენის გარეშე | ☐ |
+
+ყველა REST მოთხოვნა მოდის header-ით **`x-access-token`** → mock-rest ამოწმებს; ყველა პასუხი `Content-Type: application/xml` (⚠ ზუსტი content-type), UTF-8.
+
+> ⚠ ზემოთ ჩამოთვლილი descriptions endpoint-ების ზუსტი XML root ელემენტები/ატრიბუტები: სტრუქტურა უნდა ემთხვეოდეს `UnifiedFeedDescriptions.xsd`-ს (ლოკალური `UOF_XSD_DIR`-დან ვამოწმებთ CI-ში), კონტენტი — ჩვენი.
+
+### 11.3 AMQP — რას აკეთებს SDK
+
+| # | ქცევა | სიმულატორის მოთხოვნა | სტატუსი |
+|---|---|---|---|
+| A1 | username = access token, password = კონფიგიდან (Betradar: ცარიელი) | RabbitMQ user-ის სახელი = `SIM_TOKEN` (§8.1) | ☐ |
+| A2 | vhost = `"/unifiedfeed/" + bookmaker_id` (whoami-დან), თუ `setMessagingVirtualHost` არ არის მითითებული | vhost `/unifiedfeed/99999` არსებობს, user-ს აქვს permission | ☐ |
+| A3 | TLS: `useSslProtocol(...)` — RabbitMQ Java client-ის ეს რეჟიმი სერტიფიკატს არ ამოწმებს ⚠ | self-signed cert საკმარისია 5671-ზე | ☐ |
+| A4 | `queueDeclare()` (server-named, exclusive, auto-delete) + `queueBind(q, "unifiedfeed", rk)` ყოველ binding-ზე | exchange `unifiedfeed` წინასწარ არსებობს (definitions.json); user-ს აქვს `configure/write` `amq.gen.*`-ზე და `read` `unifiedfeed`-ზე | ☐ |
+| A5 | client properties: `SrUfSdkType`, `SrUfSdkVersion`, `SrUfSdkBId` … | არაფერი; Management UI-ში ჩანს — სასარგებლოა debug-ისთვის | ☐ |
+| A6 | message header **`timestamp_in_ms`** → SDK-ის `sentAt` timestamp | publisher ყოველთვის აგზავნის (§5.4) | ☐ |
+| A7 | routing key 8 სეგმენტით, SDK-ის parser-ი | §5.1; snapshot_complete/alive system keys | ☐ |
+| A8 | alive ყოველ 10s; inactivity > 20s → ProducerDown | §5.6 | ☐ |
+
+### 11.4 Recovery — რას იძახებს SDK
+
+| # | Endpoint | Method | შენიშვნა | სტატუსი |
+|---|---|---|---|---|
+| R1 | `{api_url}recovery/initiate_request?after={ms}&node_id={n}&request_id={id}` | POST (ცარიელი body) | `after` მხოლოდ თუ ცნობილია; `node_id` თუ კონფიგურირებულია; წარმატება = 2xx | ☐ |
+| R2 | `{api_url}odds/events/{urn}/initiate_request?request_id=…&node_id=…` | POST | `sendEventRecovery` / event odds recovery | ☐ |
+| R3 | `{api_url}stateful_messages/events/{urn}/initiate_request?request_id=…&node_id=…` | POST | stateful messages per event | ☐ |
+| R4 | `snapshot_complete` იგივე `request_id`-ით, routing key-ის node სეგმენტით | AMQP | SDK default timeout 1200s; min interval 30s | ☐ |
+| R5 | alive `subscribed=0` → SDK თავად იწყებს recovery-ს | AMQP | §6.3 | ☐ |
+
+`{api_url}` = `http://mock-rest:8080/v1/liveodds/` (LO) ან `…/v1/pre/` (Ctrl).
+
+### 11.5 Lazy endpoint-ები (SDK იძახებს entity-ის data-ზე წვდომისას)
+
+| Endpoint | როდის | პრიორიტეტი |
+|---|---|---|
+| `/v1/sports/{lang}/sport_events/{urn}/summary.xml` | event status/score/competitors | **აუცილებელი (S2)** |
+| `/v1/sports/{lang}/sport_events/{urn}/fixture.xml` | fixture-ის დეტალები | **აუცილებელი (S2)** |
+| `/v1/sports/{lang}/sport_events/{urn}/fixture_change_fixture.xml` ⚠ | fixture_change შეტყობინების შემდეგ (cache bypass) | **აუცილებელი (S2)** |
+| `/v1/sports/{lang}/sports.xml`, `/sports/{id}/categories.xml`, `/sports/{id}/tournaments.xml`, `/tournaments.xml` | sport/category/tournament სახელები | S2 |
+| `/v1/sports/{lang}/competitors/{urn}/profile.xml` | market/outcome სახელებში `{$competitor1}` | **აუცილებელი (S2)** |
+| `/v1/sports/{lang}/players/{urn}/profile.xml` | player outcome-ები (goalscorer) | Phase 2 |
+| `/v1/sports/{lang}/schedules/live/schedule.xml`, `/schedules/{date}/schedule.xml`, `/schedules/pre/schedule.xml?start=&limit=` | SportDataProvider-ის კალენდარი | S2 |
+| `/v1/sports/{lang}/tournaments/{urn}/schedule.xml`, `/tournaments/{urn}/seasons.xml` | ტურნირის კალენდარი | S4 |
+| `/v1/sports/{lang}/sport_events/{urn}/timeline.xml` | match timeline | S4 |
+| `/v1/sports/{lang}/sport_events/{urn}/period_summary.xml` | period statistics | optional |
+| `/v1/sports/{lang}/fixtures/changes.xml`, `/results/changes.xml` | ცვლილებების სია | S3 |
+| `/v1/replay/...` (+ `/v1/replay/sports/{lang}/sport_events/{urn}/{fixture,summary,timeline}.xml`) | `selectReplay()`-ის ანალოგი ჩვენზე | S5 |
+
+### 11.6 SDK smoke ტესტი (`tests/sdk-smoke`, CI)
+
+1. docker compose up (rabbitmq, redis, postgres, simulator, mock-rest).
+2. Java 21 პროგრამა: ოფიციალური SDK (Maven) → `selectCustom()` → open feed, `node_id=1`.
+3. Assertions (timeout 120s): SDK აკეთებს whoami → producers → descriptions; AMQP connect; **producer 1 და 3 → UP** (recovery + snapshot_complete); `odds_change` მიღებულია `sr:match:900000001`-ზე და market სახელი სწორად იხსნება (`getName()`); `bet_settlement` ჩამოდის.
+4. Chaos: `uofsim producer down 1 --for 45s` → SDK აგზავნის `ProducerDown`-ს ≤ 25s-ში, შემდეგ recovery → `ProducerUp`.
+5. mock-rest-ის **ყველა 404/405 ლოგი** = ტესტის ჩავარდნა (ნიშნავს, რომ SDK-მ იძახა endpoint, რომელიც checklist-ში არ გვაქვს).
 
 ---
 
@@ -1362,9 +1493,13 @@ Replay Server — Betradar-ის სერვისი, რომელიც �
 | GET | `/v1/users/whoami.xml` | `<bookmaker_details response_code="OK" bookmaker_id="99999" virtual_host="/unifiedfeed/99999" expire_at="…"/>` | ⚠ ატრიბუტების სრული სია |
 | GET | `/v1/descriptions/producers.xml` | producers 1, 3 (+6) | |
 | GET | `/v1/descriptions/en/markets.xml?include_mappings=true` | `data/static/markets.en.xml` (+ runtime-ში დამატებული) | `UnifiedFeedDescriptions.xsd` |
-| GET | `/v1/descriptions/en/markets/{id}/variants/{variant}.xml` | single variant market | ⚠ path |
+| GET | `/v1/descriptions/en/markets/{id}/variants/{variant}?include_mappings=true` | single variant market (Java SDK იძახებს **`.xml` გაფართოების გარეშე**; mock ორივეს ღებულობს) | ✅ SDK კოდი |
 | GET | `/v1/descriptions/en/variants.xml` | variant descriptions | ⚠ |
+| GET | `/v1/descriptions/{lang}/match_status.xml` | match status აღწერები | Java SDK startup (§11) |
+| GET | `/v1/descriptions/betstop_reasons.xml`, `/betting_status.xml`, `/void_reasons.xml` | reason/status სიები | Java SDK startup (§11) |
 | GET | `/v1/sports/en/sports.xml` | სპორტები | |
+| GET | `/v1/sports/en/competitors/{urn}/profile.xml` | გუნდის პროფილი (outcome სახელებისთვის) | Java SDK lazy (§11.5) |
+| GET | `/v1/sports/en/sport_events/{urn}/fixture_change_fixture.xml` | fixture cache bypass | Java SDK lazy ⚠ |
 | GET | `/v1/sports/en/sport_events/{urn}/fixture.xml` | Redis/PG-დან | |
 | GET | `/v1/sports/en/sport_events/{urn}/summary.xml` | live state Redis-დან; REST-ში status სტრიქონია (`live`, `closed`), AMQP-ში რიცხვი | ⚠ namespace `http://schemas.sportradar.com/sportsapi/v1/unified` |
 | GET | `/v1/sports/en/schedules/live/schedule.xml` | მიმდინარე live event-ები | |
@@ -1392,6 +1527,6 @@ Replay Server — Betradar-ის სერვისი, რომელიც �
 ## დანართი C — წყაროები
 
 - Sportradar UOF docs: https://docs.sportradar.com/uof (AMQP topic filtering, Replay Server, Recovery using API, Environments) — ⚠ ჩვენი გარემოდან ზოგი გვერდი ვერ ჩამოიტვირთა; მონაცემები აღებულია საძიებო snippet-ებიდან.
-- Sportradar Java SDK: https://github.com/sportradar/UnifiedOddsSdkJava — `xsd/messages/UnifiedFeed.xsd`, `xsd/UnifiedFeedDescriptions.xsd`, `EnvironmentManager.java` (hosts), `ConfigLimit.java` (inactivity 20s, recovery 1200s, 30s interval).
+- Sportradar Java/.NET Core SDK-ები (**proprietary SDK License — მხოლოდ რეფერენსად, არ ვაკოპირებთ**): https://github.com/sportradar/UnifiedOddsSdkJava — `xsd/messages/UnifiedFeed.xsd`, `xsd/UnifiedFeedDescriptions.xsd`, `EnvironmentManager.java` (hosts), `ConfigLimit.java` (inactivity 20s, recovery 1200s, 30s interval).
 - go-uof-sdk (minus5): https://github.com/minus5/go-uof-sdk — routing key პარსინგი/ტესტები, replay endpoints, producers ცხრილი, sample XML-ები.
 - Betradar Unified Odds Developer Integration PDF: https://iodocs.betradar.com/unifiedsdk/Betradar_Unified-Odds_Developer_Integration.pdf
