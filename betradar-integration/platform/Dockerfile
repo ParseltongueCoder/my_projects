@@ -1,15 +1,17 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+# Which service to publish: Uof.Adapter (default) or Admin.Api.
+ARG PROJECT=Uof.Adapter
 WORKDIR /src
 COPY Directory.Build.props ./
 COPY db/ db/
 COPY src/Platform.Canonical/Platform.Canonical.csproj src/Platform.Canonical/
-COPY src/Uof.Adapter/Uof.Adapter.csproj src/Uof.Adapter/
-RUN dotnet restore src/Uof.Adapter/Uof.Adapter.csproj
+COPY src/${PROJECT}/${PROJECT}.csproj src/${PROJECT}/
+RUN dotnet restore src/${PROJECT}/${PROJECT}.csproj
 COPY src/ src/
-RUN dotnet publish src/Uof.Adapter/Uof.Adapter.csproj -c Release -o /app --no-restore
+RUN dotnet publish src/${PROJECT}/${PROJECT}.csproj -c Release -o /app --no-restore && echo "${PROJECT}" > /app/.entrypoint
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /app ./
-EXPOSE 8081
-ENTRYPOINT ["dotnet", "Uof.Adapter.dll"]
+EXPOSE 8081 8082
+ENTRYPOINT ["sh", "-c", "exec dotnet $(cat /app/.entrypoint).dll"]

@@ -1,0 +1,26 @@
+name: admin-web
+
+on:
+  push:
+    paths: ["betradar-integration/admin/admin-web/**", ".github/workflows/admin-web.yml"]
+  pull_request:
+    paths: ["betradar-integration/admin/admin-web/**", ".github/workflows/admin-web.yml"]
+
+defaults:
+  run:
+    working-directory: betradar-integration/admin/admin-web
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: betradar-integration/admin/admin-web/package-lock.json
+      - run: npm ci
+      - run: npx ng test ui --watch=false
+      - run: npx ng test feed-ops --watch=false
+      - run: npx ng build feed-ops

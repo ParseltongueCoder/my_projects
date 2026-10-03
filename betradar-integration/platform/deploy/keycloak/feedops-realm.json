@@ -1,0 +1,95 @@
+{
+  "realm": "feedops",
+  "enabled": true,
+  "displayName": "Feed Ops (dev)",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "accessTokenLifespan": 300,
+  "roles": {
+    "realm": [
+      {
+        "name": "feedops-viewer",
+        "description": "Read the Feed Ops admin"
+      },
+      {
+        "name": "feedops-operator",
+        "description": "Viewer + simulator/demo actions"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "feed-ops-web",
+      "name": "Feed Ops web",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:8088/*",
+        "http://localhost:4200/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8088",
+        "http://localhost:4200"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8088/*##http://localhost:4200/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "admin-api audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "admin-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "viewer",
+      "enabled": true,
+      "firstName": "Feed",
+      "lastName": "Viewer",
+      "email": "viewer@example.test",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "viewer",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "feedops-viewer"
+      ]
+    },
+    {
+      "username": "operator",
+      "enabled": true,
+      "firstName": "Feed",
+      "lastName": "Operator",
+      "email": "operator@example.test",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "operator",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "feedops-viewer",
+        "feedops-operator"
+      ]
+    }
+  ]
+}

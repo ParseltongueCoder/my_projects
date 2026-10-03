@@ -4,6 +4,7 @@ services:
   rabbitmq:
     image: rabbitmq:3.13-management
     hostname: rabbitmq
+    restart: on-failure   # first start occasionally fails reading its Erlang cookie; a restart fixes it
     ports:
       - "5671:5671"     # AMQPS - what the SDK / our adapter connects to
       - "5672:5672"     # plain AMQP, local debugging only

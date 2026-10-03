@@ -1,0 +1,4 @@
+{
+  "apiBaseUrl": "",
+  "auth": { "enabled": false, "authority": "", "clientId": "feed-ops-web", "scope": "openid profile" }
+}

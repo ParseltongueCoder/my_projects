@@ -1,0 +1,61 @@
+<div class="page-head">
+  <div>
+    <h1>Simulator</h1>
+    <div class="sub">Development and demo only: drives the UOF simulator behind this environment.</div>
+  </div>
+</div>
+
+@if (!session.isOperator()) {
+  <div class="note"><mat-icon>info</mat-icon>Read-only: the feedops-operator role is needed to start scenarios or take producers down.</div>
+}
+
+<div class="grid">
+  <section class="panel">
+    <h2>Scenarios</h2>
+    <div class="row">
+      <span>Speed</span>
+      <mat-form-field>
+        <input matInput type="number" min="0.25" max="100" step="0.5" [(ngModel)]="speed" aria-label="Speed" />
+        <span matTextSuffix>×</span>
+      </mat-form-field>
+    </div>
+    @for (s of scenarios(); track s) {
+      <div class="row">
+        <span class="mono">{{ s }}</span>
+        <button matButton="filled" [disabled]="!session.isOperator()" (click)="start(s)"><mat-icon>play_arrow</mat-icon>Start</button>
+      </div>
+    }
+    <div class="row">
+      <span class="mono">demo_match (recording)</span>
+      <button matButton="tonal" [disabled]="!session.isOperator()" (click)="replay()"><mat-icon>replay</mat-icon>Replay</button>
+    </div>
+    @if (status()?.replay; as r) {
+      <div style="margin-top: .75rem">
+        <div class="muted">{{ r.source ?? 'nothing played yet' }} · {{ r.published }}/{{ r.total }} {{ r.running ? '(running)' : '' }}</div>
+        <mat-progress-bar mode="determinate" [value]="progress(r)" style="margin-top: .35rem" />
+      </div>
+    }
+  </section>
+
+  <section class="panel">
+    <h2>Producers (feed side)</h2>
+    <div class="row">
+      <span>Outage length</span>
+      <mat-form-field>
+        <input matInput type="number" min="5" max="600" [(ngModel)]="downSeconds" aria-label="Outage seconds" />
+        <span matTextSuffix>s</span>
+      </mat-form-field>
+    </div>
+    @for (p of status()?.producers ?? []; track p.id) {
+      <div class="row" [attr.data-producer]="p.id">
+        <span><b>{{ p.id === 1 ? 'LO' : p.id === 3 ? 'Ctrl' : 'Producer' }}</b> #{{ p.id }}
+          <ui-status-tag [status]="p.mode === 'Up' ? 'up' : 'down'" /> <span class="muted">{{ p.mode }}</span></span>
+        <span class="actions">
+          <button matButton="outlined" [disabled]="!session.isOperator()" (click)="down(p.id, 'silent')"><mat-icon>volume_off</mat-icon>Silent</button>
+          <button matButton="outlined" [disabled]="!session.isOperator()" (click)="down(p.id, 'unsubscribed')">Unsubscribe</button>
+          <button matButton [disabled]="!session.isOperator()" (click)="up(p.id)">Up</button>
+        </span>
+      </div>
+    }
+  </section>
+</div>

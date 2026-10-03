@@ -1,0 +1,23 @@
+.back { display: inline-flex; align-items: center; gap: .25rem; }
+tr.dim td { opacity: .55; }
+.hero { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: .75rem; }
+.hero h1 { margin: .3rem 0 .5rem; font-size: 1.5rem; }
+.hero .score { margin: 0 .5rem; color: var(--fo-primary); }
+.meta { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
+.facts { text-align: right; display: flex; flex-direction: column; gap: .25rem; }
+
+.markets { margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); gap: .75rem; }
+.market { border: 1px solid var(--fo-border); border-radius: 10px; padding: .75rem; background: var(--fo-surface); }
+.market.closed { background: var(--fo-surface-alt); }
+.market-head { display: flex; justify-content: space-between; gap: .5rem; align-items: flex-start; margin-bottom: .6rem; }
+.tags { display: flex; flex-direction: column; align-items: flex-end; gap: .2rem; font-size: .8rem; }
+.fav { color: #e2a400; font-size: .8rem; margin-left: .25rem; }
+.outcomes { display: flex; gap: .4rem; flex-wrap: wrap; }
+.outcome { flex: 1 1 6rem; display: flex; flex-direction: column; align-items: center; gap: .15rem; padding: .45rem .5rem;
+           border-radius: 8px; border: 1px solid var(--fo-border); }
+.outcome.inactive { opacity: .5; }
+.outcome.won { border-color: var(--fo-success); background: var(--fo-success-bg); }
+.o-name { font-size: .85rem; text-align: center; }
+.o-odds { font-weight: 700; font-variant-numeric: tabular-nums; }
+.o-result { font-size: .8rem; color: var(--fo-muted); }
+.market-foot { font-size: .75rem; margin-top: .5rem; }

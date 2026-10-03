@@ -1,0 +1,78 @@
+<div class="page-head">
+  <div>
+    <h1>Feed messages</h1>
+    <div class="sub">Every message is archived raw before it is applied (newest first).</div>
+  </div>
+  <mat-slide-toggle [(ngModel)]="follow">Follow live</mat-slide-toggle>
+</div>
+
+<section class="panel">
+  <div class="filters">
+    <mat-form-field>
+      <mat-label>Type</mat-label>
+      <mat-select [(ngModel)]="type" (selectionChange)="applyFilter()">
+        <mat-option [value]="null">Any type</mat-option>
+        @for (t of types; track t) { <mat-option [value]="t">{{ t }}</mat-option> }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="status" (selectionChange)="applyFilter()">
+        <mat-option [value]="null">Any status</mat-option>
+        @for (s of statuses; track s) { <mat-option [value]="s">{{ s.replace('_', ' ') }}</mat-option> }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Event</mat-label>
+      <input matInput class="mono" placeholder="sr:match:…" [(ngModel)]="eventUrn" (keyup.enter)="applyFilter()" />
+    </mat-form-field>
+    <button matButton="filled" (click)="applyFilter()"><mat-icon>filter_alt</mat-icon>Search</button>
+  </div>
+
+  <table mat-table [dataSource]="result()?.items ?? []">
+    <ng-container matColumnDef="received">
+      <th mat-header-cell *matHeaderCellDef>Received</th>
+      <td mat-cell *matCellDef="let m">{{ m.receivedAt | date: 'dd MMM HH:mm:ss.SSS' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="type">
+      <th mat-header-cell *matHeaderCellDef>Type</th>
+      <td mat-cell *matCellDef="let m" class="mono">{{ m.type }}</td>
+    </ng-container>
+    <ng-container matColumnDef="event">
+      <th mat-header-cell *matHeaderCellDef>Event</th>
+      <td mat-cell *matCellDef="let m">
+        @if (m.eventId) {
+          <a class="link mono" [routerLink]="['/events', m.eventId]" (click)="$event.stopPropagation()">{{ m.eventUrn }}</a>
+        } @else { <span class="mono">{{ m.eventUrn }}</span> }
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="producer">
+      <th mat-header-cell *matHeaderCellDef>Producer</th>
+      <td mat-cell *matCellDef="let m">{{ m.producerId }}</td>
+    </ng-container>
+    <ng-container matColumnDef="request">
+      <th mat-header-cell *matHeaderCellDef>Request</th>
+      <td mat-cell *matCellDef="let m" class="mono">{{ m.requestId }}</td>
+    </ng-container>
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let m">
+        <ui-status-tag [status]="m.status" />
+        @if (m.error) { <div class="muted ellipsis">{{ m.error }}</div> }
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="lag">
+      <th mat-header-cell *matHeaderCellDef class="num">Lag</th>
+      <td mat-cell *matCellDef="let m" class="num">{{ m.lagMs !== null ? (m.lagMs | number: '1.0-0') + ' ms' : '' }}</td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="columns"></tr>
+    <tr mat-row class="clickable" *matRowDef="let row; columns: columns" (click)="panel.open(row.id)"></tr>
+    <tr class="mat-row" *matNoDataRow><td class="empty" [attr.colspan]="columns.length">No messages match</td></tr>
+  </table>
+
+  <div class="pager">
+    <button matIconButton [disabled]="(result()?.page ?? 1) <= 1" (click)="page(-1)" aria-label="Previous page"><mat-icon>chevron_left</mat-icon></button>
+    <span class="muted">Page {{ result()?.page ?? 1 }}</span>
+    <button matIconButton [disabled]="!result()?.hasMore" (click)="page(1)" aria-label="Next page"><mat-icon>chevron_right</mat-icon></button>
+  </div>
+</section>

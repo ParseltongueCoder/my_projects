@@ -16,7 +16,7 @@
 | Event bus | **NATS JetStream** | ერთი პატარა binary, persistence + replay + ჩაშენებული dedup, subject-based routing; Kafka-ზე გადასვლის მკაფიო კრიტერიუმები Phase 2-ში. |
 | მთავარი DB | **PostgreSQL 18** | canonical model, ტრანზაქციები, partitioning — უფასო და საკმარისი Phase 1-2-ისთვის. |
 | Hot cache | **Valkey 8** (Redis-თავსებადი, BSD ლიცენზია) | მიმდინარე odds/market state < 1 ms წაკითხვით; ლიცენზიის რისკის გარეშე. |
-| Admin UI | **React + Refine + Ant Design (Vite SPA)** | MIT ლიცენზია, CRUD/RBAC/audit/live-update მზა აბსტრაქციები, SEO არ გვჭირდება → Next.js ზედმეტია. |
+| Admin UI | ~~React + Refine + Ant Design~~ → **Angular 22 + Angular Material** ([ADR-002](adr/ADR-002-admin-frontend.md)) | გუნდი Angular-ზეა; Material და CDK — MIT (PrimeNG 22 კომერციული PrimeUI ლიცენზიითაა, იხ. ADR-002). |
 | AuthN/AuthZ | **Keycloak** (OIDC, MFA, RBAC) | უფასო, სტანდარტული, Phase 2-ში ოპერატორების client-credentials-იც იქვე. |
 | Monitoring | **OpenTelemetry → Prometheus + Loki + Tempo → Grafana, Alertmanager → Telegram/Email** | სრულად self-hosted და უფასო. |
 | ინფრასტრუქტურა | **local docker-compose → Hetzner Cloud (EU) + Docker Compose; Phase 2-ში k3s** | ყველაზე იაფი სანდო EU ღრუბელი; Betradar-ის ინფრასტრუქტურა ევროპაშია. |

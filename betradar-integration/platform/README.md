@@ -87,6 +87,12 @@ Store-ის ტესტები სიმულატორის `ScenarioCo
 - **.NET SDK raw XML-ს თითოეულ event შეტყობინებაზე იძლევა** (`IEventMessage.RawMessage`) — docs/04-ის „raw-first“ დიზაინი მეორე AMQP consumer-ის გარეშე მუშაობს.
 - SDK-ის `GetMarketDescriptionsAsync()` `Open()`-ის შემდეგ პირველ წამებში ცარიელს აბრუნებს → adapter ცდის რამდენჯერმე.
 
+## Feed Ops ადმინი
+
+`docker compose up` ასევე უშვებს **Keycloak**-ს (http://localhost:8180), **Admin.Api**-ს (`src/Admin.Api`) და Angular ადმინს — http://localhost:8088 (dev მომხმარებლები: `operator/operator`, `viewer/viewer`). დეტალები: [`admin/admin-web/README.md`](../admin/admin-web/README.md).
+
+- `Admin.Api` — მხოლოდ კითხვა canonical მოდელიდან; `/api/stream` (SSE) — ცვლილებები `V004` trigger-ების `LISTEN/NOTIFY`-დან; JWT (Keycloak), როლები `feedops-viewer` / `feedops-operator`; `Simulator__BaseUrl` (მხოლოდ dev) რთავს სიმულატორის პანელს.
+
 ## შემდეგი ნაბიჯები
 
 - NATS JetStream (`UOF_RAW`) store-სა და SDK-ს შორის — docs/04-ის მიხედვით (ახლა in-process queue-ა, ერთი consumer).

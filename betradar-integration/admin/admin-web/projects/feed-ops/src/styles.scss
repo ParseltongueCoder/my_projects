@@ -1,0 +1,69 @@
+@use '@angular/material' as mat;
+@import '@fontsource/roboto/400.css';
+@import '@fontsource/roboto/500.css';
+@import '@fontsource/roboto/700.css';
+@import '@fontsource/material-symbols-outlined/400.css';
+
+// Angular Material 3 theme. Colours use light-dark(), so switching `color-scheme` switches the theme.
+html {
+  color-scheme: light;
+  @include mat.theme((
+    color: (primary: mat.$azure-palette, tertiary: mat.$violet-palette),
+    typography: Roboto,
+    density: -2,
+  ));
+}
+html.app-dark { color-scheme: dark; }
+
+// App tokens on top of the Material system tokens (also used by the @admin/ui library).
+:root {
+  --fo-bg: light-dark(#f4f6fa, #0f1115);
+  --fo-surface: var(--mat-sys-surface-container-lowest);
+  --fo-surface-alt: var(--mat-sys-surface-container);
+  --fo-border: var(--mat-sys-outline-variant);
+  --fo-text: var(--mat-sys-on-surface);
+  --fo-muted: var(--mat-sys-on-surface-variant);
+  --fo-primary: var(--mat-sys-primary);
+  --fo-success: light-dark(#1b7f3b, #6fd88f);
+  --fo-success-bg: light-dark(#e3f5e8, #183a24);
+  --fo-info: light-dark(#1d5fbf, #8ab8ff);
+  --fo-info-bg: light-dark(#e3eeff, #1a2c4a);
+  --fo-warn: light-dark(#a35a00, #ffb95c);
+  --fo-warn-bg: light-dark(#fff1dc, #3d2a10);
+  --fo-danger: light-dark(#b3261e, #ffb4ab);
+  --fo-danger-bg: light-dark(#fde7e5, #4a1c18);
+  --fo-neutral: light-dark(#5c6370, #b5bcc8);
+  --fo-neutral-bg: light-dark(#eceff3, #262a31);
+}
+
+.material-symbols-outlined, mat-icon { font-family: 'Material Symbols Outlined'; }
+
+html, body { margin: 0; height: 100%; }
+body { font-family: Roboto, system-ui, sans-serif; font-size: 14px; background: var(--fo-bg); color: var(--fo-text); }
+
+.page-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.page-head h1 { font: var(--mat-sys-headline-small); margin: 0; }
+.page-head .sub { color: var(--fo-muted); margin-top: .2rem; }
+.panel { background: var(--fo-surface); border: 1px solid var(--fo-border); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+.panel > h2 { font: var(--mat-sys-title-medium); margin: 0 0 .75rem; }
+.filters { display: flex; gap: .75rem; flex-wrap: wrap; align-items: center; margin-bottom: .5rem; }
+.filters mat-form-field { min-width: 14rem; }
+.muted { color: var(--fo-muted); }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .85em; }
+.num { font-variant-numeric: tabular-nums; text-align: right !important; }
+.score { font-weight: 700; font-variant-numeric: tabular-nums; }
+.warn-text { color: var(--fo-warn); }
+a.link { color: var(--fo-primary); text-decoration: none; }
+a.link:hover { text-decoration: underline; }
+.empty { padding: 2rem; text-align: center; color: var(--fo-muted); }
+.pager { display: flex; justify-content: flex-end; align-items: center; gap: .25rem; margin-top: .5rem; }
+.ellipsis { max-width: 22rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+// Compact data tables.
+table.mat-mdc-table { background: transparent; }
+tr.mat-mdc-row.clickable { cursor: pointer; }
+tr.mat-mdc-row.clickable:hover { background: var(--fo-surface-alt); }
+.mat-mdc-header-cell { color: var(--fo-muted); font-weight: 500; }
+
+// Right-hand side panel (feed message details).
+.side-panel .mat-mdc-dialog-surface { border-radius: 0 !important; }

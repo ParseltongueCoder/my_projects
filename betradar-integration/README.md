@@ -15,6 +15,8 @@
 | — | [UofSim — სიმულატორის კოდი](uof-simulator/README.md) | .NET სიმულატორი: mock Betradar API (descriptions + Sports API), RabbitMQ feed, YAML სცენარები, replay/recorder, recovery, chaos, SDK smoke ტესტი |
 | — | [Platform — UOF adapter](platform/README.md) | .NET adapter (ოფიციალური SDK) → canonical მოდელი PostgreSQL-ში |
 | ADR | [ADR-001: .NET stack](docs/adr/ADR-001-dotnet-stack.md) | Java → .NET გადაწყვეტილება |
+| ADR | [ADR-002: Angular + Material](docs/adr/ADR-002-admin-frontend.md) | ადმინების frontend; რატომ არა PrimeNG |
+| — | [Feed Ops ადმინი](admin/admin-web/README.md) | Angular აპლიკაცია + `Admin.Api` |
 
 ## ძირითადი გადაწყვეტილებები (შეჯერებული 4 დოკუმენტს შორის)
 
@@ -25,7 +27,7 @@
 | Feed transport (სიმულატორი) | RabbitMQ, exchange `unifiedfeed` (topic), vhost `/unifiedfeed/{bookmaker_id}`, TLS 5671 |
 | შიდა event bus | NATS JetStream (`UOF_RAW` → normalizer); Kafka მხოლოდ Phase 2-ის კრიტერიუმებით |
 | DB / cache | PostgreSQL 18 / Valkey 8 (სიმულატორის შიდა state-ისთვის Redis-თავსებადი ნებისმიერი) |
-| Admin | React + Refine + Ant Design, Keycloak |
+| Admin | Angular 22 + Angular Material, Keycloak (OIDC), Admin.Api (.NET) + SSE |
 | Monitoring | OpenTelemetry, Prometheus, Loki, Tempo, Grafana, Alertmanager → Telegram |
 | Infra | docker-compose → Hetzner Cloud (CX/CAX) → Phase 2-ში k3s |
 | ბიზნეს-მოდელი სტარტზე | ოპერატორს აქვს **საკუთარი** Sportradar კონტრაქტი, ჩვენ — ტექნოლოგიური მიმწოდებელი (რედისტრიბუციის რისკის თავიდან ასაცილებლად) |
@@ -46,7 +48,7 @@ Sportradar-ის SDK რეპოები (`UnifiedOddsSdkJava`, `UnifiedOddsS
 | 3–4 | სიმულატორი S2 + adapter ✅ | Sports API mock, YAML სცენარები, recorder; .NET adapter SDK-ით → PostgreSQL (docs/02-ის DDL + V002) |
 | 4–5 | S3 + canonical store | producer/recovery სიმულაცია, SDK smoke test CI-ში; normalizer → Postgres/Valkey |
 | **5** | **Sportradar outreach** | პირველი მიმართვა, discovery call |
-| 5–7 | S3 ✅ + monitoring ✅ + admin | recovery snapshot, producer down → market-ების შეჩერება/აღდგენა, Prometheus + Grafana „UOF Feed Health" + alert-ები ✅; შემდეგი: admin MVP |
+| 5–7 | S3 ✅ + monitoring ✅ + admin | recovery snapshot, producer down → market-ების შეჩერება/აღდგენა, Prometheus + Grafana „UOF Feed Health" + alert-ები ✅; Feed Ops admin MVP ✅ |
 | 7–8 | S5 + დემო | chaos/load ტესტები, E2E დემო-ვიდეო, ერთგვერდიანი ტექ. აღწერა |
 | 8–14 | ფაზა 2: Integration env | კონფიგით გადართვა, divergence report, Replay რეგრესიული სუიტი, hardening, integration review |
 | 14+ | ფაზა 3 | პირველი ოპერატორის პილოტი, მეორე პროვაიდერი (LSports — აქვს trial/sandbox), სტრიმები, ვიჯეტები |

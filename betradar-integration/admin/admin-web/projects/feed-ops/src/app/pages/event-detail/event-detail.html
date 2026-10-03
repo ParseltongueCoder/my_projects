@@ -1,0 +1,114 @@
+<a class="link back" routerLink="/events"><mat-icon>arrow_back</mat-icon> Events</a>
+
+@if (notFound()) {
+  <div class="empty">Event not found</div>
+} @else if (detail(); as d) {
+  <section class="hero panel">
+    <div>
+      <div class="muted">{{ d.event.sport }} · {{ d.event.category }} · {{ d.event.tournament }}</div>
+      <h1>{{ d.event.home }} <span class="score">{{ d.event.homeScore ?? '–' }} : {{ d.event.awayScore ?? '–' }}</span> {{ d.event.away }}</h1>
+      <div class="meta">
+        <ui-status-tag [status]="d.event.status" />
+        @if (d.event.clock) { <span>{{ d.event.clock }}'</span> }
+        <span class="muted">match status {{ d.event.matchStatusCode ?? '–' }}</span>
+        <span class="muted">kick-off {{ d.event.scheduledAt | date: 'dd MMM yyyy HH:mm' }}</span>
+        <span class="muted mono">{{ d.event.urn }}</span>
+      </div>
+    </div>
+    <div class="facts">
+      <div><b>{{ d.event.activeMarkets }}</b> / {{ d.event.markets }} markets active</div>
+      <div class="muted">last feed {{ d.event.lastFeedAt | date: 'HH:mm:ss' }}</div>
+      @if (divergent() > 0) {
+        <div class="warn-text"><mat-icon inline>warning</mat-icon> {{ divergent() }} market(s) held suspended (producer down)</div>
+      }
+    </div>
+  </section>
+
+  <mat-tab-group animationDuration="0ms" [mat-stretch-tabs]="false">
+    <mat-tab [label]="'Markets (' + d.markets.length + ')'">
+      <div class="markets">
+        @for (m of d.markets; track m.id) {
+          <div class="market" [class.closed]="m.status !== 'active'">
+            <div class="market-head">
+              <div>
+                <b>{{ m.name }}</b>
+                @if (m.favourite) { <mat-icon class="fav" inline matTooltip="Favourite line">star</mat-icon> }
+                <div class="muted mono">#{{ m.marketTypeId }} {{ m.specifiers }}</div>
+              </div>
+              <div class="tags">
+                <ui-status-tag [status]="m.status" />
+                @if (m.feedStatus !== m.status) {
+                  <span class="muted" matTooltip="What the feed says; we hold the market suspended while its producer is down">feed: {{ m.feedStatus }}</span>
+                }
+              </div>
+            </div>
+            <div class="outcomes">
+              @for (o of m.outcomes; track o.code) {
+                <div class="outcome" [class.inactive]="!o.active" [class.won]="o.result === 'won'" [matTooltip]="outcomeTitle(o)">
+                  <span class="o-name">{{ o.name }}</span>
+                  @if (o.result) {
+                    <span class="o-result">{{ o.result }}@if (o.voidFactor) { · void {{ o.voidFactor }} }</span>
+                  } @else {
+                    <span class="o-odds">{{ o.odds !== null ? (o.odds | number: '1.2-2') : '–' }}</span>
+                  }
+                </div>
+              }
+            </div>
+            <div class="market-foot muted">producer {{ m.producerId ?? '–' }} · updated {{ m.lastFeedAt | date: 'HH:mm:ss' }}</div>
+          </div>
+        } @empty {
+          <div class="empty">No markets yet</div>
+        }
+      </div>
+    </mat-tab>
+
+    <mat-tab [label]="'Settlements (' + settlements().length + ')'">
+      <table mat-table [dataSource]="settlements()">
+        <ng-container matColumnDef="time"><th mat-header-cell *matHeaderCellDef>Feed time</th><td mat-cell *matCellDef="let s">{{ s.feedTs | date: 'HH:mm:ss' }}</td></ng-container>
+        <ng-container matColumnDef="market"><th mat-header-cell *matHeaderCellDef>Market</th><td mat-cell *matCellDef="let s">{{ s.market }}</td></ng-container>
+        <ng-container matColumnDef="outcome"><th mat-header-cell *matHeaderCellDef>Outcome</th><td mat-cell *matCellDef="let s">{{ s.outcome }}</td></ng-container>
+        <ng-container matColumnDef="result">
+          <th mat-header-cell *matHeaderCellDef>Result</th>
+          <td mat-cell *matCellDef="let s"><ui-status-tag [status]="s.result" /> @if (s.voidFactor) { <span class="muted">void {{ s.voidFactor }}</span> }</td>
+        </ng-container>
+        <ng-container matColumnDef="certainty"><th mat-header-cell *matHeaderCellDef>Certainty</th><td mat-cell *matCellDef="let s">{{ s.certainty === 2 ? 'confirmed' : 'live scouted' }}</td></ng-container>
+        <ng-container matColumnDef="state">
+          <th mat-header-cell *matHeaderCellDef>State</th>
+          <td mat-cell *matCellDef="let s"><ui-status-tag [status]="s.state" /> @if (s.rolledBackAt) { <span class="muted">{{ s.rolledBackAt | date: 'HH:mm:ss' }}</span> }</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="settlementColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: settlementColumns" [class.dim]="row.state !== 'effective'"></tr>
+        <tr class="mat-row" *matNoDataRow><td class="empty" [attr.colspan]="settlementColumns.length">Not settled</td></tr>
+      </table>
+    </mat-tab>
+
+    <mat-tab [label]="'Bet stops (' + betStops().length + ')'">
+      <table mat-table [dataSource]="betStops()">
+        <ng-container matColumnDef="time"><th mat-header-cell *matHeaderCellDef>Feed time</th><td mat-cell *matCellDef="let b">{{ b.feedTs | date: 'HH:mm:ss' }}</td></ng-container>
+        <ng-container matColumnDef="source"><th mat-header-cell *matHeaderCellDef>Source</th><td mat-cell *matCellDef="let b"><span [class.warn-text]="b.source === 'producer_down'">{{ b.source }}</span></td></ng-container>
+        <ng-container matColumnDef="groups"><th mat-header-cell *matHeaderCellDef>Groups</th><td mat-cell *matCellDef="let b" class="mono">{{ b.groups }}</td></ng-container>
+        <ng-container matColumnDef="target"><th mat-header-cell *matHeaderCellDef>Target</th><td mat-cell *matCellDef="let b"><ui-status-tag [status]="b.targetStatus" /></td></ng-container>
+        <ng-container matColumnDef="markets"><th mat-header-cell *matHeaderCellDef class="num">Markets</th><td mat-cell *matCellDef="let b" class="num">{{ b.affectedMarkets }}</td></ng-container>
+        <ng-container matColumnDef="producer"><th mat-header-cell *matHeaderCellDef>Producer</th><td mat-cell *matCellDef="let b">{{ b.producerId }}</td></ng-container>
+        <tr mat-header-row *matHeaderRowDef="betStopColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: betStopColumns"></tr>
+        <tr class="mat-row" *matNoDataRow><td class="empty" [attr.colspan]="betStopColumns.length">No bet stops</td></tr>
+      </table>
+    </mat-tab>
+
+    <mat-tab [label]="'Feed messages (' + messages().length + ')'">
+      <table mat-table [dataSource]="messages()">
+        <ng-container matColumnDef="received"><th mat-header-cell *matHeaderCellDef>Received</th><td mat-cell *matCellDef="let m">{{ m.receivedAt | date: 'HH:mm:ss.SSS' }}</td></ng-container>
+        <ng-container matColumnDef="type"><th mat-header-cell *matHeaderCellDef>Type</th><td mat-cell *matCellDef="let m" class="mono">{{ m.type }}</td></ng-container>
+        <ng-container matColumnDef="producer"><th mat-header-cell *matHeaderCellDef>Producer</th><td mat-cell *matCellDef="let m">{{ m.producerId }}</td></ng-container>
+        <ng-container matColumnDef="request"><th mat-header-cell *matHeaderCellDef>Request</th><td mat-cell *matCellDef="let m" class="mono">{{ m.requestId }}</td></ng-container>
+        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef>Status</th><td mat-cell *matCellDef="let m"><ui-status-tag [status]="m.status" /></td></ng-container>
+        <ng-container matColumnDef="lag"><th mat-header-cell *matHeaderCellDef class="num">Lag</th><td mat-cell *matCellDef="let m" class="num">{{ m.lagMs !== null ? (m.lagMs | number: '1.0-0') + ' ms' : '' }}</td></ng-container>
+        <tr mat-header-row *matHeaderRowDef="messageColumns"></tr>
+        <tr mat-row class="clickable" *matRowDef="let row; columns: messageColumns" (click)="panel.open(row.id)"></tr>
+      </table>
+    </mat-tab>
+  </mat-tab-group>
+} @else {
+  <div class="empty">Loading…</div>
+}

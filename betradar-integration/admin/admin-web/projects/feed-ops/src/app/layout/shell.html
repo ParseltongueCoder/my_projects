@@ -1,0 +1,41 @@
+<header class="topbar">
+  <a class="brand" routerLink="/">
+    <mat-icon>bolt</mat-icon>
+    <span>Feed Ops</span>
+  </a>
+  <nav>
+    @for (item of nav; track item.path) {
+      <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: item.exact }">
+        <mat-icon>{{ item.icon }}</mat-icon>{{ item.label }}
+      </a>
+    }
+    @if (simulatorEnabled()) {
+      <a routerLink="/simulator" routerLinkActive="active" class="sim"><mat-icon>play_circle</mat-icon>Simulator</a>
+    }
+  </nav>
+  <div class="right">
+    <span [class]="'stream ' + live.state()" [matTooltip]="'Live updates: ' + live.state()">
+      <span class="dot"></span>{{ live.state() === 'live' ? 'Live' : live.state() === 'connecting' ? 'Connecting' : 'Offline' }}
+    </span>
+    @if (config.grafanaUrl) {
+      <a matIconButton [href]="config.grafanaUrl" target="_blank" rel="noopener" matTooltip="Grafana dashboards">
+        <mat-icon>query_stats</mat-icon>
+      </a>
+    }
+    <button matIconButton (click)="toggleDark()" [attr.aria-label]="dark() ? 'Light mode' : 'Dark mode'"
+            [matTooltip]="dark() ? 'Light mode' : 'Dark mode'">
+      <mat-icon>{{ dark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
+    @if (session.me(); as me) {
+      <span class="user"><mat-icon>account_circle</mat-icon>{{ me.name }}
+        @if (session.isOperator()) { <span class="role">operator</span> }
+      </span>
+    }
+    @if (auth.enabled) {
+      <button matButton (click)="auth.logout()"><mat-icon>logout</mat-icon>Log out</button>
+    }
+  </div>
+</header>
+<main class="content">
+  <router-outlet />
+</main>

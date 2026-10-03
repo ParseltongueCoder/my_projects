@@ -1,0 +1,68 @@
+<div class="page-head">
+  <div>
+    <h1>Events</h1>
+    <div class="sub">Live first, then by kick-off. Updates live.</div>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="filters">
+    <mat-form-field>
+      <mat-label>Search</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput placeholder="Team, tournament or sr:match:…" [(ngModel)]="q" (keyup.enter)="applyFilter()" />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="status" (selectionChange)="applyFilter()">
+        <mat-option [value]="null">Any status</mat-option>
+        @for (s of statuses; track s) { <mat-option [value]="s">{{ s.replace('_', ' ') }}</mat-option> }
+      </mat-select>
+    </mat-form-field>
+    <button matButton="filled" (click)="applyFilter()"><mat-icon>filter_alt</mat-icon>Search</button>
+  </div>
+
+  @if (loading() && !result()) { <mat-progress-bar mode="indeterminate" /> }
+  <table mat-table [dataSource]="result()?.items ?? []">
+    <ng-container matColumnDef="kickoff">
+      <th mat-header-cell *matHeaderCellDef>Kick-off</th>
+      <td mat-cell *matCellDef="let e">{{ e.scheduledAt | date: 'dd MMM HH:mm' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="event">
+      <th mat-header-cell *matHeaderCellDef>Event</th>
+      <td mat-cell *matCellDef="let e">
+        <a class="link" [routerLink]="['/events', e.id]" (click)="$event.stopPropagation()"><b>{{ e.name }}</b></a>
+        <div class="muted mono">{{ e.urn }}</div>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="tournament">
+      <th mat-header-cell *matHeaderCellDef>Tournament</th>
+      <td mat-cell *matCellDef="let e">{{ e.tournament }}<div class="muted">{{ e.category }}</div></td>
+    </ng-container>
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let e"><ui-status-tag [status]="e.status" /> @if (e.clock) { <span class="muted">{{ e.clock }}'</span> }</td>
+    </ng-container>
+    <ng-container matColumnDef="score">
+      <th mat-header-cell *matHeaderCellDef class="num">Score</th>
+      <td mat-cell *matCellDef="let e" class="num score">{{ e.homeScore ?? '–' }} : {{ e.awayScore ?? '–' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="markets">
+      <th mat-header-cell *matHeaderCellDef class="num">Active / markets</th>
+      <td mat-cell *matCellDef="let e" class="num">{{ e.activeMarkets }} / {{ e.markets }}</td>
+    </ng-container>
+    <ng-container matColumnDef="lastFeed">
+      <th mat-header-cell *matHeaderCellDef>Last feed</th>
+      <td mat-cell *matCellDef="let e">{{ e.lastFeedAt | date: 'HH:mm:ss' }}</td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="columns"></tr>
+    <tr mat-row class="clickable" *matRowDef="let row; columns: columns" (click)="open(row)"></tr>
+    <tr class="mat-row" *matNoDataRow><td class="empty" [attr.colspan]="columns.length">No events match</td></tr>
+  </table>
+
+  <div class="pager">
+    <button matIconButton [disabled]="(result()?.page ?? 1) <= 1" (click)="page(-1)" aria-label="Previous page"><mat-icon>chevron_left</mat-icon></button>
+    <span class="muted">Page {{ result()?.page ?? 1 }}</span>
+    <button matIconButton [disabled]="!result()?.hasMore" (click)="page(1)" aria-label="Next page"><mat-icon>chevron_right</mat-icon></button>
+  </div>
+</section>

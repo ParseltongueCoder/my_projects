@@ -1,4 +1,5 @@
 # Platform dev stack: simulator (RabbitMQ + mock Betradar API) + PostgreSQL + UOF adapter + monitoring.
+#   Feed Ops admin http://localhost:8088 (login operator/operator or viewer/viewer - dev users),
 #   Grafana http://localhost:3000 (dashboard "UOF Feed Health"), Prometheus http://localhost:9090/alerts
 #   ../uof-simulator/tools/gen-tls.sh && docker compose up -d --build
 name: uof-platform
@@ -39,6 +40,49 @@ services:
         condition: service_healthy
       uofsim:
         condition: service_started
+
+  keycloak:
+    image: keycloak/keycloak:26.4
+    command: ["start-dev", "--import-realm"]
+    ports:
+      - "8180:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      # Browsers reach Keycloak on localhost:8180; containers on keycloak:8080. Tokens carry the
+      # browser-facing issuer, back-channel URLs (JWKS) follow the request host.
+      KC_HOSTNAME: http://localhost:8180
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./deploy/keycloak/feedops-realm.json:/opt/keycloak/data/import/feedops-realm.json:ro
+
+  admin-api:
+    build:
+      context: .
+      args:
+        PROJECT: Admin.Api
+    environment:
+      ConnectionStrings__Platform: Host=postgres;Database=platform;Username=platform;Password=platform
+      Auth__Authority: http://localhost:8180/realms/feedops
+      Auth__MetadataAddress: http://keycloak:8080/realms/feedops/.well-known/openid-configuration
+      Auth__RequireHttpsMetadata: "false"
+      Simulator__BaseUrl: http://uofsim:8080      # dev/demo only: enables the Simulator page
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  admin-web:
+    build: ../admin/admin-web
+    ports:
+      - "8088:80"
+    environment:
+      FEEDOPS_AUTH_ENABLED: "true"
+      FEEDOPS_AUTH_AUTHORITY: http://localhost:8180/realms/feedops
+      FEEDOPS_GRAFANA_URL: http://localhost:3000/d/uof-feed-health
+    depends_on:
+      - admin-api
+      - keycloak
 
   prometheus:
     image: prom/prometheus:v3.5.0

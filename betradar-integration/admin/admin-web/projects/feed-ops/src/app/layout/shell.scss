@@ -1,0 +1,29 @@
+:host { display: block; min-height: 100vh; }
+
+.topbar {
+  position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 1.25rem;
+  padding: 0 1rem; height: 3.5rem; background: var(--fo-surface); border-bottom: 1px solid var(--fo-border);
+}
+.brand { display: flex; align-items: center; gap: .35rem; font-weight: 700; font-size: 1.05rem;
+         color: var(--fo-primary); text-decoration: none; }
+nav { display: flex; gap: .25rem; flex: 1; overflow-x: auto; }
+nav a { display: flex; align-items: center; gap: .4rem; padding: .4rem .7rem; border-radius: 8px;
+        color: var(--fo-muted); text-decoration: none; white-space: nowrap; }
+nav a mat-icon { font-size: 20px; width: 20px; height: 20px; }
+nav a:hover { background: var(--fo-surface-alt); color: var(--fo-text); }
+nav a.active { background: var(--mat-sys-secondary-container); color: var(--mat-sys-on-secondary-container); font-weight: 500; }
+nav a.sim { margin-left: auto; }
+.right { display: flex; align-items: center; gap: .35rem; }
+.stream { display: inline-flex; align-items: center; gap: .35rem; font-size: .8rem; color: var(--fo-muted); margin-right: .25rem; }
+.stream .dot { width: .55rem; height: .55rem; border-radius: 50%; background: var(--fo-warn); }
+.stream.live .dot { background: var(--fo-success); box-shadow: 0 0 0 3px var(--fo-success-bg); }
+.stream.offline .dot { background: var(--fo-danger); }
+.user { display: inline-flex; align-items: center; gap: .3rem; }
+.role { font-size: .7rem; padding: .05rem .45rem; border-radius: 6px; background: var(--mat-sys-tertiary-container);
+        color: var(--mat-sys-on-tertiary-container); }
+.content { padding: 1.25rem; max-width: 1400px; margin: 0 auto; }
+
+@media (max-width: 760px) {
+  .topbar { gap: .5rem; }
+  .brand span, .user, .stream { display: none; }
+}
