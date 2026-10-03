@@ -15,6 +15,9 @@ public sealed class TestDatabase : IAsyncLifetime
 
     public NpgsqlDataSource DataSource { get; private set; } = null!;
 
+    /// <summary>Full connection string (NpgsqlDataSource.ConnectionString omits the password).</summary>
+    public string ConnectionString { get; private set; } = "";
+
     public async Task InitializeAsync()
     {
         if (ServerConnectionString is null)
@@ -25,7 +28,8 @@ public sealed class TestDatabase : IAsyncLifetime
         {
             await admin.CreateCommand($"CREATE DATABASE {_name}").ExecuteNonQueryAsync();
         }
-        DataSource = NpgsqlDataSource.Create(new NpgsqlConnectionStringBuilder(ServerConnectionString) { Database = _name }.ConnectionString);
+        ConnectionString = new NpgsqlConnectionStringBuilder(ServerConnectionString) { Database = _name }.ConnectionString;
+        DataSource = NpgsqlDataSource.Create(ConnectionString);
         await MigrationRunner.MigrateAsync(DataSource);
     }
 
