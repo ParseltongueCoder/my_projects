@@ -8,7 +8,8 @@ RUN dotnet restore src/Uof.Adapter/Uof.Adapter.csproj
 COPY src/ src/
 RUN dotnet publish src/Uof.Adapter/Uof.Adapter.csproj -c Release -o /app --no-restore
 
-FROM mcr.microsoft.com/dotnet/runtime:10.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /app ./
+EXPOSE 8081
 ENTRYPOINT ["dotnet", "Uof.Adapter.dll"]

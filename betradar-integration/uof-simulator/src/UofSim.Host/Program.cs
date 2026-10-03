@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using UofSim.Core.Catalog;
 using UofSim.Core.Recordings;
+using UofSim.Core.Recovery;
 using UofSim.Core.Scenarios;
 using UofSim.Core.SportsApi;
 using UofSim.Host;
@@ -38,6 +39,7 @@ builder.Services.AddSingleton<IFeedTransport>(sp =>
 builder.Services.AddSingleton<IFeedPublisher, FeedPipeline>();
 builder.Services.AddSingleton<FeedRecorder>();
 builder.Services.AddSingleton<EventStateStore>();
+builder.Services.AddSingleton<SnapshotStore>();
 builder.Services.AddSingleton(sp =>
     SimCatalog.Load(Path.Combine(sp.GetRequiredService<IOptions<SimOptions>>().Value.DataDir, "catalog.yaml")));
 builder.Services.AddSingleton(sp => new SportsApiXml(

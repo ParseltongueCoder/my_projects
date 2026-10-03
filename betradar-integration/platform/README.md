@@ -24,8 +24,34 @@ Sportradar .NET SDK ──(raw XML of every event message)──► UofFeedParse
 | `bet_settlement` | `settlement` (append-only; certainty 1→2 = supersede), `outcome.result`, `market.status = settled` |
 | `rollback_bet_settlement` | `rollback`, settlement-ები `rolled_back_at`, market ბრუნდება წინა სტატუსზე |
 | `bet_cancel` | `market_cancellation`, `market.status = cancelled` |
-| producer up/down | `producer_status` (+ `last_processed_feed_ts` — recovery-ს `after`) |
+| producer down | `producer_status`, producer-ის ყველა active market → **suspended**, `bet_stop_log` (source `producer_down`) |
+| producer up (recovery-ს შემდეგ) | market-ები ბრუნდება იმ სტატუსზე, რასაც feed ამბობს (`feed_status`) |
 | ყველაფერი | `feed_message_log` (raw XML, sha256, status) |
+
+## Producer down — უსაფრთხოება
+
+`market.status` (რასაც ვთავაზობთ) და `market.feed_status` (რაც feed-მა ბოლოს თქვა) ცალ-ცალკეა (`V003`):
+
+1. SDK აცხადებს ProducerDown-ს → producer-ის ყველა active market → `suspended` (odds-ზე ფსონი აღარ მიიღება).
+2. სანამ producer down-ია, შემოსული odds_change (მათ შორის recovery snapshot) odds-ს და `feed_status`-ს აახლებს, მაგრამ market-ს **არ ხსნის**.
+3. ProducerUp (snapshot_complete-ის შემდეგ) → `status = feed_status`: იხსნება მხოლოდ ის, რაც feed-ის მიხედვით active-ია; რაც feed-მა თავად შეაჩერა, შეჩერებული რჩება.
+
+Feed-ის შეტყობინებები და producer-ის ცვლილებები ერთ რიგშია — ამიტომ down-მდე მიღებული შეტყობინებები suspension-მდე ინახება.
+
+## მონიტორინგი
+
+`docker compose up` ასევე უშვებს Prometheus-ს (http://localhost:9090) და Grafana-ს (http://localhost:3000, dashboard **„UOF Feed Health“**).
+
+| მეტრიკა (`/metrics`, პორტი 8081) | რას ზომავს |
+|---|---|
+| `uof_messages_total{type,outcome}` | შეტყობინებები: processed / duplicate / failed / error |
+| `uof_message_lag_seconds` | feed timestamp → ბაზაში ჩაწერა (histogram) |
+| `uof_store_duration_seconds` | ერთი შეტყობინების archive + apply |
+| `uof_queue_depth` | რიგში მომლოდინე შეტყობინებები |
+| `uof_producer_up{producer}` | 1 / 0 |
+| `uof_producer_down_suspended_markets_total` | producer down-ის გამო შეჩერებული market-ები |
+
+Alert-ები (`observability/prometheus/rules/uof-feed.yml`): `UofAdapterDown`, `UofProducerDown` (30 წმ), `UofFeedLagHigh` (p99 > 500 ms, 5 წთ), `UofMessagesFailing`, `UofQueueBacklog`. Alertmanager → Telegram ჯერ არ არის მიერთებული (bot token სჭირდება); alert-ები ჩანს http://localhost:9090/alerts-ზე.
 
 ## გაშვება (სიმულატორთან ერთად)
 
@@ -65,5 +91,4 @@ Store-ის ტესტები სიმულატორის `ScenarioCo
 
 - NATS JetStream (`UOF_RAW`) store-სა და SDK-ს შორის — docs/04-ის მიხედვით (ახლა in-process queue-ა, ერთი consumer).
 - `fixture_change` / `rollback_bet_cancel`-ის გამოყენება (ახლა მხოლოდ არქივდება).
-- Prometheus მეტრიკები (lag, processed/failed, producer state) და Grafana „UOF Feed Health“.
 - Valkey hot cache + distribution API.

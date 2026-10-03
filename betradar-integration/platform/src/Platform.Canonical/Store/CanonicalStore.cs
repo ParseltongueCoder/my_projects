@@ -141,6 +141,39 @@ public sealed class CanonicalStore(NpgsqlDataSource db, short providerId = Canon
             """, new { providerId, producerId = (short)producerId, name, state, reason });
     }
 
+    /// <summary>
+    /// A producer went down: nobody guarantees its prices any more, so every active market it owns is
+    /// suspended (one <c>bet_stop_log</c> row per event, source <c>producer_down</c>). They stay suspended,
+    /// whatever odds arrive, until <see cref="ReopenProducerMarketsAsync"/> runs when the producer is up again.
+    /// </summary>
+    public async Task<int> SuspendProducerMarketsAsync(int producerId, DateTimeOffset at, CancellationToken ct = default)
+    {
+        await using var conn = await db.OpenConnectionAsync(ct);
+        return await conn.ExecuteScalarAsync<int>("""
+            WITH suspended AS (
+                UPDATE sb.market SET status = 'suspended', version = version + 1, updated_at = now()
+                WHERE source_producer_id = @producer AND status = 'active'
+                RETURNING event_id),
+            logged AS (
+                INSERT INTO sb.bet_stop_log (event_id, producer_id, source, groups, target_status, affected_markets, feed_ts)
+                SELECT event_id, @producer, 'producer_down', '{all}', 'suspended', count(*), @at FROM suspended GROUP BY event_id)
+            SELECT count(*) FROM suspended
+            """, new { producer = (short)producerId, at });
+    }
+
+    /// <summary>
+    /// The producer is up again (its recovery snapshot has been applied): markets it suspended only because
+    /// it was down go back to what the feed says. Markets the feed itself suspended stay suspended.
+    /// </summary>
+    public async Task<int> ReopenProducerMarketsAsync(int producerId, CancellationToken ct = default)
+    {
+        await using var conn = await db.OpenConnectionAsync(ct);
+        return await conn.ExecuteAsync("""
+            UPDATE sb.market SET status = feed_status, version = version + 1, updated_at = now()
+            WHERE source_producer_id = @producer AND status = 'suspended' AND feed_status = 'active'
+            """, new { producer = (short)producerId });
+    }
+
     // ------------------------------------------------------------------ feed messages
 
     /// <summary>Archives the raw message and applies it. Never throws for a bad message: it is logged as failed.</summary>
@@ -233,17 +266,30 @@ public sealed class CanonicalStore(NpgsqlDataSource db, short providerId = Canon
             }, c.Tx);
         }
 
+        // While the producer is down its markets stay suspended whatever the odds say (V003).
+        var producerDown = await c.Conn.ExecuteScalarAsync<bool>("""
+            SELECT EXISTS (SELECT 1 FROM sb.producer_status
+                           WHERE provider_id = @providerId AND producer_id = @Producer AND state = 'down')
+            """, new { providerId, Producer = (short)m.ProducerId }, c.Tx);
+
         foreach (var market in m.Markets)
         {
             var descriptionId = await EnsureMarketDescriptionAsync(c, market.MarketTypeId);
             var marketId = await c.Conn.ExecuteScalarAsync<long?>("""
-                INSERT INTO sb.market AS mk (event_id, market_description_id, specifiers, specifiers_json, status,
+                INSERT INTO sb.market AS mk (event_id, market_description_id, specifiers, specifiers_json, feed_status, status,
                                              source_producer_id, is_favourite, last_feed_ts)
-                VALUES (@EventId, @descriptionId, @Specifiers, @Json::jsonb, COALESCE(@Status, 'suspended')::sb.market_status,
+                VALUES (@EventId, @descriptionId, @Specifiers, @Json::jsonb,
+                        COALESCE(@Status, 'suspended')::sb.market_status,
+                        CASE WHEN @producerDown AND COALESCE(@Status, 'suspended') = 'active' THEN 'suspended'
+                             ELSE COALESCE(@Status, 'suspended') END::sb.market_status,
                         @Producer, @Favourite, @FeedTs)
                 ON CONFLICT ON CONSTRAINT market_nk DO UPDATE SET
                     -- odds_change never reopens a settled/cancelled market; only a rollback does.
+                    feed_status = CASE WHEN mk.status IN ('settled', 'cancelled') THEN mk.feed_status
+                                       ELSE COALESCE(@Status::sb.market_status, mk.feed_status) END,
                     status = CASE WHEN mk.status IN ('settled', 'cancelled') THEN mk.status
+                                  WHEN @producerDown AND COALESCE(@Status::sb.market_status, mk.feed_status) = 'active'
+                                      THEN 'suspended'::sb.market_status
                                   ELSE COALESCE(@Status::sb.market_status, mk.status) END,
                     source_producer_id = EXCLUDED.source_producer_id,
                     is_favourite = EXCLUDED.is_favourite,
@@ -259,6 +305,7 @@ public sealed class CanonicalStore(NpgsqlDataSource db, short providerId = Canon
                 market.Specifiers,
                 Json = SpecifiersJson(market.Specifiers),
                 market.Status,
+                producerDown,
                 Producer = (short)m.ProducerId,
                 Favourite = market.Favourite,
                 m.FeedTs,
@@ -288,9 +335,11 @@ public sealed class CanonicalStore(NpgsqlDataSource db, short providerId = Canon
     {
         var all = m.Groups.Contains("all");
         var affected = await c.Conn.ExecuteAsync("""
-            UPDATE sb.market mk SET status = @TargetStatus::sb.market_status, version = mk.version + 1, updated_at = now()
+            UPDATE sb.market mk SET status = @TargetStatus::sb.market_status, feed_status = @TargetStatus::sb.market_status,
+                version = mk.version + 1, updated_at = now()
             FROM sb.market_description d
-            WHERE d.id = mk.market_description_id AND mk.event_id = @EventId AND mk.status = 'active'
+            WHERE d.id = mk.market_description_id AND mk.event_id = @EventId AND mk.feed_status = 'active'
+              AND mk.status NOT IN ('settled', 'cancelled')
               AND (@all OR d.groups && @Groups)
             """, new { m.TargetStatus, c.EventId, all, Groups = m.Groups.ToArray() }, c.Tx);
 
@@ -308,7 +357,8 @@ public sealed class CanonicalStore(NpgsqlDataSource db, short providerId = Canon
             await c.Conn.ExecuteAsync("""
                 UPDATE sb.market SET
                     status_before_close = CASE WHEN status IN ('settled', 'cancelled') THEN status_before_close ELSE status END,
-                    status = 'settled', settled_at = @FeedTs, void_reason = @VoidReason, version = version + 1, updated_at = now()
+                    status = 'settled', feed_status = 'settled', settled_at = @FeedTs, void_reason = @VoidReason,
+                    version = version + 1, updated_at = now()
                 WHERE id = @marketId
                 """, new { m.FeedTs, market.VoidReason, marketId }, c.Tx);
 
@@ -375,7 +425,8 @@ public sealed class CanonicalStore(NpgsqlDataSource db, short providerId = Canon
                 UPDATE sb.outcome SET result = NULL, void_factor = NULL, dead_heat_factor = NULL,
                     settlement_certainty = NULL, settled_at = NULL
                 WHERE market_id = @marketId;
-                UPDATE sb.market SET status = COALESCE(status_before_close, 'deactivated'), status_before_close = NULL,
+                UPDATE sb.market SET status = COALESCE(status_before_close, 'deactivated'),
+                    feed_status = COALESCE(status_before_close, 'deactivated'), status_before_close = NULL,
                     settled_at = NULL, version = version + 1, updated_at = now()
                 WHERE id = @marketId AND status = 'settled';
                 """, new { m.FeedTs, rollbackId, marketId }, c.Tx);
@@ -393,7 +444,8 @@ public sealed class CanonicalStore(NpgsqlDataSource db, short providerId = Canon
                 VALUES (@EventId, @marketId, @VoidReason, @StartTime, @EndTime, @SupersededBy, @Producer, @FeedTs, @LogId);
                 UPDATE sb.market SET
                     status_before_close = CASE WHEN status IN ('settled', 'cancelled') THEN status_before_close ELSE status END,
-                    status = 'cancelled', cancelled_at = @FeedTs, void_reason = @VoidReason, version = version + 1, updated_at = now()
+                    status = 'cancelled', feed_status = 'cancelled', cancelled_at = @FeedTs, void_reason = @VoidReason,
+                    version = version + 1, updated_at = now()
                 WHERE id = @marketId;
                 """, new
             {
@@ -408,8 +460,8 @@ public sealed class CanonicalStore(NpgsqlDataSource db, short providerId = Canon
     {
         var descriptionId = await EnsureMarketDescriptionAsync(c, marketTypeId);
         return await c.Conn.ExecuteScalarAsync<long>("""
-            INSERT INTO sb.market (event_id, market_description_id, specifiers, specifiers_json, status, last_feed_ts)
-            VALUES (@EventId, @descriptionId, @specifiers, @Json::jsonb, 'deactivated', @FeedTs)
+            INSERT INTO sb.market (event_id, market_description_id, specifiers, specifiers_json, feed_status, status, last_feed_ts)
+            VALUES (@EventId, @descriptionId, @specifiers, @Json::jsonb, 'deactivated', 'deactivated', @FeedTs)
             ON CONFLICT ON CONSTRAINT market_nk DO UPDATE SET updated_at = now()
             RETURNING id
             """, new { c.EventId, descriptionId, specifiers, Json = SpecifiersJson(specifiers), c.Command.FeedTs }, c.Tx);

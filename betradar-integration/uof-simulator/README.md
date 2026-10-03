@@ -70,8 +70,8 @@ var config = UofSdk.GetConfigurationBuilder()
 | `GET /v1/descriptions/producers.xml` (`api_url` = მოთხოვნის host + `/v1/{liveodds\|pre}/`) | ✅ |
 | `GET /v1/descriptions/{lang}/markets.xml`, `variants.xml`, `match_status.xml` | ✅ (ჩვენი subset; უცნობი ენა → `en`) |
 | `GET /v1/descriptions/betstop_reasons.xml`, `betting_status.xml`, `void_reasons.xml` | ✅ (placeholder მნიშვნელობები) |
-| `POST /v1/{product}/recovery/initiate_request` | ✅ 202 → `snapshot_complete` იგივე `request_id`-ით, routing key-ის node სეგმენტით |
-| `POST /v1/{product}/odds/events/{urn}/initiate_request`, `stateful_messages/...` | ✅ 202 (state-ის ხელახლა გაგზავნა — S2/S3) |
+| `POST /v1/{product}/recovery/initiate_request` | ✅ 202 → producer-ის მიმდინარე odds თითო event-ზე (ბოლო `odds_change`, შემდგომი `bet_stop`-ით შეჩერებული), `request_id`-ით, შემდეგ `snapshot_complete` node სეგმენტით |
+| `POST /v1/{product}/odds/events/{urn}/initiate_request`, `stateful_messages/...` | ✅ 202 → იგივე, ერთი event-ისთვის |
 | `GET /v1/sports/{lang}/sports.xml`, `tournaments.xml`, `sports/{sport}/categories.xml`, `sports/{sport}/tournaments.xml` | ✅ `data/catalog.yaml`-დან |
 | `GET /v1/sports/{lang}/schedules/{date}/schedule.xml`, `schedules/live/…`, `schedules/pre/…` | ✅ (event-ების დრო = სიმულატორის გაშვების დრო + offset) |
 | `GET /v1/sports/{lang}/sport_events/{urn}/summary.xml`, `fixture.xml`, `fixture_change_fixture.xml` | ✅ summary-ის status/score მიჰყვება გაგზავნილ `odds_change`-ებს |
@@ -130,9 +130,9 @@ uof-simulator/
 
 ## შეზღუდვები და შემდეგი ნაბიჯები
 
-- Recovery ჯერ snapshot-ს არ აგზავნის — მხოლოდ `snapshot_complete`-ს (S3: მიმდინარე odds-ის ხელახლა გაგზავნა).
+- Recovery აგზავნის მიმდინარე odds-ს, მაგრამ არა `after`-ის შემდეგ გამოტოვებულ settlement/cancel-ებს (რეალური API-ს ეს ნაწილი ⚠ გადასამოწმებელია).
 - ერთდროულად ერთი replay/სცენარი მუშაობს (ახალი წინას აჩერებს) — პარალელური მატჩები S4-ში.
 - SDK ცარიელ `schedule.xml`-ზე (დღე, როცა catalog-ში მატჩი არ არის) და `lotteries.xml`-ზე error-ს ლოგავს — მუშაობას არ აჩერებს.
 - `after` timestamp-ის recovery window-ზე შემოწმება არ ხდება (რეალური API-ს ქცევა ⚠ გადასამოწმებელია).
 - Market/outcome ID-ები და reason-ების სიები placeholder-ია — Integration წვდომისთანავე შევადაროთ რეალურ `markets.xml`-ს.
-- S3: სრული recovery (snapshot); S4: L3 მატჩის ძრავა, მეტი მარკეტი, პარალელური მატჩები; S5: chaos/load.
+- S4: L3 მატჩის ძრავა, მეტი მარკეტი, პარალელური მატჩები; S5: chaos/load.

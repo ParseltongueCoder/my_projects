@@ -24,10 +24,17 @@ public sealed class UofFeedService(
     IServiceProvider services,
     NpgsqlDataSource db,
     CanonicalStore store,
+    AdapterMetrics metrics,
     IOptions<UofOptions> options,
     ILogger<UofFeedService> log) : BackgroundService
 {
-    private sealed record Work(string RawXml, ISportEvent Event, DateTimeOffset? SentTs);
+    // Feed messages and producer state changes share one queue so they are applied in arrival order:
+    // messages received before a producer went down are stored before its markets are suspended.
+    private abstract record Work;
+
+    private sealed record FeedWork(string RawXml, ISportEvent Event, DateTimeOffset? SentTs) : Work;
+
+    private sealed record ProducerWork(int ProducerId, string Name, bool Up, DateTimeOffset At) : Work;
 
     private readonly Channel<Work> _queue = Channel.CreateUnbounded<Work>(new UnboundedChannelOptions { SingleReader = true });
     private readonly ConcurrentDictionary<string, long> _eventIds = new();
@@ -35,6 +42,7 @@ public sealed class UofFeedService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        metrics.QueueDepth = () => _queue.Reader.Count;
         var applied = await MigrationRunner.MigrateAsync(db, stoppingToken);
         log.LogInformation("Database migrated ({Count} new: {Versions})", applied.Count, string.Join(", ", applied));
 
@@ -50,8 +58,8 @@ public sealed class UofFeedService(
         session.OnFixtureChange += (_, e) => Enqueue(e.GetFixtureChange(_culture));
         session.OnUnparsableMessageReceived += (_, e) => log.LogWarning("Unparsable {Type} message", e.MessageType);
 
-        sdk.ProducerUp += (_, e) => ProducerChanged(e, "up", null);
-        sdk.ProducerDown += (_, e) => ProducerChanged(e, "down", "producer_down");
+        sdk.ProducerUp += (_, e) => ProducerChanged(e, up: true);
+        sdk.ProducerDown += (_, e) => ProducerChanged(e, up: false);
         sdk.RecoveryInitiated += (_, e) => log.LogInformation("Recovery {RequestId} initiated for producer {Producer}",
             e.GetRequestId(), e.GetProducerId());
 
@@ -77,18 +85,58 @@ public sealed class UofFeedService(
     }
 
     private void Enqueue<T>(IEventMessage<T> message) where T : ISportEvent =>
-        _queue.Writer.TryWrite(new Work(
+        _queue.Writer.TryWrite(new FeedWork(
             Encoding.UTF8.GetString(message.RawMessage),
             message.Event,
             message.Timestamps?.Sent is > 0 and var sent ? DateTimeOffset.FromUnixTimeMilliseconds(sent) : null));
 
     private async Task ProcessAsync(Work work, CancellationToken ct)
     {
+        switch (work)
+        {
+            case FeedWork feed:
+                await ProcessFeedAsync(feed, ct);
+                break;
+            case ProducerWork producer:
+                await ProcessProducerAsync(producer, ct);
+                break;
+        }
+    }
+
+    private async Task ProcessProducerAsync(ProducerWork p, CancellationToken ct)
+    {
+        try
+        {
+            await store.SetProducerStateAsync(p.ProducerId, p.Name, p.Up ? "up" : "down", p.Up ? null : "producer_down", ct);
+            var suspended = 0;
+            if (p.Up)
+            {
+                var reopened = await store.ReopenProducerMarketsAsync(p.ProducerId, ct);
+                log.LogInformation("Producer {Id} ({Name}) up: {Count} markets re-opened", p.ProducerId, p.Name, reopened);
+            }
+            else
+            {
+                suspended = await store.SuspendProducerMarketsAsync(p.ProducerId, p.At, ct);
+                log.LogWarning("Producer {Id} ({Name}) down: {Count} markets suspended", p.ProducerId, p.Name, suspended);
+            }
+            metrics.ProducerState(p.ProducerId, p.Up, suspended);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            log.LogError(ex, "Producer {Id} state change not stored", p.ProducerId);
+        }
+    }
+
+    private async Task ProcessFeedAsync(FeedWork work, CancellationToken ct)
+    {
         try
         {
             var command = UofFeedParser.Parse(work.RawXml);
             var eventId = await EventIdAsync(work.Event, ct);
+            var started = TimeProvider.System.GetTimestamp();
             var outcome = await store.ApplyAsync(command, eventId, work.RawXml, sentTs: work.SentTs, ct: ct);
+            metrics.Message(command.MessageType, outcome.ToString().ToLowerInvariant(),
+                DateTimeOffset.UtcNow - command.FeedTs, TimeProvider.System.GetElapsedTime(started));
             log.Log(outcome == ApplyOutcome.Failed ? LogLevel.Error : LogLevel.Debug,
                 "{Type} {Event} → {Outcome}", command.MessageType, command.EventUrn, outcome);
         }
@@ -96,6 +144,7 @@ public sealed class UofFeedService(
         {
             // Keep consuming: one bad message must not stop the feed. The failure is visible in the logs/metrics.
             log.LogError(ex, "Failed to process message for {Event}", work.Event.Id);
+            metrics.Message("unknown", "error", TimeSpan.Zero, TimeSpan.Zero);
         }
     }
 
@@ -140,11 +189,10 @@ public sealed class UofFeedService(
         }
     }
 
-    private void ProducerChanged(ProducerStatusChangeEventArgs e, string state, string? reason)
+    private void ProducerChanged(ProducerStatusChangeEventArgs e, bool up)
     {
         var producer = e.GetProducerStatusChange().Producer;
-        log.LogInformation("Producer {Id} ({Name}) {State}", producer.Id, producer.Name, state);
-        _ = store.SetProducerStateAsync(producer.Id, producer.Name, state, reason).ContinueWith(
-            t => log.LogError(t.Exception, "Producer state not stored"), TaskContinuationOptions.OnlyOnFaulted);
+        log.LogInformation("Producer {Id} ({Name}) {State}", producer.Id, producer.Name, up ? "up" : "down");
+        _queue.Writer.TryWrite(new ProducerWork(producer.Id, producer.Name, up, DateTimeOffset.UtcNow));
     }
 }

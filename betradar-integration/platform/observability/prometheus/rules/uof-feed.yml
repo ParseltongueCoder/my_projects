@@ -1,0 +1,37 @@
+# Feed-health alerts (docs/04 §5.3). Thresholds are starting points: tune them on real Integration traffic.
+groups:
+  - name: uof-feed
+    rules:
+      - alert: UofAdapterDown
+        expr: up{job="uof-adapter"} == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "UOF adapter is not being scraped"
+
+      - alert: UofProducerDown
+        expr: uof_producer_up == 0
+        for: 30s
+        labels: { severity: critical }
+        annotations:
+          summary: "Producer {{ $labels.producer }} is down - its markets are suspended"
+
+      - alert: UofFeedLagHigh
+        expr: histogram_quantile(0.99, sum by (le) (rate(uof_message_lag_seconds_bucket[5m]))) > 0.5
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "p99 feed→store lag {{ $value | humanizeDuration }} (budget 500 ms)"
+
+      - alert: UofMessagesFailing
+        expr: sum(increase(uof_messages_total{outcome=~"failed|error"}[5m])) > 0
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $value }} feed messages failed in the last 5 minutes (see sb.feed_message_log status='failed')"
+
+      - alert: UofQueueBacklog
+        expr: uof_queue_depth > 1000
+        for: 2m
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $value }} messages waiting to be stored"

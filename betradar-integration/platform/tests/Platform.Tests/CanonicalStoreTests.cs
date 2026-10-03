@@ -175,4 +175,52 @@ public class CanonicalStoreTests : IAsyncLifetime
         await using var conn = await _db.DataSource.OpenConnectionAsync();
         Assert.Equal(1, await conn.ExecuteScalarAsync<int>("SELECT count(*) FROM sb.feed_message_log WHERE status = 'failed' AND error IS NOT NULL"));
     }
+
+    [DbFact]
+    public async Task Producer_down_suspends_its_markets_and_recovery_reopens_them()
+    {
+        static string Odds(int producer, long ts) => System.Text.Encoding.UTF8.GetString(FeedMessageBuilder.OddsChange(producer, EventUrn, ts,
+            [new MarketOdds(1, [new OutcomeOdds("1", 2.0)]), new MarketOdds(18, [new OutcomeOdds("12", 1.9)], Specifiers: "total=2.5")]));
+
+        var live = Odds(1, 1_000);
+        await _store.ApplyAsync(UofFeedParser.Parse(live), _eventId, live);
+
+        // What the adapter does on ProducerDown.
+        await _store.SetProducerStateAsync(1, "LO", "down", "producer_down");
+        Assert.Equal(2, await _store.SuspendProducerMarketsAsync(1, DateTimeOffset.UtcNow));
+        Assert.Equal(0, await _store.SuspendProducerMarketsAsync(3, DateTimeOffset.UtcNow)); // other producer: untouched
+
+        await using var conn = await _db.DataSource.OpenConnectionAsync();
+        Task<List<string>> Statuses() => conn.QueryAsync<string>("SELECT DISTINCT status::text FROM sb.market").ContinueWith(t => t.Result.ToList());
+        Assert.Equal(["suspended"], await Statuses());
+        Assert.Equal(2, await conn.ExecuteScalarAsync<int>(
+            "SELECT affected_markets FROM sb.bet_stop_log WHERE source = 'producer_down' AND event_id = @_eventId", new { _eventId }));
+
+        // Odds keep arriving (e.g. the recovery snapshot) while the producer is still down: odds update, markets stay suspended.
+        var recovered = Odds(1, 2_000);
+        await _store.ApplyAsync(UofFeedParser.Parse(recovered), _eventId, recovered);
+        Assert.Equal(["suspended"], await Statuses());
+
+        // ProducerUp: back to what the feed says.
+        await _store.SetProducerStateAsync(1, "LO", "up", null);
+        Assert.Equal(2, await _store.ReopenProducerMarketsAsync(1));
+        Assert.Equal(["active"], await Statuses());
+    }
+
+    [DbFact]
+    public async Task Reopen_keeps_markets_the_feed_itself_suspended()
+    {
+        var odds = System.Text.Encoding.UTF8.GetString(FeedMessageBuilder.OddsChange(1, EventUrn, 1_000,
+            [new MarketOdds(1, [new OutcomeOdds("1", 2.0)], MarketStatus.Suspended), new MarketOdds(29, [new OutcomeOdds("74", 1.8)])]));
+        await _store.ApplyAsync(UofFeedParser.Parse(odds), _eventId, odds);
+        await _store.SetProducerStateAsync(1, "LO", "down", "producer_down");
+        await _store.SuspendProducerMarketsAsync(1, DateTimeOffset.UtcNow);
+        await _store.SetProducerStateAsync(1, "LO", "up", null);
+
+        Assert.Equal(1, await _store.ReopenProducerMarketsAsync(1));
+        await using var conn = await _db.DataSource.OpenConnectionAsync();
+        Assert.Equal([("uof_1", "suspended"), ("uof_29", "active")], (await conn.QueryAsync<(string, string)>("""
+            SELECT d.code, m.status::text FROM sb.market m JOIN sb.market_description d ON d.id = m.market_description_id ORDER BY 1
+            """)).ToList());
+    }
 }

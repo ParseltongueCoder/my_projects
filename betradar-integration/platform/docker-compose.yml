@@ -1,4 +1,5 @@
-# Platform dev stack: simulator (RabbitMQ + mock Betradar API) + PostgreSQL + UOF adapter.
+# Platform dev stack: simulator (RabbitMQ + mock Betradar API) + PostgreSQL + UOF adapter + monitoring.
+#   Grafana http://localhost:3000 (dashboard "UOF Feed Health"), Prometheus http://localhost:9090/alerts
 #   ../uof-simulator/tools/gen-tls.sh && docker compose up -d --build
 name: uof-platform
 
@@ -31,11 +32,34 @@ services:
       Uof__MessagingHost: rabbitmq
       Uof__MessagingPort: "5671"
       Uof__MessagingPassword: sim
+    ports:
+      - "8081:8081"     # /metrics (Prometheus), /healthz
     depends_on:
       postgres:
         condition: service_healthy
       uofsim:
         condition: service_started
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus:/etc/prometheus:ro
+
+  grafana:
+    image: grafana/grafana:12.1.0
+    ports:
+      - "3000:3000"
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"        # local dev only
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
 
 volumes:
   pgdata:

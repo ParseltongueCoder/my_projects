@@ -1,5 +1,5 @@
 using System.Globalization;
-using Microsoft.Extensions.Options;
+using OpenTelemetry.Metrics;
 using Npgsql;
 using Platform.Canonical.Store;
 using Sportradar.OddsFeed.SDK.Api;
@@ -8,7 +8,7 @@ using Sportradar.OddsFeed.SDK.Common.Enums;
 using Sportradar.OddsFeed.SDK.Common.Extensions;
 using Uof.Adapter;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 var uof = builder.Configuration.GetSection(UofOptions.Section).Get<UofOptions>() ?? new UofOptions();
 builder.Services.Configure<UofOptions>(builder.Configuration.GetSection(UofOptions.Section));
@@ -18,9 +18,16 @@ builder.Services.AddSingleton(_ => NpgsqlDataSource.Create(
     builder.Configuration.GetConnectionString("Platform")
     ?? throw new InvalidOperationException("ConnectionStrings:Platform is not configured")));
 builder.Services.AddSingleton(sp => new CanonicalStore(sp.GetRequiredService<NpgsqlDataSource>()));
+builder.Services.AddSingleton<AdapterMetrics>();
 builder.Services.AddHostedService<UofFeedService>();
+builder.Services.AddOpenTelemetry().WithMetrics(m => m
+    .AddMeter(AdapterMetrics.MeterName)
+    .AddPrometheusExporter());
 
-builder.Build().Run();
+var app = builder.Build();
+app.MapPrometheusScrapingEndpoint();          // GET /metrics
+app.MapGet("/healthz", () => Results.Ok("ok"));
+app.Run();
 
 // Simulator → Integration → Production is a configuration change only (docs/03 §9).
 static IUofConfiguration BuildSdkConfiguration(UofOptions o)

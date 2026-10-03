@@ -46,7 +46,7 @@ Sportradar-ის SDK რეპოები (`UnifiedOddsSdkJava`, `UnifiedOddsS
 | 3–4 | სიმულატორი S2 + adapter ✅ | Sports API mock, YAML სცენარები, recorder; .NET adapter SDK-ით → PostgreSQL (docs/02-ის DDL + V002) |
 | 4–5 | S3 + canonical store | producer/recovery სიმულაცია, SDK smoke test CI-ში; normalizer → Postgres/Valkey |
 | **5** | **Sportradar outreach** | პირველი მიმართვა, discovery call |
-| 5–7 | S4 + admin + monitoring | Poisson odds engine, admin MVP, Grafana „UOF Feed Health", alert-ები |
+| 5–7 | S3 ✅ + monitoring ✅ + admin | recovery snapshot, producer down → market-ების შეჩერება/აღდგენა, Prometheus + Grafana „UOF Feed Health" + alert-ები ✅; შემდეგი: admin MVP |
 | 7–8 | S5 + დემო | chaos/load ტესტები, E2E დემო-ვიდეო, ერთგვერდიანი ტექ. აღწერა |
 | 8–14 | ფაზა 2: Integration env | კონფიგით გადართვა, divergence report, Replay რეგრესიული სუიტი, hardening, integration review |
 | 14+ | ფაზა 3 | პირველი ოპერატორის პილოტი, მეორე პროვაიდერი (LSports — აქვს trial/sandbox), სტრიმები, ვიჯეტები |

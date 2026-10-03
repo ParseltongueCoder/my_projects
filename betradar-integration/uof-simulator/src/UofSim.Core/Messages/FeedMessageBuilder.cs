@@ -128,10 +128,17 @@ public static class FeedMessageBuilder
     }
 
     /// <summary>Replaces the root <c>timestamp</c> attribute (used by the replayer to make recordings "live").</summary>
-    public static byte[] WithTimestamp(string xml, long timestampMs)
+    public static byte[] WithTimestamp(string xml, long timestampMs) => Restamp(xml, timestampMs, requestId: null);
+
+    /// <summary>Sets the root <c>timestamp</c> and, for recovery answers, the <c>request_id</c>.</summary>
+    public static byte[] Restamp(string xml, long timestampMs, long? requestId)
     {
         var doc = XDocument.Parse(xml);
         doc.Root!.SetAttributeValue("timestamp", timestampMs);
+        if (requestId is not null)
+        {
+            doc.Root.SetAttributeValue("request_id", requestId);
+        }
         return Serialize(doc.Root);
     }
 
