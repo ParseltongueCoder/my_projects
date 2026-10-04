@@ -88,7 +88,7 @@ UOF adapter ──► │ Bo.Api (modular monolith)     │───────
 | NOTIF | დიდი ფსონი, liability, feed down, PAM error, referral backlog/SLA; in-app + Telegram |
 | PROMO | standard freebet + manual/CSV დარიცხვა (თუ pilot-ს გაშვებისთანავე სჭირდება) |
 
-P1: four-eyes approval-ები,  odds/acca boost, კამპანიების builder, abuse detection, partial cash-out, scheduled რეპორტები.
+P1: four-eyes approval-ები, odds/acca boost, კამპანიების builder, abuse detection, partial cash-out, scheduled რეპორტები.
 P2: ML risk scoring, early payout, bet builder, ClickHouse, retail.
 
 ## 5. შესრულების თანმიმდევრობა
