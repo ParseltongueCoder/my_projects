@@ -344,7 +344,7 @@ POST /v1/bets/tk_…/counter-offer/accept   Idempotency-Key: …   {"version":3}
   | 409 COUNTER_OFFER_EXPIRED | 409 REFERRAL_ALREADY_DECIDED | 409 REFERRAL_MARKET_CHANGED
 POST /v1/bets/tk_…/counter-offer/decline  {"version":3}  → 200 {"status":"rejected","code":"COUNTER_OFFER_DECLINED"}
 ```
-- Counter-ის TTL = `referral.counter_offer_timeout_seconds` (default 20, 10 §3.1). countdown UI-ში ჩანს (10 §4.4). ვადის გასვლისას ⇒ `rejected COUNTER_OFFER_EXPIRED`, თანხა სრულად ბრუნდება (cancel/rollback, 10 §4.2).
+- Counter-ის TTL = `referral.counter_offer_timeout_seconds` (default **30**, ცალკე ვადა referral-ის ვადის შემდეგ; გადაწყდა 2026-10-04). countdown UI-ში ჩანს (10 §4.4). ვადის გასვლისას ⇒ `rejected COUNTER_OFFER_EXPIRED`, თანხა სრულად ბრუნდება (cancel/rollback, 10 §4.2).
 - `version` სავალდებულოა: ტრეიდერმა შეიძლება counter-offer შეცვალოს (P1). ძველ ვერსიაზე accept ⇒ `409 COUNTER_OFFER_CHANGED` + ახალი offer.
 - Accept-ზე bet-engine ხელახლა ამოწმებს market status-ს და odds-ს (10 §4.3). თუ მარკეტი დაიხურა ⇒ auto-cancel (`REFERRAL_MARKET_CHANGED`) — მომხმარებლის წესი.
 
@@ -1042,15 +1042,15 @@ GET/POST /api/bo/int/api-keys  · POST /api/bo/int/api-keys/{id}/rotate | /revok
 
 ## 13. ღია საკითხები
 
-1. **⚠ Pilot ოპერატორის არხი:** A თუ B? ეს წყვეტს, white-label pilot-ის კრიტიკულ გზაზეა თუ არა (§10.2: ~15 დევ-კვირა).
+1. ✅ **არხი:** გადაწყდა (2026-10-04): **ჯერ API (არხი A), შემდეგ white-label (B)**. White-label pilot-ის კრიტიკულ გზაზე აღარ არის.
 2. **⚠ რეგულატორი და iFrame:** სავალდებულოა თუ არა, რომ ფსონის UI ლიცენზირებულ დომენზე იყოს? თუ კი, CNAME (`sport.operator.ge`) სავალდებულო ხდება და `{brand}.sb.example` მხოლოდ sandbox-ში დარჩება.
-3. **⚠ Counter-offer TTL:** default 20 წმ (10 §3.1) მობილურზე და iFrame-ში შეიძლება მოკლე იყოს. ითვლება თუ არა counter-ის დრო referral-ის 30/180 წმ-ში, თუ ცალკეა? რეკომენდაცია: ცალკე, 30 წმ live-ზეც და prematch-ზეც.
+3. ✅ **Counter-offer TTL:** გადაწყდა (2026-10-04): 30 წმ, ცალკე ითვლება.
 4. **⚠ PAM:** აქვს თუ არა pilot ოპერატორს S2S შესაძლებლობა (launch code endpoint მის backend-ში)? თუ არა, გზა 2 (PAM token exchange) სჭირდება `/pam/v1/session/validate`-ს.
 5. **⚠ ორი დომენის კრიტერიუმი:** მოქალაქეობა, რეზიდენტობა თუ IP? ვინ ამოწმებს — PAM რეგისტრაციისას თუ ჩვენ token exchange-ზე?
 6. **⚠ რეკლამის კანონი:** შეიძლება თუ არა featured/promo ბლოკების ჩვენება anonymous მოთამაშისთვის GE-domestic ბრენდზე?
 7. **⚠ SEO:** სჭირდება თუ არა ოპერატორს sportsbook გვერდების ინდექსაცია (full-page რეჟიმი)? თუ კი, SSR P2-დან P1-ში გადადის (+4–6 დევ-კვირა).
 8. **⚠ Cloudflare for SaaS:** custom hostname-ების ფასი და ხელშეკრულება, ან ალტერნატივა (Caddy on-demand TLS ჩვენს edge-ზე, WAF-ის გარეშე).
-9. **⚠ Odds ფორმატი და ათწილადის გამყოფი** ქართულ ბაზარზე: მხოლოდ decimal და წერტილი?
+9. ✅ **Odds ფორმატი:** გადაწყდა (2026-10-04): decimal, წერტილით (`2.50`). fractional/american ოფციად რჩება სხვა ბაზრებისთვის.
 10. **⚠ Stats/Live Match Tracker widget:** Sportradar-ის ლიცენზია ოპერატორისაა. ჩავსვამთ თუ არა white-label-ში (P1), და ვისი key-ით?
 11. **⚠ Webhook-ები ოპერატორისთვის** (`bet.placed/settled/decided`): სჭირდება თუ არა pilot-ს CRM-ისთვის (10 §4.4)?
 12. **⚠ Ერთ-click betting** და double-intent დაცვა (§8.6): ერთმანეთს ეწინააღმდეგება. რომელი უფრო მნიშვნელოვანია pilot-ისთვის?

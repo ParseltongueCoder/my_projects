@@ -268,7 +268,7 @@ Scopes: O operator, b brand, s sport, c category, t tournament, e event, +MT mar
 | `referral.on_market_suspend` | json `{live, prematch}` cancel/hold | override / none | O s | `{"live":"cancel","prematch":"cancel"}` | მომხმარებლის გადაწყვეტილება: მარკეტის დახურვისას ბილეთი ავტომატურად უქმდება. `hold` მხოლოდ ოპერატორის ცალკე მოთხოვნით |
 | `referral.partial_mode` | enum counter_offer | override / none | O | counter_offer | `direct` არ გამოიყენება |
 | `referral.partial_min_pct` | decimal | override / none | O | 0.10 | partial stake ≥ X × requested და ≥ `limit.min_stake` |
-| `referral.counter_offer_enabled` / `referral.counter_offer_timeout_seconds` | bool / int | override | O s | true / 20 | P0 |
+| `referral.counter_offer_enabled` / `referral.counter_offer_timeout_seconds` | bool / int | override | O s | true / 30 | P0; მომხმარებლის გადაწყვეტილება: 30 წმ, ითვლება ცალკე, referral-ის 30/180 წმ-იანი ვადის შემდეგ |
 | `referral.four_eyes_stake_over` / `referral.four_eyes_win_over` | money | override / none | O s | — | P1: მეორე დამადასტურებელი |
 | `referral.claim_ttl_seconds` | int | override | O | 30 | claim lease (heartbeat ახანგრძლივებს) |
 | `referral.max_pending` | int | override | O | 200 | რიგის გადავსებისას ახალ referral-ზე მაშინვე სრულდება `on_timeout` (overload protection) + alert |
