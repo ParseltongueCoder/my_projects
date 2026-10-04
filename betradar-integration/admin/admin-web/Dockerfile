@@ -1,15 +1,19 @@
 FROM node:24-alpine AS build
+# Which app of the workspace: feed-ops (default) or backoffice.
+ARG APP=feed-ops
 WORKDIR /src
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY angular.json tsconfig.json ./
 COPY projects/ projects/
-RUN npx ng build feed-ops --configuration production
+RUN npx ng build ${APP} --configuration production && mv dist/${APP}/browser /out
 
 FROM nginx:1.29-alpine
-COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+# nginx's entrypoint renders templates with envsubst (only defined variables: $uri etc. stay untouched).
+ENV API_UPSTREAM=admin-api:8082
+COPY deploy/nginx.conf /etc/nginx/templates/default.conf.template
 COPY deploy/40-feedops-config.sh /docker-entrypoint.d/40-feedops-config.sh
-COPY --from=build /src/dist/feed-ops/browser /usr/share/nginx/html
+COPY --from=build /out /usr/share/nginx/html
 # A restrictive umask on the build machine (e.g. 077) would otherwise leave copied assets unreadable to nginx.
 RUN chmod -R a+rX /usr/share/nginx/html
 EXPOSE 80

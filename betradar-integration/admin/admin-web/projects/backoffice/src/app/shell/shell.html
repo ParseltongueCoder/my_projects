@@ -1,0 +1,53 @@
+<header class="topbar" [class.acting]="session.me()?.impersonating">
+  <button matIconButton class="menu" (click)="navOpen.set(!navOpen())" aria-label="Menu"><mat-icon>menu</mat-icon></button>
+  <a class="brand" routerLink="/"><mat-icon>sports_soccer</mat-icon><span>Back Office</span></a>
+
+  @if (session.me(); as me) {
+    @if (me.isPlatform) {
+      <mat-form-field class="switcher" subscriptSizing="dynamic">
+        <mat-select [ngModel]="me.operator?.id ?? null" (ngModelChange)="switchOperator($event)" aria-label="Operator" panelWidth="auto">
+          <mat-option [value]="null">Platform (all operators)</mat-option>
+          @for (o of me.operators; track o.id) { <mat-option [value]="o.id">{{ o.name }}</mat-option> }
+        </mat-select>
+      </mat-form-field>
+      @if (me.impersonating) {
+        <span class="acting-label" matTooltip="Platform staff acting for an operator; actions are audited under your name">
+          <mat-icon>visibility</mat-icon> Acting as {{ me.operator?.name }}{{ me.readOnly ? ' · read-only' : '' }}
+        </span>
+      }
+    } @else if (me.operator) {
+      <span class="operator">{{ me.operator.name }}</span>
+    }
+  }
+
+  <span class="spacer"></span>
+  <button matIconButton (click)="toggleDark()" [attr.aria-label]="dark() ? 'Light mode' : 'Dark mode'" [matTooltip]="dark() ? 'Light mode' : 'Dark mode'">
+    <mat-icon>{{ dark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+  </button>
+  @if (session.me(); as me) {
+    <span class="user"><mat-icon>account_circle</mat-icon>{{ me.user.displayName ?? me.user.username }}</span>
+  }
+  @if (auth.enabled) {
+    <button matButton (click)="auth.logout()"><mat-icon>logout</mat-icon>Log out</button>
+  }
+</header>
+
+<div class="layout">
+  <nav class="sidenav" [class.open]="navOpen()" (click)="navOpen.set(false)">
+    @for (g of nav(); track g.group) {
+      @if (g.group) { <div class="group">{{ g.group }}</div> }
+      @for (item of g.items; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: item.path === '/' }" [class.soon]="item.soon">
+          <mat-icon>{{ item.icon }}</mat-icon><span>{{ item.label }}</span>
+          @if (item.soon) { <span class="stage">{{ item.soon }}</span> }
+        </a>
+      }
+    }
+  </nav>
+  <main class="content">
+    @if (session.error(); as error) {
+      <div class="panel error"><mat-icon>error</mat-icon> {{ error }}</div>
+    }
+    <router-outlet />
+  </main>
+</div>

@@ -18,6 +18,9 @@ public interface IIdentityProvisioner
     Task CreateOrganizationAsync(string alias, string name, CancellationToken ct);
     Task<ProvisionedUser> CreateUserAsync(string username, string email, string? displayName, string? organizationAlias, bool platformStaff, CancellationToken ct);
     Task SetEnabledAsync(Guid userId, bool enabled, CancellationToken ct);
+
+    /// <summary>Compensation when the back-office side of an invite fails after the identity was created.</summary>
+    Task DeleteUserAsync(Guid userId, CancellationToken ct);
 }
 
 /// <summary>No identity provider (tests, local runs without Keycloak): users get fresh ids, nothing else happens.</summary>
@@ -29,6 +32,8 @@ public sealed class NullIdentityProvisioner : IIdentityProvisioner
         Task.FromResult(new ProvisionedUser(Guid.NewGuid(), null));
 
     public Task SetEnabledAsync(Guid userId, bool enabled, CancellationToken ct) => Task.CompletedTask;
+
+    public Task DeleteUserAsync(Guid userId, CancellationToken ct) => Task.CompletedTask;
 }
 
 public sealed class KeycloakAdminOptions
@@ -74,11 +79,14 @@ public sealed class KeycloakIdentityProvisioner(HttpClient http, KeycloakAdminOp
         string username, string email, string? displayName, string? organizationAlias, bool platformStaff, CancellationToken ct)
     {
         var password = Convert.ToBase64String(RandomNumberGenerator.GetBytes(12)).Replace('/', 'x').Replace('+', 'y');
+        // Keycloak's default user profile requires first and last name (else the user meets a "verify profile" page).
+        var names = (string.IsNullOrWhiteSpace(displayName) ? username : displayName.Trim()).Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
         using (var response = await SendAsync(HttpMethod.Post, Admin("/users"), new
         {
             username,
             email,
-            firstName = displayName,
+            firstName = names[0],
+            lastName = names.Length > 1 ? names[1] : names[0],
             enabled = true,
             emailVerified = true,
             requiredActions = options.InviteRequiredActions,
@@ -93,19 +101,28 @@ public sealed class KeycloakIdentityProvisioner(HttpClient http, KeycloakAdminOp
         }
 
         var id = await FindUserIdAsync(username, ct);
-        if (organizationAlias is not null)
+        try
         {
-            var orgId = await FindOrganizationIdAsync(organizationAlias, ct);
-            using var member = await SendAsync(HttpMethod.Post, Admin($"/organizations/{orgId}/members"), id.ToString(), ct);
-            await EnsureSuccess(member, "add organization member");
+            if (organizationAlias is not null)
+            {
+                var orgId = await FindOrganizationIdAsync(organizationAlias, ct);
+                using var member = await SendAsync(HttpMethod.Post, Admin($"/organizations/{orgId}/members"), id.ToString(), ct);
+                await EnsureSuccess(member, "add organization member");
+            }
+            if (platformStaff)
+            {
+                using var role = await SendAsync(HttpMethod.Get, Admin($"/roles/{BoClaims.PlatformStaffRole}"), null, ct);
+                await EnsureSuccess(role, "read platform role");
+                var representation = await role.Content.ReadFromJsonAsync<JsonElement>(ct);
+                using var assign = await SendAsync(HttpMethod.Post, Admin($"/users/{id}/role-mappings/realm"), new[] { representation }, ct);
+                await EnsureSuccess(assign, "assign platform role");
+            }
         }
-        if (platformStaff)
+        catch
         {
-            using var role = await SendAsync(HttpMethod.Get, Admin($"/roles/{BoClaims.PlatformStaffRole}"), null, ct);
-            await EnsureSuccess(role, "read platform role");
-            var representation = await role.Content.ReadFromJsonAsync<JsonElement>(ct);
-            using var assign = await SendAsync(HttpMethod.Post, Admin($"/users/{id}/role-mappings/realm"), new[] { representation }, ct);
-            await EnsureSuccess(assign, "assign platform role");
+            // Never leave a half-provisioned login behind (it could not be invited again: username / email taken).
+            await DeleteUserAsync(id, CancellationToken.None);
+            throw;
         }
         return new ProvisionedUser(id, password);
     }
@@ -121,6 +138,15 @@ public sealed class KeycloakIdentityProvisioner(HttpClient http, KeycloakAdminOp
         }
     }
 
+    public async Task DeleteUserAsync(Guid userId, CancellationToken ct)
+    {
+        using var response = await SendAsync(HttpMethod.Delete, Admin($"/users/{userId}"), null, ct);
+        if (response.StatusCode != HttpStatusCode.NotFound)
+        {
+            await EnsureSuccess(response, "delete user");
+        }
+    }
+
     private async Task<Guid> FindUserIdAsync(string username, CancellationToken ct)
     {
         using var response = await SendAsync(HttpMethod.Get, Admin($"/users?exact=true&username={Uri.EscapeDataString(username)}"), null, ct);
@@ -131,17 +157,24 @@ public sealed class KeycloakIdentityProvisioner(HttpClient http, KeycloakAdminOp
 
     private async Task<string> FindOrganizationIdAsync(string alias, CancellationToken ct)
     {
-        using var response = await SendAsync(HttpMethod.Get, Admin($"/organizations?search={Uri.EscapeDataString(alias)}&exact=true"), null, ct);
-        await EnsureSuccess(response, "find organization");
-        var orgs = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
-        foreach (var org in orgs.EnumerateArray())
+        // "search" matches the organization name, not the alias; page through and match the alias exactly.
+        for (var first = 0; ; first += 100)
         {
-            if (org.TryGetProperty("alias", out var a) && a.GetString() == alias)
+            using var response = await SendAsync(HttpMethod.Get, Admin($"/organizations?briefRepresentation=true&first={first}&max=100"), null, ct);
+            await EnsureSuccess(response, "list organizations");
+            var orgs = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
+            foreach (var org in orgs.EnumerateArray())
             {
-                return org.GetProperty("id").GetString()!;
+                if (org.TryGetProperty("alias", out var a) && a.GetString() == alias)
+                {
+                    return org.GetProperty("id").GetString()!;
+                }
+            }
+            if (orgs.GetArrayLength() < 100)
+            {
+                throw BoProblem.Conflict("ORGANIZATION_MISSING", $"Keycloak organization '{alias}' does not exist");
             }
         }
-        throw BoProblem.Conflict("ORGANIZATION_MISSING", $"Keycloak organization '{alias}' does not exist");
     }
 
     private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string url, object? body, CancellationToken ct)

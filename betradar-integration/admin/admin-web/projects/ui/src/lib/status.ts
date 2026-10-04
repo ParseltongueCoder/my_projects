@@ -32,6 +32,14 @@ const SEVERITIES: Record<string, Severity> = {
   rolled_back: 'warn',
   won: 'success',
   lost: 'secondary',
+  // back office: change sets, users, operators
+  applied: 'success',
+  pending_approval: 'warn',
+  rejected: 'danger',
+  invited: 'info',
+  disabled: 'secondary',
+  onboarding: 'info',
+  terminated: 'danger',
 };
 
 /** Colour for a status value from the canonical model; unknown values are neutral. */

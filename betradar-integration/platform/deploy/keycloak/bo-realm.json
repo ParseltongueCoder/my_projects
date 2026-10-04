@@ -1,0 +1,231 @@
+{
+  "realm": "bo",
+  "enabled": true,
+  "displayName": "Operator Back Office (dev)",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "passwordPolicy": "length(12) and notUsername and passwordHistory(5)",
+  "organizationsEnabled": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "platform-staff",
+        "description": "Our own staff (no organization); permissions are kept in the back office"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "bo-web",
+      "name": "Operator back office web",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:8089/*",
+        "http://localhost:4300/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8089",
+        "http://localhost:4300"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8089/*##http://localhost:4300/*"
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "basic",
+        "email",
+        "organization"
+      ],
+      "protocolMappers": [
+        {
+          "name": "bo-api audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "bo-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "bo-api-admin",
+      "name": "Bo.Api provisioning (service account)",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "bo-api-admin-dev-secret",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "protocol": "openid-connect"
+    }
+  ],
+  "organizations": [
+    {
+      "name": "AcmeBet",
+      "alias": "acmebet",
+      "enabled": true,
+      "domains": [
+        {
+          "name": "acmebet.operators.internal",
+          "verified": false
+        }
+      ],
+      "members": [
+        {
+          "username": "acme-admin"
+        },
+        {
+          "username": "acme-head"
+        },
+        {
+          "username": "acme-trader"
+        }
+      ]
+    },
+    {
+      "name": "BetGeo",
+      "alias": "betgeo",
+      "enabled": true,
+      "domains": [
+        {
+          "name": "betgeo.operators.internal",
+          "verified": false
+        }
+      ],
+      "members": [
+        {
+          "username": "betgeo-admin"
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "10000000-0000-0000-0000-000000000001",
+      "username": "platform",
+      "enabled": true,
+      "firstName": "Platform",
+      "lastName": "Admin",
+      "email": "platform@example.test",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "platform-devpass",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "platform-staff"
+      ]
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000000002",
+      "username": "support",
+      "enabled": true,
+      "firstName": "Platform",
+      "lastName": "Support",
+      "email": "support@example.test",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "support-devpass",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "platform-staff"
+      ]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000001",
+      "username": "acme-admin",
+      "enabled": true,
+      "firstName": "Acme",
+      "lastName": "Admin",
+      "email": "acme-admin@example.test",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "acme-admin-devpass",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000002",
+      "username": "acme-head",
+      "enabled": true,
+      "firstName": "Acme",
+      "lastName": "Head Trader",
+      "email": "acme-head@example.test",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "acme-head-devpass",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000003",
+      "username": "acme-trader",
+      "enabled": true,
+      "firstName": "Acme",
+      "lastName": "Trader",
+      "email": "acme-trader@example.test",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "acme-trader-devpass",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "30000000-0000-0000-0000-000000000001",
+      "username": "betgeo-admin",
+      "enabled": true,
+      "firstName": "BetGeo",
+      "lastName": "Admin",
+      "email": "betgeo-admin@example.test",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "betgeo-admin-devpass",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "service-account-bo-api-admin",
+      "enabled": true,
+      "serviceAccountClientId": "bo-api-admin",
+      "clientRoles": {
+        "realm-management": [
+          "realm-admin"
+        ]
+      }
+    }
+  ]
+}

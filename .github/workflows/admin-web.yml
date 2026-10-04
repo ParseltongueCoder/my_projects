@@ -24,3 +24,5 @@ jobs:
       - run: npx ng test ui --watch=false
       - run: npx ng test feed-ops --watch=false
       - run: npx ng build feed-ops
+      - run: npx ng test backoffice --watch=false
+      - run: npx ng build backoffice

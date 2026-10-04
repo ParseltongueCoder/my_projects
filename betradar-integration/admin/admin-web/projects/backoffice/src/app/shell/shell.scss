@@ -1,0 +1,32 @@
+:host { display: block; min-height: 100vh; }
+.topbar {
+  position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: .75rem;
+  padding: 0 1rem; height: 3.5rem; background: var(--fo-surface); border-bottom: 1px solid var(--fo-border);
+}
+.topbar.acting { background: var(--fo-warn-bg); border-bottom-color: var(--fo-warn); }
+.brand { display: flex; align-items: center; gap: .35rem; font-weight: 700; font-size: 1.05rem; color: var(--fo-primary); text-decoration: none; }
+.menu { display: none; }
+.switcher { width: 15rem; }
+.acting-label { display: inline-flex; align-items: center; gap: .3rem; color: var(--fo-warn); font-weight: 500; font-size: .85rem; }
+.operator { font-weight: 500; padding: .2rem .6rem; border-radius: 8px; background: var(--mat-sys-secondary-container); color: var(--mat-sys-on-secondary-container); }
+.spacer { flex: 1; }
+.user { display: inline-flex; align-items: center; gap: .3rem; }
+.layout { display: flex; min-height: calc(100vh - 3.5rem); }
+.sidenav { width: 15rem; flex-shrink: 0; padding: .75rem .5rem; border-right: 1px solid var(--fo-border); background: var(--fo-surface);
+  position: sticky; top: 3.5rem; height: calc(100vh - 3.5rem); overflow-y: auto; box-sizing: border-box; }
+.group { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--fo-muted); margin: .9rem .6rem .3rem; }
+.sidenav a { display: flex; align-items: center; gap: .55rem; padding: .4rem .6rem; border-radius: 8px; color: var(--fo-text); text-decoration: none; }
+.sidenav a mat-icon { font-size: 20px; width: 20px; height: 20px; color: var(--fo-muted); }
+.sidenav a:hover { background: var(--fo-surface-alt); }
+.sidenav a.active { background: var(--mat-sys-secondary-container); color: var(--mat-sys-on-secondary-container); font-weight: 500; }
+.sidenav a.soon { color: var(--fo-muted); }
+.stage { margin-left: auto; font-size: .65rem; padding: 0 .4rem; border-radius: 6px; background: var(--fo-neutral-bg); color: var(--fo-neutral); }
+.content { flex: 1; min-width: 0; padding: 1.25rem; max-width: 1400px; }
+.error { display: flex; gap: .5rem; align-items: center; color: var(--fo-danger); }
+@media (max-width: 900px) {
+  .menu { display: inline-flex; }
+  .sidenav { position: fixed; left: 0; z-index: 9; transform: translateX(-100%); transition: transform .2s; }
+  .sidenav.open { transform: none; box-shadow: 0 0 24px rgba(0,0,0,.2); }
+  .brand span, .user, .acting-label { display: none; }
+  .switcher { width: 10rem; }
+}

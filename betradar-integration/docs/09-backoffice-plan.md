@@ -100,7 +100,7 @@ P2: ML risk scoring, early payout, bet builder, ClickHouse, retail.
 
 | ეტაპი | შინაარსი | რას ვაჩვენებთ ბოლოს | ~კვირა |
 |---|---|---|---|
-| **BO-0 საფუძველი** | Bo.Api + Bo.Workers ჩონჩხი, `bo.operator/brand`, Keycloak `bo` realm, permission-ები, audit + outbox, RLS, Angular `backoffice` shell, CFG ძრავა | ორი ოპერატორი ერთმანეთის მონაცემებს ვერ ხედავს; პარამეტრი იცვლება და trace ჩანს | 3–4 |
+| **BO-0 საფუძველი** ✅ | Bo.Api + Bo.Workers ჩონჩხი, `bo.operator/brand`, Keycloak `bo` realm, permission-ები, audit + outbox, RLS, Angular `backoffice` shell, CFG ძრავა | ორი ოპერატორი ერთმანეთის მონაცემებს ვერ ხედავს; პარამეტრი იცვლება და trace ჩანს | 3–4 |
 | **BO-1 შეთავაზება** | CAT, I18N, CMS, ODDS + `offer-core`, distribution API (overlay + WebSocket) | ოპერატორი ცვლის margin-ს და ლიგის სახელს, frontend-ში 1 წამში აისახება | 4–5 |
 | **BO-2 ფსონი და ფული** | PAM სიმულატორი (როგორც UOF სიმულატორი), INT, bet-engine (pipeline, settlement), LIM + liability, ticket search, CUS | სიმულატორის მატჩზე ფსონი იდება, სეტლდება, rollback-ზე resettle ხდება, PAM-ის ბალანსი სწორია | 6–8 |
 | **BO-3 რისკი, მონიტორინგი, ანალიტიკა** | MON (ticker, referral რიგი), CASH, REP rollup-ები + dashboard, NOTIF | დიდი ფსონი მიდის referral-ზე, ტრეიდერი სთავაზობს counter-offer-ს და მოთამაშე ადასტურებს; cash-out live მატჩზე; GGR რეპორტი | 5–6 |
@@ -114,6 +114,18 @@ P2: ML risk scoring, early payout, bet builder, ClickHouse, retail.
 | იგივე გუნდი + მოთამაშის ფენა | **~8–9 თვე** |
 | **+2 frontend (Angular, მობილური) + 0.5 backend (რეკომენდებულია)** | **~6.5–7 თვე** |
 | ✅ **არჩეულია (2026-10-04): ჯერ API, შემდეგ white-label.** White-label (SB-1/2-ის UI, SB-4-ის theming, დაახლოებით 15 დევ-კვირა) pilot-ის შემდეგ კეთდება | **~7–7.5 თვე** იმავე გუნდით; **~6–6.5 თვე** +1 frontend/backend დეველოპერით | პარალელურად მიმდინარეობს Sportradar-ის integration environment-ზე გადასვლა (ფაზა 2, README).
+
+### BO-0: რა გაკეთდა და სად გადავუხვიეთ დიზაინს (2026-10-04)
+
+აშენდა: `V005` (RLS), `Bo.Core`, `Bo.Api`, `projects/backoffice`, Keycloak realm `bo` Organizations-ით, compose, E2E (ტრეიდერი → four-eyes → effective trace → სხვა ოპერატორის იზოლაცია → ახალი ოპერატორი → მოწვევა TOTP-ით).
+
+| დიზაინი | ახლა | რატომ / როდის |
+|---|---|---|
+| EF Core, `DbContext` თითო მოდულზე (08 §1.3) | Dapper + RLS | იგივე სტილი, რაც `Platform.Canonical`; RLS იზოლაციას ისედაც უზრუნველყოფს. EF — თუ მოდულების რაოდენობა მოითხოვს |
+| თითო მოდული ცალკე project | `Bo.Api/Modules/*` საქაღალდეები + `Bo.Core` | ჯერ სამი მოდულია; პროექტებად დაყოფა BO-1-ში, NetArchTest-თან ერთად |
+| Outbox → NATS | Outbox → PostgreSQL NOTIFY | NATS ჯერ არ არის გაშლილი (docs/04); relay-ის შეცვლა ერთ ადგილას ხდება |
+| Settings snapshot Valkey-ში | in-process snapshot, `config_version`-ით ვალიდირებული | ერთი სერვისი კითხულობს; Valkey — როცა bet-engine/distribution დაემატება |
+| Scheduling, rollback (P1) | არა | P1 |
 
 ## 6. ღია საკითხები: ბიზნესი და იურისტი (კოდს ბლოკავს)
 

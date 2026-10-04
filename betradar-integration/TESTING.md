@@ -129,3 +129,34 @@ cd betradar-integration/uof-simulator && dotnet test           # 74 ტესტ
 cd ../platform && dotnet test tests/Platform.Tests             # DB ტესტები: იხ. platform/README.md
 cd ../admin/admin-web && npm ci && npx ng test feed-ops --watch=false && npx ng test ui --watch=false
 ```
+
+## 7. ოპერატორის back office (BO-0)
+
+იგივე `docker compose up`-ით ეშვება: **http://localhost:8089**. პაროლი ყველა dev მომხმარებლისთვის `<მომხმარებელი>-devpass`, მაგალითად `acme-trader-devpass`. შესვლა ორ ეტაპადაა: ჯერ მომხმარებლის სახელი, შემდეგ პაროლი.
+
+| მომხმარებელი | ვინ არის |
+|---|---|
+| `platform` | ჩვენი თანამშრომელი, სრული უფლებით |
+| `support` | ჩვენი თანამშრომელი, მხოლოდ ნახვის უფლებით |
+| `acme-admin`, `acme-head`, `acme-trader` | ოპერატორი AcmeBet: ადმინი, უფროსი ტრეიდერი, ტრეიდერი |
+| `betgeo-admin` | ოპერატორი BetGeo: ადმინი |
+
+მარკეტები და ლიგები სიებში მხოლოდ მაშინ ჩანს, თუ Feed Ops-ში ერთხელ მაინც გაუშვით სცენარი.
+
+### B1. ცვლილება მეორე ადამიანის დადასტურებით (four-eyes)
+1. შედით `acme-trader`-ით, გახსენით **Settings**, აირჩიეთ **League** → *Sim Premier League*, ხოლო Market type-ში `#1`.
+2. `margin.pct` → **Override** → `0.04` → **Stage change**. ქვემოთ ჩაწერეთ სათაური და დააჭირეთ **Submit for approval**.
+3. გამოდით და შედით `acme-head`-ით. **Change sets** → **Approve**.
+4. **Effective config**-ში იგივე ლიგისა და მარკეტის ტიპისთვის `margin.pct` უნდა იყოს `0.04`. ხაზზე დაჭერით ჩანს, რომელმა დონემ მიიღო გადაწყვეტილება.
+5. `acme-trader`-ს სხვისი ცვლილების დადასტურება არ შეუძლია, `acme-head`-ს კი საკუთარის.
+
+### B2. ოპერატორების იზოლაცია
+1. შედით `betgeo-admin`-ით.
+2. AcmeBet-ის ცვლილებები, მომხმარებლები და brand-ები არსად უნდა ჩანდეს.
+3. იმავე ლიგაზე `margin.pct` უნდა იყოს ნაგულისხმევი `0.06`.
+
+### B3. პლატფორმის თანამშრომელი
+1. შედით `platform`-ით და ზედა ზოლში აირჩიეთ **AcmeBet**. ზოლი ყვითლდება და ჩნდება წარწერა „Acting as AcmeBet“. **Audit log**-ში ჩანს ყველა ცვლილება.
+2. შედით `support`-ით და აირჩიეთ AcmeBet. ყველაფერი ჩანს, მაგრამ შეცვლა არ შეიძლება.
+3. `platform`-ით: **Operators** → **New operator**. შემდეგ **Users** → **Invite user** როლით *Operator admin*.
+4. ახალი მომხმარებლით შესვლისას Keycloak ჯერ მოითხოვს Authenticator-ის (TOTP) დაყენებას, შემდეგ ახალ პაროლს.

@@ -93,6 +93,20 @@ Store-ის ტესტები სიმულატორის `ScenarioCo
 
 - `Admin.Api` — მხოლოდ კითხვა canonical მოდელიდან; `/api/stream` (SSE) — ცვლილებები `V004` trigger-ების `LISTEN/NOTIFY`-დან; JWT (Keycloak), როლები `feedops-viewer` / `feedops-operator`; `Simulator__BaseUrl` (მხოლოდ dev) რთავს სიმულატორის პანელს.
 
+## Operator back office API (BO-0) — `src/Bo.Api`, `src/Bo.Core`
+
+docs/08, docs/06 §5 და docs/09 §2-ის პირველი ნაწილი. Compose-ში: `bo-api` (8083) + `backoffice-web` (http://localhost:8089), Keycloak realm `bo`.
+
+- **ოპერატორების იზოლაცია PostgreSQL RLS-ით** (`V005`): ყოველი მოთხოვნა ერთ ტრანზაქციაშია `SET LOCAL ROLE bo_app` + `app.operator_id`-ით; ოპერატორის გარეშე tenant ცხრილები ცარიელია (fail closed). ოპერატორი token-ის Keycloak Organization-იდან განისაზღვრება და უნდა ემთხვეოდეს `bo.admin_user`-ს. Production-ში login role უნდა იყოს `bo_app`-ის წევრი.
+- **Platform staff** — realm role `platform-staff`; ოპერატორს `X-Operator-Id`-ით ირჩევენ, `platform.impersonate_write`-ის გარეშე მხოლოდ კითხულობენ.
+- **Permissions** (`Bo.Core/Security/Permissions.cs`) და **settings catalog** (`Bo.Core/Config/SettingCatalog.cs`, ~70 key) კოდშია და start-ზე `bo.permission` / `bo.role` / `bo.setting_def`-ში სინქრონდება.
+- **CFG**: resolver (`SettingResolver`) — ყველაზე ღრმა დონე იგებს, market type qualifier თანაბარ სიღრმეზე; `all_path` (დამალულია მშობელზე ⇒ ყველგან ქვემოთ); trace. ყოველი ცვლილება change set-ია; `requires_approval` key-ები მეორე მომხმარებელს სჭირდება (four-eyes, DB CHECK-ითაც). Apply: `config_version++`, audit, outbox.
+- **Audit** append-only (`bo_app`-ს UPDATE/DELETE არ აქვს). **Outbox** → ჯერ PostgreSQL NOTIFY `bo_events` (NATS docs/04-ის მიხედვით მოგვიანებით).
+- **Keycloak provisioning** (`Keycloak__AdminUrl`): ოპერატორის შექმნა = Organization; მოწვევა = user + membership + required actions (TOTP, პაროლი); ჩავარდნისას user-ი იშლება.
+- `Bo:DevSeed=true` — dev ოპერატორები `acmebet` (ორი brand: local/foreign) და `betgeo`, user-ები `deploy/keycloak/bo-realm.json`-ის id-ებით.
+
+ტესტები: `PLATFORM_TEST_PG=... dotnet test tests/Bo.Tests` — resolver/validator და API ტესტები, მათ შორის ორ ოპერატორს შორის იზოლაცია (სიები, id-ით 404, სხვისი brand-ის გამოყენება, RLS პირდაპირ SQL-ზე).
+
 ## შემდეგი ნაბიჯები
 
 - NATS JetStream (`UOF_RAW`) store-სა და SDK-ს შორის — docs/04-ის მიხედვით (ახლა in-process queue-ა, ერთი consumer).

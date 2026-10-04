@@ -5,6 +5,7 @@ Angular 22 workspace for our admin apps ([ADR-002](../../docs/adr/ADR-002-admin-
 | Project | What |
 |---|---|
 | `projects/feed-ops` | **Feed Ops admin** — feed health for our own team (read-only + dev-only simulator panel) |
+| `projects/backoffice` | **Operator back office** (BO-0) — tenants, users & roles, audit log, configuration engine; API `Bo.Api` |
 | `projects/ui` (`@admin/ui`) | Shared building blocks for every admin (status tags, KPI cards, XML formatter) |
 
 UI: Angular Material 3 (MIT). Auth: Keycloak (OIDC code + PKCE). Data: `Admin.Api` (`platform/src/Admin.Api`).
@@ -45,10 +46,38 @@ npx ng serve feed-ops        # http://localhost:4200
 (publish admin-api's port 8082, CORS already allows `http://localhost:4200`), or run Admin.Api locally with `Auth__Enabled=false`
 and keep auth disabled here.
 
+## Operator back office (`projects/backoffice`)
+
+Keycloak realm `bo` (one Organization per operator), API `platform/src/Bo.Api`, http://localhost:8089 in compose.
+
+![Settings editor with a staged change](docs/screenshots/bo-01-settings-staged.png)
+Dev users (password `<user>-devpass`): `platform`, `support` (our staff), `acme-admin`, `acme-head`, `acme-trader` (AcmeBet),
+`betgeo-admin` (BetGeo).
+
+| Route | Shows |
+|---|---|
+| `/` | operator home: brands, change sets waiting for approval, recent activity |
+| `/cfg/scope` | **settings editor**: pick a level (platform → operator → brand → sport → country → league → event, optional market type), see what is set here and what applies (with its source); edits are staged and submitted as one change set |
+| `/cfg/effective` | "why is a value X": effective values at a point of the offer, every candidate row and the winner |
+| `/cfg/change-sets` | history with before/after; four-eyes approval of keys that need it |
+| `/cfg/catalog` | every setting: type, default, levels, approval |
+| `/sites` | brands (sites/domains: local vs foreign players) and enabled modules of the operator |
+| `/adm/users`, `/adm/roles`, `/adm/audit` | invite users (Keycloak user + organization membership, TOTP at first login), grant roles, permission matrix, audit log |
+| `/platform/operators` | platform staff: create operators (Keycloak organization + default brand), status |
+
+Platform staff choose an operator in the header (sent as `X-Operator-Id`); the header turns amber and they act
+read-only unless their role allows writing. Modules of later stages are in the menu with their stage (BO-1 …).
+
+```bash
+npx ng serve backoffice --port 4300   # against Bo.Api with Auth__Enabled=false (dev user = platform admin)
+```
+
 ## Tests
 
 ```bash
+npx ng test backoffice --watch=false
 npx ng test feed-ops --watch=false
 npx ng test ui --watch=false
 npx ng build feed-ops
+npx ng build backoffice
 ```

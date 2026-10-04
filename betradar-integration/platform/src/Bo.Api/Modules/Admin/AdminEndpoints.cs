@@ -81,7 +81,7 @@ public static class AdminEndpoints
             }
             var roles = await db.TenantAsync(t, (conn, tx) => ResolveRolesAsync(conn, tx, body.Roles, platformUser), ct);
             var provisioned = await idp.CreateUserAsync(username, body.Email.Trim(), body.DisplayName, t.Operator?.Code, platformUser, ct);
-            var user = await db.TenantAsync(t, async (conn, tx) =>
+            var user = await CompensateAsync(idp, provisioned.Id, () => db.TenantAsync(t, async (conn, tx) =>
             {
                 await conn.ExecuteAsync("""
                     INSERT INTO bo.admin_user (id, operator_id, username, email, display_name, status)
@@ -95,7 +95,7 @@ public static class AdminEndpoints
                 var created = (await UsersAsync(conn, tx, provisioned.Id)).Single();
                 await Audit.WriteAsync(conn, tx, t, "adm.user.created", "admin_user", provisioned.Id.ToString(), after: created);
                 return created;
-            }, ct);
+            }, ct));
             return Results.Created($"/api/bo/adm/users/{user.Id}", new { user, temporaryPassword = provisioned.TemporaryPassword });
         });
 
@@ -186,6 +186,20 @@ public static class AdminEndpoints
         // Keycloak after the DB: a disabled DB row already blocks every API call, even if Keycloak lags.
         await idp.SetEnabledAsync(id, enabled, ct);
         return user;
+    }
+
+    /// <summary>Removes the identity again when the back-office side of an invite fails.</summary>
+    private static async Task<T> CompensateAsync<T>(IIdentityProvisioner idp, Guid userId, Func<Task<T>> work)
+    {
+        try
+        {
+            return await work();
+        }
+        catch
+        {
+            await idp.DeleteUserAsync(userId, CancellationToken.None);
+            throw;
+        }
     }
 
     private static async Task EnsureNotLastAdminAsync(NpgsqlConnection conn, NpgsqlTransaction tx, Guid userId)

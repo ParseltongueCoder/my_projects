@@ -1,0 +1,108 @@
+<div class="page-head">
+  <div>
+    <h1>Settings</h1>
+    <div class="sub">Most specific level wins; hidden at a parent hides everything below. <a class="link" routerLink="/cfg/effective">Why is a value X?</a></div>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="scope-bar">
+    <mat-button-toggle-group [value]="scopeType()" (change)="setLevel($event.value)" aria-label="Level" hideSingleSelectionIndicator>
+      @for (l of levels(); track l) { <mat-button-toggle [value]="l">{{ levelLabel[l] }}</mat-button-toggle> }
+    </mat-button-toggle-group>
+    @switch (scopeType()) {
+      @case ('brand') {
+        <mat-form-field>
+          <mat-label>Brand</mat-label>
+          <mat-select [ngModel]="brand()" (ngModelChange)="brand.set($event)">
+            @for (b of brands(); track b.id) { <mat-option [value]="b">{{ b.name }} ({{ b.audience }})</mat-option> }
+          </mat-select>
+        </mat-form-field>
+      }
+      @case ('platform') {}
+      @case ('operator') {}
+      @default {
+        <bo-scope-search [type]="scopeType()" [label]="'Find ' + levelLabel[scopeType()].toLowerCase()" [(selected)]="node" />
+      }
+    }
+    <bo-market-type-search [(selected)]="marketType" />
+  </div>
+</section>
+
+@if (!levels().length) {
+  <div class="panel empty">Choose an operator in the header to edit its settings.</div>
+} @else if (!ready()) {
+  <div class="panel empty">Choose the {{ levelLabel[scopeType()].toLowerCase() }} to configure.</div>
+} @else {
+  <section class="panel">
+    <div class="filters">
+      <mat-form-field>
+        <mat-label>Search</mat-label>
+        <input matInput [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="margin, limit…" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Module</mat-label>
+        <mat-select [ngModel]="moduleFilter()" (ngModelChange)="moduleFilter.set($event)">
+          <mat-option value="">All</mat-option>
+          @for (m of modules(); track m) { <mat-option [value]="m">{{ m }}</mat-option> }
+        </mat-select>
+      </mat-form-field>
+      <mat-slide-toggle [ngModel]="onlySetHere()" (ngModelChange)="onlySetHere.set($event)">Only set here</mat-slide-toggle>
+      <span class="muted">{{ where() }} · {{ visible().length }} settings</span>
+    </div>
+
+    <table>
+      <thead><tr><th>Setting</th><th>Set here</th><th>Applies here</th><th>Source</th><th></th></tr></thead>
+      <tbody>
+        @for (r of visible(); track r.key) {
+          @let s = staged().get(r.key);
+          <tr [class.staged]="s" [attr.data-key]="r.key">
+            <td>
+              <div class="key">{{ r.key }} @if (def(r.key)?.requiresApproval) { <mat-icon class="small" matTooltip="Needs approval by a second user">verified_user</mat-icon> }</div>
+              <div class="desc">{{ def(r.key)?.description }}</div>
+            </td>
+            <td>
+              @if (s) {
+                <b>{{ s.op === 'delete' ? '(reset)' : format(r.key, s.value) }}</b> <span class="chip primary">staged</span>
+              } @else if (r.valueHere !== null) {
+                <b>{{ format(r.key, r.valueHere) }}</b>
+              } @else { <span class="muted">—</span> }
+            </td>
+            <td [class.inherited]="r.valueHere === null">{{ format(r.key, r.effective.value) }}</td>
+            <td class="muted">{{ source(r) }}</td>
+            <td class="actions">
+              @if (canEdit() && (def(r.key)?.operatorEditable || session.isPlatform())) {
+                @if (s) {
+                  <button matButton (click)="unstage(r.key)">Undo</button>
+                } @else {
+                  <button matButton (click)="edit(r)"><mat-icon>edit</mat-icon>{{ r.valueHere !== null ? 'Change' : 'Override' }}</button>
+                  @if (r.valueHere !== null) { <button matButton (click)="reset(r)" matTooltip="Remove the value set here; inherit again">Reset</button> }
+                }
+              } @else if (!def(r.key)?.operatorEditable) {
+                <span class="chip">platform managed</span>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5" class="empty">{{ loading() ? 'Loading…' : 'No settings match' }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+  @if (staged().size) {
+    <div class="draft-bar">
+      <mat-icon>edit_note</mat-icon>
+      <b>{{ staged().size }} staged change{{ staged().size > 1 ? 's' : '' }}</b>
+      <mat-form-field>
+        <mat-label>Change set title (what and why)</mat-label>
+        <input matInput [ngModel]="title()" (ngModelChange)="title.set($event)" />
+      </mat-form-field>
+      @if (needsApproval()) { <span class="chip warn">needs approval</span> }
+      <button matButton (click)="discard()">Discard</button>
+      <button matButton="filled" [disabled]="!title().trim() || submitting()" (click)="submit()">
+        {{ needsApproval() ? 'Submit for approval' : 'Apply' }}
+      </button>
+    </div>
+  }
+}
