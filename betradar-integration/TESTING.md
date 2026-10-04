@@ -22,9 +22,15 @@ Sportradar-ის ანგარიში **არ არის საჭირ
 
 თუ ლოკალურად უკვე გაქვთ PostgreSQL 5432 პორტზე, გააჩერეთ. სხვა გზაა `platform/docker-compose.yml`-ში `"5432:5432"`-ის შეცვლა, მაგალითად `"55432:5432"`-ით.
 
+### macOS (მათ შორის Apple Silicon: M1–M4)
+- Docker Desktop: https://www.docker.com/products/docker-desktop/ (ან OrbStack). **Settings → Resources → Memory**-ში მიეცით მინიმუმ 6 GB.
+- Git უკვე არის (`git --version`; თუ არ არის, macOS შემოგთავაზებთ Command Line Tools-ის დაყენებას). `openssl` და `bash` სისტემას თან მოყვება, დამატებით არაფერია საჭირო.
+- ყველა image multi-arch-ია (arm64), ამიტომ M-ჩიპზე ემულაციის გარეშე მუშაობს.
+- თუ Postgres.app ან Homebrew-ის PostgreSQL გაქვთ ჩართული, 5432 პორტი დაკავებული იქნება: გააჩერეთ (`brew services stop postgresql`).
+
 ## 2. გაშვება
 
-ბრძანებები Windows-ზე გაუშვით **Git Bash**-ში, macOS/Linux-ზე ჩვეულებრივ ტერმინალში:
+ბრძანებები macOS/Linux-ზე გაუშვით ჩვეულებრივ **Terminal**-ში, Windows-ზე **Git Bash**-ში:
 
 ```bash
 git clone https://github.com/ParseltongueCoder/my_projects.git
