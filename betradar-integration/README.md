@@ -17,6 +17,7 @@
 | ADR | [ADR-001: .NET stack](docs/adr/ADR-001-dotnet-stack.md) | Java → .NET გადაწყვეტილება |
 | ADR | [ADR-002: Angular + Material](docs/adr/ADR-002-admin-frontend.md) | ადმინების frontend; რატომ არა PrimeNG |
 | — | [Feed Ops ადმინი](admin/admin-web/README.md) | Angular აპლიკაცია + `Admin.Api` |
+| — | [**ტესტირების გზამკვლევი**](TESTING.md) | ფაზა 1-ის ლოკალური გაშვება და სატესტო სცენარები |
 
 ## ძირითადი გადაწყვეტილებები (შეჯერებული 4 დოკუმენტს შორის)
 
@@ -30,6 +31,7 @@
 | Admin | Angular 22 + Angular Material, Keycloak (OIDC), Admin.Api (.NET) + SSE |
 | Monitoring | OpenTelemetry, Prometheus, Loki, Tempo, Grafana, Alertmanager → Telegram |
 | Infra | docker-compose → Hetzner Cloud (CX/CAX) → Phase 2-ში k3s |
+| B2B პროდუქტი | ოპერატორი ყიდულობს **სრულ sportsbook ძრავას** (odds/markets, ბეტების მიღება, settlement, რისკი); ოპერატორის **PAM** (მოთამაშე, wallet, KYC) უერთდება API-ით |
 | ბიზნეს-მოდელი სტარტზე | ოპერატორს აქვს **საკუთარი** Sportradar კონტრაქტი, ჩვენ — ტექნოლოგიური მიმწოდებელი (რედისტრიბუციის რისკის თავიდან ასაცილებლად) |
 
 ## ლიცენზიის წესი (სავალდებულო ყველასთვის)
