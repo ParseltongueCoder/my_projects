@@ -48,8 +48,8 @@
 11. **FX კურსები:** `bo.fx_rate` ცხრილი, წყარო ეროვნული ბანკის (NBG) დღიური კურსი. ცხრილს REP/platform ფლობს, ის გამოიყენება ლიმიტების base currency-ში გადასაყვანად და რეპორტებში.
 12. **`bet.customer_stats_daily`** REP-ის rollup-ებს ეკუთვნის (08 §4). CUS მას მხოლოდ კითხულობს.
 13. **Keycloak:** ერთი realm `bo`, ოპერატორები მასში Organizations-ად არიან. ის `feedops` realm-ისგან ცალკეა. დეტალური permission-ები ჩვენს DB-შია (08 §3).
-15. **MON და referral (docs/10):** referral-ის წყაროა `bet.referral`, რომელსაც bet-engine ფლობს. timer-ები მხოლოდ სერვერზე მუშაობს. docs/10 ცვლის 07-ის შემდეგ ნაწილებს: §2.7, `bet.referral` DDL, `referral.*` key-ები, `bet.referral.decide` permission (ახლა `referral.decide`) და `bo.risk_group.refer_all_bets` (ახლა `referral.risk_groups`). 08-ის sitemap-ში `/bet/pending-review` გადადის `/mon/*`-ზე. ემატება როლი `head_trader`, რომელიც 06-ის `op_head_trader`-სა და 07-ის `senior_trader`-ს აერთიანებს. NATS subject-ები: `bet.{op}.*`. CFG catalog-ს (06 §5.8) ემატება docs/10-ის `referral.*` და `monitor.*` key-ები.
 14. **Sportradar MTS ოფციური ნაბიჯია.** თუ ოპერატორს საკუთარი MTS აქვს, bet pipeline-ის liability ნაბიჯის შემდეგ შეიძლება ჩაერთოს გარე acceptance-ის ნაბიჯი (P1, ⚠ ოპერატორის კონტრაქტზეა დამოკიდებული).
+15. **MON და referral (docs/10):** referral-ის წყაროა `bet.referral`, რომელსაც bet-engine ფლობს. timer-ები მხოლოდ სერვერზე მუშაობს. docs/10 ცვლის 07-ის შემდეგ ნაწილებს: §2.7, `bet.referral` DDL, `referral.*` key-ები, `bet.referral.decide` permission (ახლა `referral.decide`) და `bo.risk_group.refer_all_bets` (ახლა `referral.risk_groups`). 08-ის sitemap-ში `/bet/pending-review` გადადის `/mon/*`-ზე. ემატება როლი `head_trader`, რომელიც 06-ის `op_head_trader`-სა და 07-ის `senior_trader`-ს აერთიანებს. NATS subject-ები: `bet.{op}.*`. CFG catalog-ს (06 §5.8) ემატება docs/10-ის `referral.*` და `monitor.*` key-ები.
 
 ## 3. სისტემის სურათი
 
