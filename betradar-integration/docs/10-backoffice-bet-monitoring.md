@@ -43,8 +43,8 @@
 | ფული | PAM `reserve` → `commit`/`cancel`; capability-ის გარეშე **fallback: `debit` referral-ში შესვლისას → `rollback`/ნაწილობრივი `credit`** (07 §7) | pilot-ის PAM-ის შესაძლებლობები უცნობია (09 §6.2); ორივე გზა P0-ია |
 | Rule engine | **ფიქსირებული წესების ნაკრები CFG key-ებით** (`referral.*`), არა DSL | კონფიგურაცია CFG-ის trace-ით აიხსნება; DSL P2-ია, როცა რეალური მოთხოვნები დაგროვდება |
 | Lock | **claim** (lease 30 წმ, heartbeat) ერთ ტრეიდერზე; supervisor-ს შეუძლია **steal**. Accept/reject claim-ის გარეშეც შეიძლება (ატომური claim+decide) | ორი ტრეიდერი ერთ ფსონზე არ იმუშავებს; ერთი კლავიშით გადაწყვეტა სწრაფია |
-| Partial accept | P0, `referral.partial_mode = direct`: ნაწილი მიიღება, დანარჩენი ბრუნდება, მოთამაშეს ეცნობება ⚠ (იურიდიული) | ყველაზე ხშირი გადაწყვეტილებაა დიდ ფსონზე; მოთამაშის ინტერაქციას არ ითხოვს |
-| Counter-offer | **P1** (დაბალი odds ან stake, მოთამაშე ადასტურებს N წამში) | ითხოვს player frontend-ის UX-ს (09 §6.1 ღიაა: frontend-ს ვინ აკეთებს), ახალ player API-ს და PAM-ის ხელახალ reserve-ს. Partial accept ამ მოთხოვნის დიდ ნაწილს ფარავს |
+| Partial accept | **მხოლოდ counter-offer-ით** (`referral.partial_mode = counter_offer`); `direct` რეჟიმი გამორთულია (მომხმარებლის გადაწყვეტილება 2026-10-04: საქართველოში მოთამაშის თანხმობის გარეშე ნაწილობრივი მიღება არ გამოიყენება) | მოთამაშე თავად ადასტურებს ახალ თანხას |
+| Counter-offer | **P0** (დაბალი stake და/ან odds, მოთამაშე ადასტურებს `referral.counter_offer_timeout_seconds`-ში) | მომხმარებლის გადაწყვეტილება 2026-10-04. Player API და white-label frontend ორივე ჩვენია (docs/11) |
 | Four-eyes | P0: **role constraint** (`referral.decide {max_stake_base}`); ზღვარს ზემოთ საჭიროა `referral.decide_over_limit`. **რიგის შიგნით მეორე დამადასტურებელი** (`awaiting_second_approval`) — P1 | ADM-ის `bo.approval_request` (24 სთ ვადა) წამებში მომუშავე რიგს არ ერგება |
 | ტაიმერები | **მხოლოდ server-side** (bet-engine `referral-timer`, PG `SKIP LOCKED`); კლიენტი countdown-ს `expires_at`-იდან ითვლის server time offset-ით | ბრაუზერის დახურვა ან მოთამაშის ხელახალი მცდელობა SLA-ს ვერ შეცვლის |
 | Streaming | outbox → NATS JetStream `bet.{op}.*` → **`mon-projector`** (enrichment) → **Valkey Stream per operator** → `mon-stream` (SSE, server-side ფილტრი, `Last-Event-ID` = Valkey stream id) | stateless SSE instance-ები, ბუნებრივი backpressure (pull), resume reconnect-ზე |
@@ -261,14 +261,14 @@ Scopes: O operator, b brand, s sport, c category, t tournament, e event, +MT mar
 | `referral.customer_flags` | string[] | override / none | O s | `[]` | ამ flag-ის მქონე customer-ის ყველა ფსონი (მაგ. `["sharp","arbitrage","syndicate"]`) |
 | `referral.risk_groups` | string[] | override / none | O s | `[]` | ამ risk group-ების ყველა ფსონი (ცვლის `bo.risk_group.refer_all_bets`-ს, §12) |
 | `referral.new_customer_stake_over` | money | override / none | O s | — | ახალი customer-ის (`monitor.new_customer_days`) ფსონი > X |
-| `referral.live_timeout_seconds` | int 5–120 | override / min | O s t e | 20 | SLA live ფსონზე |
-| `referral.prematch_timeout_seconds` | int 10–900 | override / min | O s t e | 120 | SLA prematch-ზე; ⚠ ყოველთვის `min(timeout, event.start_time − now)` |
+| `referral.live_timeout_seconds` | int 5–120 | override / min | O s t e | 30 | SLA live ფსონზე |
+| `referral.prematch_timeout_seconds` | int 10–900 | override / min | O s t e | 180 | SLA prematch-ზე; ⚠ ყოველთვის `min(timeout, event.start_time − now)` |
 | `referral.on_timeout` | enum reject/accept | override / none | O s | reject | ვადის გასვლისას. `accept`-ზეც სრულდება accept-ის revalidation (§4.3) |
 | `referral.odds_drop_pct` | decimal | override / none | O s | 0.05 | მიმდინარე odds < placed × (1 − X) ⇒ auto-cancel (და accept შეუძლებელია) |
-| `referral.on_market_suspend` | json `{live, prematch}` cancel/hold | override / none | O s | `{"live":"cancel","prematch":"hold"}` | `hold`: ბარათზე accept დაბლოკილია, სანამ მარკეტი არ აღდგება |
-| `referral.partial_mode` | enum direct/counter_offer | override / none | O | direct | `counter_offer` = P1 |
+| `referral.on_market_suspend` | json `{live, prematch}` cancel/hold | override / none | O s | `{"live":"cancel","prematch":"cancel"}` | მომხმარებლის გადაწყვეტილება: მარკეტის დახურვისას ბილეთი ავტომატურად უქმდება. `hold` მხოლოდ ოპერატორის ცალკე მოთხოვნით |
+| `referral.partial_mode` | enum counter_offer | override / none | O | counter_offer | `direct` არ გამოიყენება |
 | `referral.partial_min_pct` | decimal | override / none | O | 0.10 | partial stake ≥ X × requested და ≥ `limit.min_stake` |
-| `referral.counter_offer_enabled` / `referral.counter_offer_timeout_seconds` | bool / int | override | O s | false / 20 | P1 |
+| `referral.counter_offer_enabled` / `referral.counter_offer_timeout_seconds` | bool / int | override | O s | true / 20 | P0 |
 | `referral.four_eyes_stake_over` / `referral.four_eyes_win_over` | money | override / none | O s | — | P1: მეორე დამადასტურებელი |
 | `referral.claim_ttl_seconds` | int | override | O | 30 | claim lease (heartbeat ახანგრძლივებს) |
 | `referral.max_pending` | int | override | O | 200 | რიგის გადავსებისას ახალ referral-ზე მაშინვე სრულდება `on_timeout` (overload protection) + alert |
@@ -386,8 +386,8 @@ Reject: ნაბიჯი 1 → cancel/rollback + liability release → ticket 
 - `POST /v1/bets` ⇒ `202 {status:"referred", ticket_id, code:"BET_REFERRED", message, review_expires_at}`. CMS-ის ტექსტი: „ფსონი განხილვაზეა, პასუხს მიიღებთ უახლოეს წამებში“. ზუსტი countdown-ის ჩვენებას **არ** ვურჩევთ (ტრეიდერი უფრო ადრეც წყვეტს), მხოლოდ მაქსიმალურ დროს.
 - ბალანსი: reserve/debit უკვე მოხდა ⇒ PAM-ის ბალანსი შემცირებულია. Frontend ფსონს ღია ბილეთებში აჩვენებს „განხილვაზე“ სტატუსით. მოთამაშეს შეუძლია სხვა ფსონების დადება.
 - Push: operator-gateway WebSocket `bet.status`: `referred` → `accepted {stake, odds}` | `partially_accepted {accepted_stake, refunded_amount, code:"REFERRAL_PARTIALLY_ACCEPTED"}` | `rejected {code, message}` | P1 `counter_offer {stake?, odds?, expires_at}`. WebSocket-ის გარეშე — polling `GET /v1/bets/{id}` (1–2 წმ).
-- P1 counter-offer: `POST /v1/bets/{id}/counter-offer/accept` | `/decline` (Idempotency-Key). UX: modal, რომელშიც ჩანს ძველი და ახალი stake/odds და countdown (აქ countdown აუცილებელია).
-- P1: მოთამაშეს შეუძლია განხილვაზე მყოფი ფსონის გაუქმება: `POST /v1/bets/{id}/withdraw` ⇒ `REFERRAL_WITHDRAWN`.
+- P0 counter-offer: `POST /v1/bets/{id}/counter-offer/accept` | `/decline` (Idempotency-Key). UX: modal, რომელშიც ჩანს ძველი და ახალი stake/odds და countdown (აქ countdown აუცილებელია).
+- მოთამაშეს **არ შეუძლია** განხილვაზე მყოფი ფსონის გაუქმება (მომხმარებლის გადაწყვეტილება 2026-10-04); `withdraw` endpoint არ არსებობს.
 - Operator webhook-ები (`bet.referred`, `bet.decided`) ოპერატორის CRM/PAM-ისთვის — ⚠ სჭირდება თუ არა ოპერატორს.
 
 ### 4.5 Sequence: referral → accept (reserve capability-ით)
@@ -790,10 +790,10 @@ Signal-ს `mon-projector` აქვეყნებს `notif.signal.<type>`-ზ
 | **Dashboards** | ticker (ყველა ფილტრი §2.9, pause, ფერები, context menu); referral queue + decision card; big bets; event drill-down (LIM კომპონენტით); watchlist; rejected stream + აგრეგაცია | cash-out stream; supervisor დაშბორდი; mobile layout (05 #11 — მფლობელი-ტრეიდერი ტელეფონიდან) | settlement monitor; პირადი highlight rules |
 | **UX** | saved views (პირადი + გაზიარებული); ერთფანჯრიანი workspace + pop-out პანელები + BroadcastChannel linking; ხმები; hotkey-ები | მრავალფანჯრიანი workspace-ის აღდგენა; „watch N დღით“ | — |
 | **Referral წესები** | `referral.enabled`, `stake_over`, `potential_win_over`, `total_odds_over`, `liability_pct_over`, `customer_event_stake_over`, `customer_flags`, `risk_groups`, `new_customer_stake_over`, restriction `refer_all_bets`; timeout-ები; `on_timeout`; `odds_drop_pct`; `on_market_suspend`; `max_pending` | `on_limit_breach = refer`; `when_no_trader` | rule DSL; ML risk score ბარათზე; ავტომატური decision suggestion |
-| **Lifecycle** | claim/release/steal; accept; partial (direct); reject reason-ით; bulk reject; expire; auto-cancel (ყველა ტრიგერი); revalidation; reserve **და** debit fallback; role constraint + `decide_over_limit`; audit | **counter-offer** (+ player API/WS UX); four-eyes რიგში (`awaiting_second_approval`); player withdraw; IP/device სინდიკატის ნიშნები; CLV ბარათზე | referral schedules (ცვლის საათები); ავტომატური partial `max_allowed_stake`-ით |
+| **Lifecycle** | claim/release/steal; accept; **counter-offer** (stake/odds, player API + WS); reject reason-ით; bulk reject; expire; auto-cancel (ყველა ტრიგერი); revalidation; reserve **და** debit fallback; role constraint + `decide_over_limit`; audit | four-eyes რიგში (`awaiting_second_approval`); IP/device სინდიკატის ნიშნები; CLV ბარათზე | referral schedules (ცვლის საათები); ავტომატური partial `max_allowed_stake`-ით |
 | **Alerts** | `bet_referral`, `referral_backlog`, `referral_sla_breach`; Prometheus მეტრიკები + Grafana | `referral_no_trader_online`, `rejects_spike` | escalation |
 
-**რატომ არის counter-offer P1:** (1) მოთამაშის UX-ის მფლობელი უცნობია (09 §6.1). (2) საჭიროა ახალი player API, WebSocket მესიჯი და მეორე ტაიმერი. (3) PAM-ზე partial commit-ი ან ხელახალი reserve სჭირდება, რაც კონტრაქტით ჯერ არ გვაქვს. (4) partial accept (P0) და ზუსტი `max_allowed_stake` reject-ში უკვე ფარავს ყველაზე ხშირ შემთხვევას, როცა „ასე დიდ თანხას ვერ მივიღებ“. odds-ის შემცირების counter-offer ძირითადად sharp-ზე ორიენტირებულ, მოწიფულ ოპერაციას სჭირდება.
+**Counter-offer P0-ია** (მომხმარებლის გადაწყვეტილება 2026-10-04). Partial accept მოთამაშის თანხმობის გარეშე არ გამოიყენება. PAM-ზე საჭიროა partial commit ან, fallback-ად, commit სრულ თანხაზე და სხვაობის `credit refund`.
 
 ---
 
@@ -850,9 +850,9 @@ Signal-ს `mon-projector` აქვეყნებს `notif.signal.<type>`-ზ
 
 ## 13. ღია საკითხები
 
-1. ⚠ **Partial accept მოთამაშის თანხმობის გარეშე** (`partial_mode = direct`): დასაშვებია საქართველოს რეგულაციით და ოპერატორის T&C-ით? თუ არა, partial მხოლოდ counter-offer-ით (P1) იქნება შესაძლებელი და counter-offer P0-ში გადადის.
-2. ⚠ **PAM:** pilot ოპერატორის PAM უჭერს მხარს `reserve`-ს, partial commit-ს და reserve-ის TTL-ს ≥ 3 წთ? თუ არა, P0-ში მუშაობს debit/rollback fallback (მოთამაშე ხედავს თანხის ჩამოჭრას და დაბრუნებას).
-3. ⚠ **Default ტაიმაუტები** (live 20 წმ / prematch 120 წმ) და `on_timeout = reject` — ოპერატორის trading გუნდთან შესათანხმებელი.
+1. ✅ გადაწყდა (2026-10-04): counter-offer P0; partial მოთამაშის თანხმობის გარეშე არ გამოიყენება. ~~**Partial accept მოთამაშის თანხმობის გარეშე** (`partial_mode = direct`): დასაშვებია საქართველოს რეგულაციით და ოპერატორის T&C-ით? თუ არა, partial მხოლოდ counter-offer-ით (P1) იქნება შესაძლებელი და counter-offer P0-ში გადადის.~~
+2. ⚠ **PAM:** pilot ოპერატორის PAM უჭერს მხარს `reserve`-ს, partial commit-ს და reserve-ის TTL-ს ≥ 4 წთ (180 წმ + 60 წმ)? თუ არა, P0-ში მუშაობს debit/rollback fallback (მოთამაშე ხედავს თანხის ჩამოჭრას და დაბრუნებას).
+3. ✅ გადაწყდა: live **30 წმ**, prematch **180 წმ**, მარკეტის დახურვისას auto-cancel, მოთამაშე ფსონს ვერ გააუქმებს. ~~**Default ტაიმაუტები** (live 20 წმ / prematch 120 წმ) და `on_timeout = reject` — ოპერატორის trading გუნდთან შესათანხმებელი.~~
 4. ⚠ **Reject-ის ტექსტი მოთამაშისთვის:** ნეიტრალური („ფსონი ვერ მიიღება“) თუ გამჭვირვალე („ტრეიდერმა უარყო“)? (07 §13.9-ის მსგავსი.)
 5. ⚠ **Username ticker-ზე:** PII-ად ითვლება? (07 §13.11.) თუ კი, ticker-ზე ჩანს external id + მასკირებული username და სრული მხოლოდ `customer.view_pii`-ით.
 6. ⚠ **Managed trading:** ვაპირებთ თუ არა, რომ ჩვენმა ტრეიდერებმა (`platform_trader`) ოპერატორის referral-ებზე გადაწყვეტილება მიიღონ? ეს ცვლის 24/7 staffing-ს, DPA-ს და `monitor.view_all_operators`-ის პრიორიტეტს.

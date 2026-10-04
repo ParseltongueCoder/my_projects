@@ -84,11 +84,11 @@ UOF adapter ──► │ Bo.Api (modular monolith)     │───────
 | CUS | PAM mirror, პროფილი, risk group, შეზღუდვები, სია + დეტალური გვერდი |
 | INT | `/pam/v1` (validate, debit, credit, rollback, status), webhooks, HMAC, outbox, reconciliation, **PAM სიმულატორი** |
 | REP | KPI dashboard, 8 ძირითადი რეპორტი, CSV, rollup + reconciliation, საქართველოს bet register ⚠ |
-| MON | ticker ყველა ფილტრით, referral რიგი + გადაწყვეტილების ბარათი, claim/steal, accept/partial/reject (+ bulk reject), timeout და auto-cancel, დიდი ფსონები, მატჩის drill-down, watchlist, უარყოფილი ფსონების ნაკადი, შენახული ხედები, ხმები |
+| MON | ticker ყველა ფილტრით, referral რიგი + გადაწყვეტილების ბარათი, claim/steal, accept / **counter-offer** / reject (+ bulk reject), timeout და auto-cancel, დიდი ფსონები, მატჩის drill-down, watchlist, უარყოფილი ფსონების ნაკადი, შენახული ხედები, ხმები |
 | NOTIF | დიდი ფსონი, liability, feed down, PAM error, referral backlog/SLA; in-app + Telegram |
 | PROMO | standard freebet + manual/CSV დარიცხვა (თუ pilot-ს გაშვებისთანავე სჭირდება) |
 
-P1: four-eyes approval-ები, counter-offer (ახალი კოეფიციენტი ან თანხა მოთამაშის თანხმობით), odds/acca boost, კამპანიების builder, abuse detection, partial cash-out, scheduled რეპორტები.
+P1: four-eyes approval-ები,  odds/acca boost, კამპანიების builder, abuse detection, partial cash-out, scheduled რეპორტები.
 P2: ML risk scoring, early payout, bet builder, ClickHouse, retail.
 
 ## 5. შესრულების თანმიმდევრობა
@@ -100,14 +100,14 @@ P2: ML risk scoring, early payout, bet builder, ClickHouse, retail.
 | **BO-0 საფუძველი** | Bo.Api + Bo.Workers ჩონჩხი, `bo.operator/brand`, Keycloak `bo` realm, permission-ები, audit + outbox, RLS, Angular `backoffice` shell, CFG ძრავა | ორი ოპერატორი ერთმანეთის მონაცემებს ვერ ხედავს; პარამეტრი იცვლება და trace ჩანს | 3–4 |
 | **BO-1 შეთავაზება** | CAT, I18N, CMS, ODDS + `offer-core`, distribution API (overlay + WebSocket) | ოპერატორი ცვლის margin-ს და ლიგის სახელს, frontend-ში 1 წამში აისახება | 4–5 |
 | **BO-2 ფსონი და ფული** | PAM სიმულატორი (როგორც UOF სიმულატორი), INT, bet-engine (pipeline, settlement), LIM + liability, ticket search, CUS | სიმულატორის მატჩზე ფსონი იდება, სეტლდება, rollback-ზე resettle ხდება, PAM-ის ბალანსი სწორია | 6–8 |
-| **BO-3 რისკი, მონიტორინგი, ანალიტიკა** | MON (ticker, referral რიგი), CASH, REP rollup-ები + dashboard, NOTIF | დიდი ფსონი მიდის referral-ზე, ტრეიდერი ადასტურებს ნაწილობრივ; cash-out live მატჩზე; GGR რეპორტი | 5–6 |
+| **BO-3 რისკი, მონიტორინგი, ანალიტიკა** | MON (ticker, referral რიგი), CASH, REP rollup-ები + dashboard, NOTIF | დიდი ფსონი მიდის referral-ზე, ტრეიდერი სთავაზობს counter-offer-ს და მოთამაშე ადასტურებს; cash-out live მატჩზე; GGR რეპორტი | 5–6 |
 | **BO-4 Promo და რეგულაცია** | freebet ledger + დარიცხვა, საქართველოს რეპორტები, ასაკისა და რეესტრის შემოწმება | freebet-ით დადებული და მოგებული ბილეთი; რეგულატორული export | 3–4 |
 
 ჯამში დაახლოებით **6 თვე pilot-მდე**. პარალელურად მიმდინარეობს Sportradar-ის integration environment-ზე გადასვლა (ფაზა 2, README).
 
 ## 6. ღია საკითხები: ბიზნესი და იურისტი (კოდს ბლოკავს)
 
-1. **მოთამაშის frontend.** ოპერატორს ჩვენ ვაძლევთ sportsbook-ის UI-ს (iframe/widget), თუ მხოლოდ API-ს და UI-ს ოპერატორი თავად აკეთებს? ეს წყვეტს distribution API-ის ფორმას და ფაზა 3-ის მოცულობას.
+1. ✅ **მოთამაშის frontend** (გადაწყდა 2026-10-04): ორივე არხი. დიდ ოპერატორებს ვაძლევთ **Player API**-ს, რადგან მათ საკუთარი frontend აქვთ. პატარა ოპერატორებს ვაძლევთ **white-label frontend**-ს (iFrame), რომელსაც კონფიგურაციით თავიანთ დიზაინს მოარგებენ. დიზაინი: [docs/11](11-sportsbook-api-and-whitelabel.md).
 2. **PAM:** pilot ოპერატორის PAM უჭერს მხარს reserve/commit-ს? adapter-ს ვინ წერს? შეიძლება თუ არა resettlement-მა მოთამაშის ბალანსი უარყოფითზე ჩამოიყვანოს?
 3. **Settlement:** ვიხდით `certainty=1`-ზე, თუ ველოდებით დადასტურებას? როგორ ვამრგვალებთ გადასახადს (floor თუ banker's rounding)?
 4. **Cash-out:** default margin 5% მისაღებია? თუ market cash-out-ის შემდეგ void-დება, cash-out ძალაში რჩება?
@@ -118,8 +118,5 @@ P2: ML risk scoring, early payout, bet builder, ClickHouse, retail.
    - გადასახადები: წყაროები ერთმანეთს ეწინააღმდეგება;
    - username პერსონალურ მონაცემად ითვლება?
 6. **Trading:** ოპერატორი საკუთარ Sportradar MTS-ს გამოიყენებს თუ ჩვენს LIM-ს? შეზღუდავს თუ არა ოპერატორის კონტრაქტი ფასის შეცვლას?
-7. **Referral (docs/10 §13):**
-   - კანონიერია თუ არა ფსონის ნაწილობრივი დადასტურება მოთამაშის თანხმობის გარეშე? თუ არა, counter-offer P0 ხდება;
-   - default timeout: live 20 წმ, prematch 120 წმ, ვადის გასვლისას უარყოფა;
-   - შეუძლია თუ არა მოთამაშეს შემოწმებაზე მყოფი ფსონის გაუქმება?
+7. ✅ **Referral** (გადაწყდა 2026-10-04): counter-offer P0-ია, ნაწილობრივი დადასტურება მოთამაშის თანხმობის გარეშე არ გამოიყენება. Timeout: live 30 წმ, prematch 180 წმ. მარკეტის დახურვისას ბილეთი ავტომატურად უქმდება. მოთამაშე შემოწმებაზე მყოფ ფსონს ვერ გააუქმებს.
 8. **კომერციული მოდელი** (GGR %, ფიქსირებული ფასი, ბილეთის ფასი): ის წყვეტს, რა უნდა აჩვენოს platform billing რეპორტმა.
