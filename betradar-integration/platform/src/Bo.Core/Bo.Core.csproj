@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Pure back-office domain logic (no I/O): permission and settings catalogs, settings resolution. -->
+</Project>
