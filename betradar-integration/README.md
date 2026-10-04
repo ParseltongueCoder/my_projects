@@ -17,6 +17,7 @@
 | ADR | [ADR-001: .NET stack](docs/adr/ADR-001-dotnet-stack.md) | Java → .NET გადაწყვეტილება |
 | ADR | [ADR-002: Angular + Material](docs/adr/ADR-002-admin-frontend.md) | ადმინების frontend; რატომ არა PrimeNG |
 | — | [Feed Ops ადმინი](admin/admin-web/README.md) | Angular აპლიკაცია + `Admin.Api` |
+| 05–09 | [**ოპერატორის Back Office — გეგმა**](docs/09-backoffice-plan.md) | ბაზრის კვლევა (05), კატალოგი/odds/კონფიგურაცია (06), ბილეთები/ლიმიტები/cash-out/მომხმარებლები/PAM (07), არქიტექტურა/ADM/რეპორტები/promo (08), შეჯამება და თანმიმდევრობა (09) |
 | — | [**ტესტირების გზამკვლევი**](TESTING.md) | ფაზა 1-ის ლოკალური გაშვება და სატესტო სცენარები |
 
 ## ძირითადი გადაწყვეტილებები (შეჯერებული 4 დოკუმენტს შორის)

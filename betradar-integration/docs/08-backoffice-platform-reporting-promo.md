@@ -1,5 +1,7 @@
 # 08 — ოპერატორის Back Office: არქიტექტურა, ADM, REP, PROMO, NOTIF
 
+> ⚠ შეთანხმებული გადაწყვეტილებები 05–08 დოკუმენტებს შორის: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა.
+
 > **სტატუსი:** draft v0.1 · **თარიღი:** 2026-10-04
 > **სფერო:** ოპერატორის sportsbook back office-ის (BO) საერთო არქიტექტურა (frontend, backend, multi-tenancy, UI კონვენციები, სრული sitemap) და მოდულები **ADM** (admin users, RBAC, audit), **REP** (რეპორტები და სტატისტიკა), **PROMO** (კამპანიები, freebet-ები, ბონუსები), **NOTIF** (alert-ები BO მომხმარებლებისთვის).
 > **დაკავშირებული:** [04 — პლატფორმის არქიტექტურა](04-platform-architecture.md), [ADR-001](adr/ADR-001-dotnet-stack.md), [ADR-002](adr/ADR-002-admin-frontend.md), [`admin/admin-web`](../admin/admin-web/README.md), Keycloak realm-ის ნიმუში [`feedops-realm.json`](../platform/deploy/keycloak/feedops-realm.json). დანარჩენი მოდულები (CAT, I18N, ODDS, CFG, CMS, BET, LIM, CASH, CUS, INT) — BO სერიის სხვა დოკუმენტებში; აქ მათზე მხოლოდ module code-ით და setting key-ით ვაკეთებთ მითითებას.

@@ -1,5 +1,7 @@
 # 07 — Back office: ფსონები, ლიმიტები და რისკი, cash-out, მომხმარებლები, PAM ინტეგრაცია
 
+> ⚠ შეთანხმებული გადაწყვეტილებები 05–08 დოკუმენტებს შორის: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა.
+
 > **სტატუსი:** design draft v0.1 · **თარიღი:** 2026-10-04
 > **მოდულები:** BET (bet acceptance & ticket search) · LIM (limits & risk) · CASH (cash-out) · CUS (customers) · INT (PAM & integrations) + მინიმალური bet engine-ის დიზაინი, რომელზეც ეს მოდულები დგას.
 > **დაკავშირებული:** [02 — UOF data model](02-uof-data-model.md) (§2.2 void/dead heat, §6.2 `sb` DDL, §7 state machine-ები) · [04 — არქიტექტურა](04-platform-architecture.md) (§9.1 bet-engine/settlement-service) · CFG/CAT (`bo.setting`, `bo.setting_def`), CMS (შეცდომის ტექსტები), ADM (RBAC, `bo.audit_log`), REP (აგრეგატები), PROMO (freebet), NOTIF (alert-ები) — სხვა დოკუმენტებში.
