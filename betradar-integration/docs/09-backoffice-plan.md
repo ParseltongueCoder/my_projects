@@ -11,6 +11,7 @@
 | [06](06-backoffice-catalog-odds-config.md) | CAT, I18N, ODDS, CFG, CMS + ცვლილებების გავრცელება + `bo` DDL |
 | [07](07-backoffice-trading-risk-customers.md) | BET, LIM, CASH, CUS, INT (PAM კონტრაქტი) + `bet` DDL |
 | [08](08-backoffice-platform-reporting-promo.md) | BO არქიტექტურა, sitemap, ADM, REP, PROMO, NOTIF |
+| [11](11-sportsbook-api-and-whitelabel.md) | Player API (`/v1` + WebSocket), white-label frontend (Angular, iFrame + full-page), postMessage პროტოკოლი, theming, operator onboarding |
 | [10](10-backoffice-bet-monitoring.md) | MON — ბილეთების მონიტორინგის დეშბორდები, referral (ხელით დადასტურება), real-time არქიტექტურა |
 
 ## 1. მოდულების რუკა
@@ -30,6 +31,7 @@
 | ADM | ადმინ იუზერები | ადმინების მართვა | `module.action` permission-ები, TOTP, four-eyes, audit log viewer |
 | PROMO | კამპანიები, freebet | კამპანია + ფრიბეთი | odds boost, acca boost, cashback (P1), abuse prevention |
 | MON | ბილეთების მონიტორინგი | დეშბორდები ფილტრებით, მონიტორინგზე წამოსული ბილეთის შემოწმება და ხელით დადასტურება | ტრეიდერის ბარათი (ისტორია, liability ფსონამდე და ფსონის შემდეგ, მსგავსი ფსონები), claim/steal, ნაწილობრივი დადასტურება, timeout პოლიტიკა, ხმოვანი სიგნალები, multi-monitor |
+| WL / API | მოთამაშის არხები | API დიდი ოპერატორებისთვის, white-label iFrame პატარებისთვის | ერთი `/v1` API ორივე არხისთვის, ბრენდის თემა live preview-ით, sandbox სიმულატორებზე, docs portal, certification |
 | NOTIF | Alert-ები | — | დიდი ფსონი, liability ზღვარი, feed/PAM პრობლემა; in-app, Telegram, email |
 | INT | PAM ინტეგრაცია | — | idempotent wallet API, outbox + reconciliation, webhooks, **PAM სიმულატორი** |
 
@@ -50,6 +52,7 @@
 13. **Keycloak:** ერთი realm `bo`, ოპერატორები მასში Organizations-ად არიან. ის `feedops` realm-ისგან ცალკეა. დეტალური permission-ები ჩვენს DB-შია (08 §3).
 14. **Sportradar MTS ოფციური ნაბიჯია.** თუ ოპერატორს საკუთარი MTS აქვს, bet pipeline-ის liability ნაბიჯის შემდეგ შეიძლება ჩაერთოს გარე acceptance-ის ნაბიჯი (P1, ⚠ ოპერატორის კონტრაქტზეა დამოკიდებული).
 15. **MON და referral (docs/10):** referral-ის წყაროა `bet.referral`, რომელსაც bet-engine ფლობს. timer-ები მხოლოდ სერვერზე მუშაობს. docs/10 ცვლის 07-ის შემდეგ ნაწილებს: §2.7, `bet.referral` DDL, `referral.*` key-ები, `bet.referral.decide` permission (ახლა `referral.decide`) და `bo.risk_group.refer_all_bets` (ახლა `referral.risk_groups`). 08-ის sitemap-ში `/bet/pending-review` გადადის `/mon/*`-ზე. ემატება როლი `head_trader`, რომელიც 06-ის `op_head_trader`-სა და 07-ის `senior_trader`-ს აერთიანებს. NATS subject-ები: `bet.{op}.*`. CFG catalog-ს (06 §5.8) ემატება docs/10-ის `referral.*` და `monitor.*` key-ები.
+16. **მოთამაშის არხები (docs/11):** white-label frontend იგივე საჯარო `/v1` Player API-ის პირველი კლიენტია; ცალკე „შიდა“ API არ არსებობს. ტოკენი მხოლოდ მეხსიერებაში ინახება (cookie-ების გარეშე) და iFrame-ს postMessage-ით გადაეცემა, URL-ით არასდროს. docs/11 ცვლის 07 §2.8/§5.5-ის player endpoint-ებს. მოთამაშისთვის საჯარო სტატუსია `pending_review` (შიდა `referred`). CMS-ის თარგმანებსა და შეტყობინებების override-ებს ემატება `brand` განზომილება.
 
 ## 3. სისტემის სურათი
 
@@ -103,7 +106,14 @@ P2: ML risk scoring, early payout, bet builder, ClickHouse, retail.
 | **BO-3 რისკი, მონიტორინგი, ანალიტიკა** | MON (ticker, referral რიგი), CASH, REP rollup-ები + dashboard, NOTIF | დიდი ფსონი მიდის referral-ზე, ტრეიდერი სთავაზობს counter-offer-ს და მოთამაშე ადასტურებს; cash-out live მატჩზე; GGR რეპორტი | 5–6 |
 | **BO-4 Promo და რეგულაცია** | freebet ledger + დარიცხვა, საქართველოს რეპორტები, ასაკისა და რეესტრის შემოწმება | freebet-ით დადებული და მოგებული ბილეთი; რეგულატორული export | 3–4 |
 
-ჯამში დაახლოებით **6 თვე pilot-მდე**. პარალელურად მიმდინარეობს Sportradar-ის integration environment-ზე გადასვლა (ფაზა 2, README).
+**პარალელური ნაკადი SB-0…SB-4** (docs/11 §10): მოთამაშის ფენა (Player API, WebSocket, white-label, iFrame, theming) თითო BO ეტაპის გვერდით მიდის. მოცულობა დაახლოებით 34–40 დევ-კვირაა.
+
+| გუნდი | pilot-მდე |
+|---|---|
+| 3–4 დეველოპერი (მხოლოდ BO) | ~6 თვე, მოთამაშის ფენის გარეშე |
+| იგივე გუნდი + მოთამაშის ფენა | **~8–9 თვე** |
+| **+2 frontend (Angular, მობილური) + 0.5 backend (რეკომენდებულია)** | **~6.5–7 თვე** |
+| pilot ოპერატორი იყენებს არხ A-ს (საკუთარი frontend) | white-label კრიტიკულ გზას ტოვებს, დაახლოებით −15 დევ-კვირა | პარალელურად მიმდინარეობს Sportradar-ის integration environment-ზე გადასვლა (ფაზა 2, README).
 
 ## 6. ღია საკითხები: ბიზნესი და იურისტი (კოდს ბლოკავს)
 
