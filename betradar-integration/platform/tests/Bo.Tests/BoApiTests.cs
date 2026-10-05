@@ -20,6 +20,11 @@ public sealed class BoApiFixture : IAsyncLifetime
     public long TournamentId { get; private set; }
     public long OtherTournamentId { get; private set; }
     public int MarketTypeId { get; private set; }
+    public int TotalMarketTypeId { get; private set; }
+    public long CategoryId { get; private set; }
+    public long EventId { get; private set; }
+    public long HomeId { get; private set; }
+    public long AwayId { get; private set; }
 
     public async Task InitializeAsync()
     {
@@ -43,6 +48,23 @@ public sealed class BoApiFixture : IAsyncLifetime
         TournamentId = await conn.ExecuteScalarAsync<long>("INSERT INTO sb.tournament (sport_id, category_id, name_i18n) VALUES (@SportId, @category, '{\"en\":\"Erovnuli Liga\"}') RETURNING id", new { SportId, category });
         OtherTournamentId = await conn.ExecuteScalarAsync<long>("INSERT INTO sb.tournament (sport_id, category_id, name_i18n) VALUES (@SportId, @category, '{\"en\":\"Liga 2\"}') RETURNING id", new { SportId, category });
         MarketTypeId = await conn.ExecuteScalarAsync<int>("INSERT INTO sb.market_description (code, name_template_i18n) VALUES ('1x2', '{\"en\":\"1x2\"}') RETURNING id");
+        CategoryId = category;
+        await conn.ExecuteAsync("""
+            INSERT INTO sb.market_description_outcome (market_description_id, code, name_template_i18n, ordinal) VALUES
+              (@MarketTypeId, '1', '{"en":"{$competitor1}"}', 1), (@MarketTypeId, '2', '{"en":"draw"}', 2), (@MarketTypeId, '3', '{"en":"{$competitor2}"}', 3)
+            """, new { MarketTypeId });
+        TotalMarketTypeId = await conn.ExecuteScalarAsync<int>("INSERT INTO sb.market_description (code, name_template_i18n) VALUES ('total', '{\"en\":\"Total\"}') RETURNING id");
+        await conn.ExecuteAsync("""
+            INSERT INTO sb.market_description_outcome (market_description_id, code, name_template_i18n, ordinal) VALUES
+              (@TotalMarketTypeId, '12', '{"en":"over {total}"}', 1), (@TotalMarketTypeId, '13', '{"en":"under {total}"}', 2)
+            """, new { TotalMarketTypeId });
+        HomeId = await conn.ExecuteScalarAsync<long>("INSERT INTO sb.competitor (sport_id, name_i18n, country_code) VALUES (@SportId, '{\"en\":\"Dinamo Tbilisi\"}', 'GEO') RETURNING id", new { SportId });
+        AwayId = await conn.ExecuteScalarAsync<long>("INSERT INTO sb.competitor (sport_id, name_i18n, country_code) VALUES (@SportId, '{\"en\":\"Torpedo Kutaisi\"}', 'GEO') RETURNING id", new { SportId });
+        EventId = await conn.ExecuteScalarAsync<long>("""
+            INSERT INTO sb.event (event_type, sport_id, tournament_id, scheduled_at) VALUES ('match', @SportId, @TournamentId, now() + interval '1 day') RETURNING id
+            """, new { SportId, TournamentId });
+        await conn.ExecuteAsync("INSERT INTO sb.event_competitor (event_id, position, competitor_id, qualifier) VALUES (@EventId, 1, @HomeId, 'home'), (@EventId, 2, @AwayId, 'away')",
+            new { EventId, HomeId, AwayId });
     }
 
     public HttpClient Platform(long? operatorId = null, Guid? user = null)

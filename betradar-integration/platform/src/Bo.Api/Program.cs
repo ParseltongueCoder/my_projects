@@ -2,11 +2,15 @@ using System.Text.Json.Serialization;
 using Bo.Api.Identity;
 using Bo.Api.Infrastructure;
 using Bo.Api.Modules.Admin;
+using Bo.Api.Modules.Catalog;
 using Bo.Api.Modules.Config;
+using Bo.Api.Modules.I18n;
+using Bo.Api.Modules.Media;
 using Bo.Api.Modules.Platform;
 using Npgsql;
 
-// Operator back office API (BO-0): tenants, admin users & RBAC, audit, configuration engine. docs/08, docs/06 §5, docs/09.
+// Operator back office API: tenants, admin users & RBAC, audit, configuration (BO-0); catalogue, translations, media (BO-1).
+// docs/06, docs/08, docs/09.
 var builder = WebApplication.CreateBuilder(args);
 
 var auth = builder.Configuration.GetSection(BoAuthOptions.Section).Get<BoAuthOptions>() ?? new BoAuthOptions();
@@ -18,6 +22,7 @@ builder.Services.AddSingleton(_ => NpgsqlDataSource.Create(
 builder.Services.AddSingleton<BoDb>();
 builder.Services.AddSingleton<SettingsSnapshotCache>();
 builder.Services.AddSingleton<ConfigService>();
+builder.Services.AddSingleton<Names>();
 builder.Services.AddScoped<TenantContext>();
 builder.Services.AddHostedService<OutboxRelay>();
 if (string.IsNullOrWhiteSpace(keycloak.AdminUrl))
@@ -57,10 +62,14 @@ app.UseAuthorization();
 app.UseWhen(c => c.Request.Path.StartsWithSegments("/api/bo"), b => b.UseMiddleware<TenantMiddleware>());
 
 app.MapGet("/healthz", () => Results.Ok("ok")).AllowAnonymous();
+app.MapPublicMedia();
 var api = app.MapGroup("/api/bo");
 api.MapAdmin();
 api.MapConfig();
 api.MapPlatform();
+api.MapCatalog();
+api.MapI18n();
+api.MapMedia();
 
 app.Run();
 
