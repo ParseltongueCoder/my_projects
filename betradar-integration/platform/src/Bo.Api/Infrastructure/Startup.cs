@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Bo.Core.Cms;
 using Bo.Core.Config;
 using Bo.Core.Security;
 using Dapper;
@@ -7,7 +8,7 @@ using Platform.Canonical.Db;
 
 namespace Bo.Api.Infrastructure;
 
-/// <summary>Schema migrations and syncing the code catalogs (permissions, system roles, settings) into the DB.</summary>
+/// <summary>Schema migrations and syncing the code catalogs (permissions, system roles, settings, messages) into the DB.</summary>
 public static class CatalogSync
 {
     public static async Task RunAsync(NpgsqlDataSource db, CancellationToken ct = default)
@@ -72,8 +73,27 @@ public static class CatalogSync
                 d.Description,
             }, tx);
         }
+
+        foreach (var m in MessageCatalog.All)
+        {
+            await conn.ExecuteAsync("""
+                INSERT INTO bo.message_def (code, module, category, severity, params, defaults, is_customer_visible, description)
+                VALUES (@Code, @Module, @Category, @Severity, @ps, @defaults::jsonb, @CustomerVisible, @Description)
+                ON CONFLICT (code) DO UPDATE SET module = EXCLUDED.module, category = EXCLUDED.category, severity = EXCLUDED.severity,
+                  params = EXCLUDED.params, defaults = EXCLUDED.defaults, is_customer_visible = EXCLUDED.is_customer_visible,
+                  description = EXCLUDED.description
+                """, new
+            {
+                m.Code, m.Module, m.Category, m.Severity, ps = m.Params.ToArray(),
+                defaults = JsonSerializer.Serialize(new Dictionary<string, MessageText> { ["en"] = m.En, ["ka"] = m.Ka }, JsonWeb),
+                m.CustomerVisible, m.Description,
+            }, tx);
+        }
+        await conn.ExecuteAsync("DELETE FROM bo.message_def WHERE code <> ALL(@codes)", new { codes = MessageCatalog.All.Select(m => m.Code).ToArray() }, tx);
         await tx.CommitAsync(ct);
     }
+
+    private static readonly JsonSerializerOptions JsonWeb = new(JsonSerializerDefaults.Web);
 
     private static string ToSnake(string pascal) =>
         string.Concat(pascal.Select((c, i) => i > 0 && char.IsUpper(c) ? "_" + char.ToLowerInvariant(c) : char.ToLowerInvariant(c).ToString()));

@@ -3,6 +3,7 @@ using Bo.Api.Identity;
 using Bo.Api.Infrastructure;
 using Bo.Api.Modules.Admin;
 using Bo.Api.Modules.Catalog;
+using Bo.Api.Modules.Cms;
 using Bo.Api.Modules.Config;
 using Bo.Api.Modules.I18n;
 using Bo.Api.Modules.Media;
@@ -26,6 +27,7 @@ builder.Services.AddSingleton<SettingsSnapshotCache>();
 builder.Services.AddSingleton<ConfigService>();
 builder.Services.AddSingleton<Names>();
 builder.Services.AddSingleton<OfferService>();
+builder.Services.AddSingleton<CmsMessages>();
 builder.Services.AddScoped<TenantContext>();
 builder.Services.AddHostedService<OutboxRelay>();
 builder.Services.AddHostedService<TradingExpiryWorker>();
@@ -75,6 +77,7 @@ api.MapCatalog();
 api.MapI18n();
 api.MapMedia();
 api.MapOdds();
+api.MapCms();
 
 app.Run();
 
