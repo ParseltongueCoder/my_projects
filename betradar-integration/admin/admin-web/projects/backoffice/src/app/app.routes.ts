@@ -9,7 +9,7 @@ const soon = (title: string, module: string, stage: string) => ({
   loadComponent: () => import('./features/soon/soon').then((m) => m.SoonPage),
 });
 
-/** Sitemap of the operator back office (docs/08 §2). BO-0 builds the shell, CFG, ADM and platform pages. */
+/** Sitemap of the operator back office (docs/08 §2). BO-0: shell, CFG, ADM, platform; BO-1: CAT, I18N, ODDS, CMS. */
 export const routes: Routes = [
   {
     path: '',
@@ -64,8 +64,25 @@ export const routes: Routes = [
         data: { permission: 'i18n.view', needsOperator: true },
         loadComponent: () => import('./features/i18n/translations').then((m) => m.TranslationsPage),
       },
-      soon('Odds & margins', 'ODDS', 'BO-1'),
-      soon('Messages (CMS)', 'CMS', 'BO-1'),
+      {
+        path: 'odds',
+        canActivate: [permissionGuard],
+        data: { permission: 'odds.view', needsOperator: true },
+        children: [
+          { path: '', title: 'Trading · Back Office', loadComponent: () => import('./features/odds/events').then((m) => m.OddsEventsPage) },
+          { path: 'events/:id', title: 'Trading view · Back Office', loadComponent: () => import('./features/odds/trading').then((m) => m.TradingViewPage) },
+          { path: 'overrides', title: 'Active overrides · Back Office', loadComponent: () => import('./features/odds/overrides').then((m) => m.OddsOverridesPage) },
+          { path: 'market-types', title: 'Market types · Back Office', loadComponent: () => import('./features/odds/market-types').then((m) => m.MarketTypesPage) },
+          { path: 'margins', title: 'Margin simulator · Back Office', loadComponent: () => import('./features/odds/margins').then((m) => m.MarginsPage) },
+        ],
+      },
+      {
+        path: 'cms',
+        title: 'Messages · Back Office',
+        canActivate: [permissionGuard],
+        data: { permission: 'cms.view', needsOperator: true },
+        loadComponent: () => import('./features/cms/messages').then((m) => m.CmsMessagesPage),
+      },
       soon('Tickets', 'BET', 'BO-2'),
       soon('Limits & liability', 'LIM', 'BO-2'),
       soon('Customers', 'CUS', 'BO-2'),

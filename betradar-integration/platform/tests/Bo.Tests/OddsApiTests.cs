@@ -190,6 +190,10 @@ public sealed class OddsApiTests(BoApiFixture f) : IClassFixture<BoApiFixture>
         Assert.Equal("UNKNOWN_OUTCOME", await Code(await f.AcmeTrader.PostAsJsonAsync($"/api/bo/odds/events/{f.EventId}/manual-markets",
             new { marketTypeId = f.TotalMarketTypeId, specifiers = "total=3.5", outcomes = new[] { new { code = "1", odds = 1.9m } } }), HttpStatusCode.BadRequest));
 
+        var template = await Json(await f.AcmeTrader.GetAsync($"/api/bo/odds/market-types/{f.TotalMarketTypeId}/template?lang=en"));
+        Assert.Equal("total", template.GetProperty("specifiers")[0].GetProperty("name").GetString());
+        Assert.Equal(["12", "13"], template.GetProperty("outcomes").EnumerateArray().Select(o => o.GetProperty("code").GetString()));
+
         var created = await Json(await f.AcmeTrader.PostAsJsonAsync($"/api/bo/odds/events/{f.EventId}/manual-markets", new
         {
             marketTypeId = f.TotalMarketTypeId,

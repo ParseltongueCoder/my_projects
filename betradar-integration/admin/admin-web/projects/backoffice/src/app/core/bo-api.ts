@@ -3,8 +3,9 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { APP_CONFIG } from './config';
 import {
-  AdminUser, AuditEntry, Brand, CatalogEvent, ChangeSet, EffectiveSetting, EventDetail, EventOverride, MarketType, Me, Operator, Page,
-  Participant, Permission, Problem, Role, ScopeOption, ScopeSetting, ScopeType, SettingChange, SettingDef, TemplatePreview, TranslationEdit,
+  AdminUser, AuditEntry, Brand, CatalogEvent, ChangeSet, EffectiveSetting, EventDetail, EventOffer, EventOverride, MarketOffer, MarketTemplate,
+  MarketType, MarketTypeRow, Me, MessageRow, OddsOverride, Operator, OverrideRow, Page, Participant, Permission, Problem, RenderedMessage,
+  Role, ScopeOption, ScopeSetting, ScopeType, SettingChange, SettingDef, Simulation, TemplatePreview, Trading, TradingRow, TranslationEdit,
   TranslationRow, TreeNode,
 } from './models';
 import { OperatorSelection } from './operator-selection';
@@ -211,5 +212,74 @@ export class BoApi {
 
   linkMedia(entityType: string, entityId: number, role: string, mediaId: string | null): Observable<void> {
     return this.http.put<void>(`${this.base}/media/links`, { entityType, entityId, role, mediaId });
+  }
+
+  // ODDS
+  eventOffer(id: number, lang: string): Observable<EventOffer> {
+    return this.http.get<EventOffer>(`${this.base}/odds/events/${id}/markets`, { params: params({ lang }) });
+  }
+
+  overrides(eventId?: number, lang?: string): Observable<OverrideRow[]> {
+    return this.http.get<OverrideRow[]>(`${this.base}/odds/overrides`, { params: params({ eventId, lang }) });
+  }
+
+  createOverride(body: { marketId: number; outcomeCode: string; kind: string; value: number; clearOn: string; ttlMinutes: number; reason: string }):
+    Observable<{ override: OddsOverride; warnings: string[]; market: MarketOffer | null }> {
+    return this.http.post<{ override: OddsOverride; warnings: string[]; market: MarketOffer | null }>(`${this.base}/odds/overrides`, body);
+  }
+
+  clearOverride(id: number, reason: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/odds/overrides/${id}`, { params: params({ reason }) });
+  }
+
+  trading(eventId?: number, lang?: string): Observable<TradingRow[]> {
+    return this.http.get<TradingRow[]>(`${this.base}/odds/trading`, { params: params({ eventId, lang }) });
+  }
+
+  createTrading(body: { scopeType: string; scopeId: number; action: string; ttlMinutes: number | null; reason: string; platform: boolean }): Observable<Trading> {
+    return this.http.post<Trading>(`${this.base}/odds/trading`, body);
+  }
+
+  clearTrading(id: number, reason: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/odds/trading/${id}`, { params: params({ reason }) });
+  }
+
+  marketTemplate(id: number, lang: string): Observable<MarketTemplate> {
+    return this.http.get<MarketTemplate>(`${this.base}/odds/market-types/${id}/template`, { params: params({ lang }) });
+  }
+
+  createManualMarket(eventId: number, body: { marketTypeId: number; specifiers: string; outcomes: { code: string; odds: number | null }[]; status: string; reason: string }):
+    Observable<MarketOffer> {
+    return this.http.post<MarketOffer>(`${this.base}/odds/events/${eventId}/manual-markets`, body);
+  }
+
+  patchManualMarket(id: number, body: { outcomes?: { code: string; odds: number | null; isActive?: boolean }[]; status?: string; reason?: string }): Observable<MarketOffer> {
+    return this.http.patch<MarketOffer>(`${this.base}/odds/manual-markets/${id}`, body);
+  }
+
+  marketTypeMatrix(q: string, lang: string): Observable<{ sports: { id: number; name: string }[]; items: MarketTypeRow[] }> {
+    return this.http.get<{ sports: { id: number; name: string }[]; items: MarketTypeRow[] }>(`${this.base}/odds/market-types`, { params: params({ q, lang }) });
+  }
+
+  toggleMarketType(id: number, sportId: number | null, enabled: boolean, reason: string): Observable<ChangeSet> {
+    return this.http.put<ChangeSet>(`${this.base}/odds/market-types/${id}`, { sportId, enabled, reason });
+  }
+
+  simulate(body: { marketId?: number | null; outcomes?: { code: string; odds: number }[]; closedSet?: boolean; settings: Record<string, string | number | null> }):
+    Observable<Simulation> {
+    return this.http.post<Simulation>(`${this.base}/odds/simulate`, body);
+  }
+
+  // CMS
+  messages(query: Params): Observable<{ languages: string[]; items: MessageRow[] }> {
+    return this.http.get<{ languages: string[]; items: MessageRow[] }>(`${this.base}/cms/messages`, { params: params(query) });
+  }
+
+  saveMessage(code: string, body: { texts: Record<string, { title?: string | null; text?: string | null }>; brandId: number | null; platform: boolean }): Observable<void> {
+    return this.http.put<void>(`${this.base}/cms/messages/${code}`, body);
+  }
+
+  previewMessage(code: string, lang: string, brandId: number | null, values: string): Observable<RenderedMessage> {
+    return this.http.get<RenderedMessage>(`${this.base}/cms/messages/${code}/preview`, { params: params({ lang, brandId, params: values }) });
   }
 }

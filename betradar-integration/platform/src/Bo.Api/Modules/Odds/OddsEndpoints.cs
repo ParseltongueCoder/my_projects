@@ -465,6 +465,40 @@ public static class OddsEndpoints
             }, ct);
         });
 
+        // What a manual market from this template needs: its specifiers and outcomes, named in the operator's language.
+        odds.MapGet("/market-types/{id:int}/template", (TenantContext t, BoDb db, Names names, int id, string? lang, CancellationToken ct) =>
+        {
+            t.Require("odds.view");
+            var operatorId = t.RequireOperator();
+            return db.TenantAsync(t, async (conn, tx) =>
+            {
+                var type = await conn.QuerySingleOrDefaultAsync<(int Id, string Code, string NameI18n, bool IsVariant)>(
+                    "SELECT id, code, name_template_i18n::text, is_variant FROM sb.market_description WHERE id = @id AND code NOT LIKE 'manual:%'", new { id }, tx);
+                if (type == default)
+                {
+                    throw BoProblem.NotFound("Market type");
+                }
+                var specifiers = await conn.QueryAsync<(string Name, string Type)>(
+                    "SELECT name, type::text FROM sb.market_specifier_def WHERE market_description_id = @id ORDER BY ordinal, name", new { id }, tx);
+                var outcomes = (await conn.QueryAsync<(string Code, string NameI18n)>("""
+                    SELECT code, name_template_i18n::text FROM sb.market_description_outcome WHERE market_description_id = @id AND variant = '' ORDER BY ordinal, code
+                    """, new { id }, tx)).ToList();
+                var langs = await names.LanguageChainAsync(conn, tx, operatorId, lang ?? "ka");
+                var typeName = (await names.ResolveAsync(conn, tx, "market_type", new Dictionary<string, string?> { [id.ToString()] = type.NameI18n }, langs, "template"))[id.ToString()];
+                var outcomeNames = await names.ResolveAsync(conn, tx, "outcome_type",
+                    outcomes.ToDictionary(o => I18n.I18nEndpoints.OutcomeKey(id, "", o.Code), o => (string?)o.NameI18n), langs, "template");
+                return new
+                {
+                    type.Id,
+                    type.Code,
+                    name = typeName.Text,
+                    type.IsVariant,
+                    specifiers = specifiers.Select(s => new { s.Name, s.Type }),
+                    outcomes = outcomes.Select(o => new { o.Code, name = outcomeNames[I18n.I18nEndpoints.OutcomeKey(id, "", o.Code)].Text }),
+                };
+            }, ct);
+        });
+
         // Disabling writes market.enabled=false here; enabling removes it (inherits again). It is a CFG change set.
         odds.MapPut("/market-types/{id:int}", async (TenantContext t, BoDb db, ConfigService cfg, SettingsSnapshotCache settings, int id, MarketTypeToggle body, CancellationToken ct) =>
         {

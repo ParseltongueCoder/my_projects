@@ -296,3 +296,187 @@ export interface TemplatePreview {
   market: { template: string; source: string; rendered: string };
   outcomes: { code: string; template: string; source: string; rendered: string }[];
 }
+
+// ODDS (docs/06 §4)
+export type OfferStatus = 'active' | 'suspended' | 'deactivated' | 'settled' | 'cancelled' | 'hidden';
+
+export interface PricingSettings {
+  mode: string;
+  pct: number;
+  deltaPct: number;
+  method: string;
+  removeMethod: string;
+  useFeedProbabilities: boolean;
+  floorPct: number;
+  minOdds: number;
+  maxOdds: number;
+  ladder: string;
+  overrideFeedTolerancePct: number;
+}
+
+export interface Trading {
+  id: number;
+  operatorId: number | null;
+  platform: boolean;
+  scopeType: 'event' | 'market';
+  scopeId: number;
+  action: 'suspend' | 'close';
+  expiresAt: string | null;
+  reason: string;
+  createdByName: string | null;
+  createdAt: string;
+}
+
+export interface OddsOverride {
+  id: number;
+  marketId: number;
+  outcomeCode: string;
+  kind: 'absolute' | 'shift_pct';
+  value: number;
+  clearOn: 'expiry' | 'feed_change';
+  feedOddsAtSet: number | null;
+  expiresAt: string;
+  reason: string;
+  createdByName: string | null;
+  createdAt: string;
+}
+
+export interface OutcomeOffer {
+  code: string;
+  name: string;
+  feedOdds: number | null;
+  odds: number | null;
+  fairProbability: number | null;
+  source: 'feed' | 'margin' | 'override' | 'manual';
+  visible: boolean;
+  hiddenReason: string | null;
+  override: OddsOverride | null;
+  overrideApplied: boolean;
+}
+
+export interface MarketOffer {
+  id: number;
+  marketTypeId: number;
+  marketTypeCode: string;
+  name: string;
+  specifiers: string;
+  isManual: boolean;
+  feedStatus: string;
+  status: OfferStatus;
+  reasons: string[];
+  mode: string;
+  complete: boolean;
+  feedOverround: number | null;
+  offerOverround: number | null;
+  trading: Trading[];
+  outcomes: OutcomeOffer[];
+  settings: PricingSettings;
+}
+
+export interface EventOffer {
+  event: {
+    id: number; name: string; status: string; live: boolean; scheduledAt: string | null; sportId: number;
+    tournamentId: number | null; tournamentName: string | null; competitors: string[];
+  };
+  trading: Trading[];
+  markets: MarketOffer[];
+}
+
+export interface OverrideRow extends OddsOverride {
+  eventId: number;
+  eventName: string | null;
+  marketTypeCode: string;
+  specifiers: string;
+  feedOdds: number | null;
+}
+
+export interface TradingRow extends Trading {
+  eventId: number;
+  eventName: string | null;
+  marketTypeCode: string | null;
+  specifiers: string | null;
+}
+
+export interface MatrixCell {
+  enabled: boolean;
+  setHere: boolean | null;
+}
+
+export interface MarketTypeRow {
+  id: number;
+  code: string;
+  name: string;
+  groups: string[];
+  platformEnabled: boolean;
+  operatorCell: MatrixCell;
+  sportCells: Record<string, MatrixCell>;
+  openMarkets: Record<string, number>;
+  marginMode: string;
+  marginPct: number;
+}
+
+export interface MarketTemplate {
+  id: number;
+  code: string;
+  name: string;
+  isVariant: boolean;
+  specifiers: { name: string; type: string }[];
+  outcomes: { code: string; name: string }[];
+}
+
+export interface PricedOutcome {
+  code: string;
+  feedOdds: number | null;
+  fairProbability: number | null;
+  odds: number | null;
+  source: string;
+  visible: boolean;
+  hiddenReason: string | null;
+}
+
+export interface PricedMarket {
+  marketId: number;
+  status: OfferStatus;
+  reasons: string[];
+  modeUsed: string;
+  complete: boolean;
+  feedOverround: number | null;
+  offerOverround: number | null;
+  outcomes: PricedOutcome[];
+}
+
+export interface Simulation {
+  settings: PricingSettings;
+  priced: PricedMarket;
+  current: MarketOffer | null;
+}
+
+// CMS (docs/06 §6)
+export interface MessageCell {
+  brand: string | null;
+  operator: string | null;
+  platform: string | null;
+  default: string | null;
+  effective: string;
+  source: 'brand' | 'operator' | 'platform' | 'default' | 'missing';
+}
+
+export interface MessageRow {
+  code: string;
+  module: string;
+  category: string;
+  severity: string;
+  params: string[];
+  customerVisible: boolean;
+  description: string;
+  texts: Record<string, { title: MessageCell; text: MessageCell }>;
+}
+
+export interface RenderedMessage {
+  code: string;
+  params: Record<string, string>;
+  title: string;
+  message: string;
+  lang: string;
+  source: string;
+}

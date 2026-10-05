@@ -16,6 +16,7 @@ const SEVERITIES: Record<string, Severity> = {
   postponed: 'warn',
   delayed: 'warn',
   interrupted: 'warn',
+  hidden: 'danger',
   // producers
   up: 'success',
   down: 'danger',

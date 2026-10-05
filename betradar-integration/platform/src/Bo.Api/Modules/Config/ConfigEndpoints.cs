@@ -90,7 +90,7 @@ public static class ConfigEndpoints
             var term = $"%{(q ?? "").Trim()}%";
             return db.TenantAsync(t, async (conn, tx) => (await conn.QueryAsync<MarketTypeOption>("""
                 SELECT id, coalesce(name_template_i18n->>'en', code) AS name FROM sb.market_description
-                WHERE name_template_i18n->>'en' ILIKE @term OR code ILIKE @term OR id::text = @raw ORDER BY id LIMIT 30
+                WHERE code NOT LIKE 'manual:%' AND (name_template_i18n->>'en' ILIKE @term OR code ILIKE @term OR id::text = @raw) ORDER BY id LIMIT 30
                 """, new { term, raw = (q ?? "").Trim() }, tx)).ToList(), ct);
         });
 

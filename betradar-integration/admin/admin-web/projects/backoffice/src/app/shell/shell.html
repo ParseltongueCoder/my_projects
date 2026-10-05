@@ -37,7 +37,7 @@
     @for (g of nav(); track g.group) {
       @if (g.group) { <div class="group">{{ g.group }}</div> }
       @for (item of g.items; track item.path) {
-        <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: item.path === '/' || item.path === '/cat' }" [class.soon]="item.soon">
+        <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: item.path === '/' || item.path === '/cat' || item.path === '/odds' }" [class.soon]="item.soon">
           <mat-icon>{{ item.icon }}</mat-icon><span>{{ item.label }}</span>
           @if (item.soon) { <span class="stage">{{ item.soon }}</span> }
         </a>

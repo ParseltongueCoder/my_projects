@@ -28,8 +28,16 @@ const NAV: { group: string; items: NavItem[] }[] = [
       { path: '/cat/events', label: 'Events', icon: 'event', permission: 'cat.view', needsOperator: true },
       { path: '/cat/participants', label: 'Participants', icon: 'groups', permission: 'cat.view', needsOperator: true },
       { path: '/i18n', label: 'Translations', icon: 'translate', permission: 'i18n.view', needsOperator: true },
-      { path: '/odds', label: 'Odds & margins', icon: 'percent', soon: 'BO-1' },
-      { path: '/cms', label: 'Messages', icon: 'chat', soon: 'BO-1' },
+      { path: '/cms', label: 'Messages', icon: 'chat', permission: 'cms.view', needsOperator: true },
+    ],
+  },
+  {
+    group: 'Trading',
+    items: [
+      { path: '/odds', label: 'Trading', icon: 'candlestick_chart', permission: 'odds.view', needsOperator: true },
+      { path: '/odds/overrides', label: 'Active overrides', icon: 'schedule', permission: 'odds.view', needsOperator: true },
+      { path: '/odds/market-types', label: 'Market types', icon: 'grid_on', permission: 'odds.view', needsOperator: true },
+      { path: '/odds/margins', label: 'Margin simulator', icon: 'calculate', permission: 'odds.view', needsOperator: true },
     ],
   },
   {
