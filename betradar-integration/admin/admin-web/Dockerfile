@@ -3,7 +3,10 @@ FROM node:24-alpine AS build
 ARG APP=feed-ops
 WORKDIR /src
 COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
+# Retry flaky downloads and keep the npm cache between builds (both web images and repeated builds reuse it).
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --no-audit --no-fund --prefer-offline \
+      --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000
 COPY angular.json tsconfig.json ./
 COPY projects/ projects/
 RUN npx ng build ${APP} --configuration production && mv dist/${APP}/browser /out
