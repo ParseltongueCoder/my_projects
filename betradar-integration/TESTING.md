@@ -127,10 +127,11 @@ docker compose up -d
 ```bash
 cd betradar-integration/uof-simulator && dotnet test           # 74 ტესტი
 cd ../platform && dotnet test tests/Platform.Tests             # DB ტესტები: იხ. platform/README.md
+dotnet test tests/Offer.Tests                                  # ფასის pipeline (golden ფაილები), DB არ სჭირდება
 cd ../admin/admin-web && npm ci && npx ng test feed-ops --watch=false && npx ng test ui --watch=false
 ```
 
-## 7. ოპერატორის back office (BO-0)
+## 7. ოპერატორის back office (BO-0, BO-1)
 
 იგივე `docker compose up`-ით ეშვება: **http://localhost:8089**. პაროლი ყველა dev მომხმარებლისთვის `<მომხმარებელი>-devpass`, მაგალითად `acme-trader-devpass`. შესვლა ორ ეტაპადაა: ჯერ მომხმარებლის სახელი, შემდეგ პაროლი.
 
@@ -168,3 +169,24 @@ cd ../admin/admin-web && npm ci && npx ng test feed-ops --watch=false && npx ng 
 3. ქვეყნის გადამრთველით დამალეთ ქვეყანა. მისი ლიგები გადახაზული უნდა გახდეს („Hidden by a parent“). ეს ცვლილება **Change sets**-შიც ჩანს.
 4. **Translations** → **Outcome names**: `over {total}`-ის გვერდით ქართულ სვეტში ჩაწერეთ `მეტი {total}` → **Save**. 👁 ღილაკი აჩვენებს, როგორ გამოჩნდება: „მეტი 2.5“. თუ placeholder-ში შეცდომაა (`{totl}`), შენახვა ვერ მოხერხდება.
 5. იგივე გვერდებზე `betgeo-admin`-ით შესვლისას AcmeBet-ის სახელები, დროშა და დამალვა არ ჩანს.
+
+### B5. ტრეიდინგი: margin, ხელით ფასი, შეჩერება, manual მარკეტი (BO-1b)
+ჯერ Feed Ops-ში გაუშვით სცენარი (მატჩი prematch მარკეტებით). შემდეგ შედით `acme-trader`-ით.
+1. **Trading** → აირჩიეთ მატჩი. ყოველ მარკეტზე ჩანს feed-ის ფასი, „სამართლიანი“ ალბათობა (Fair %) და ის ფასი, რომელსაც AcmeBet სთავაზობს (Offered). ზედა მარჯვენა კუთხეში ჩანს margin: feed X% → offered Y%.
+2. **Margin simulator**: ჩაწერეთ `2.10 3.40 3.60`, Mode *target margin*, `7` → **Simulate**. შედეგი უნდა იყოს `2.06 / 3.30 / 3.50`.
+3. Margin-ის შეცვლა: **Settings** → მატჩის ლიგა → `margin.mode` = `target` და `margin.pct` = `0.07` → **Submit for approval**. `acme-head`-ით დაადასტურეთ (**Change sets** → **Approve**). Trading view-ში ამ ლიგის 3-outcome-იან მარკეტებზე ფასები დაბლა ჩამოვა, mode-ად `target` გამოჩნდება. `betgeo-admin`-ს ისევ feed-ის ფასები უჩანს.
+4. outcome-ის ხაზზე **Override** → Fixed odds, მაგალითად feed-ზე ბევრად მაღალი ფასი, 30 წუთი, მიზეზი → **Set override**. შეტყობინებაში ჩანს, რამდენი %-ით დაშორდა feed-ს. თუ ფასების ჯამი 100%-ზე დაბლა ჩავიდა (Σ1/o < 1), მარკეტი ავტომატურად `suspended` ხდება მიზეზით „prices below the margin floor“. ✕ ღილაკი override-ს მოხსნის.
+5. **Suspend event** → მიზეზი → ყველა მარკეტი `suspended` ხდება, ფასები ჩანს. **Lift** შეჩერებას მოხსნის. **Close event** მატჩს მთლიანად მალავს AcmeBet-ის შეთავაზებიდან. `betgeo-admin`-ზე ეს არ მოქმედებს.
+6. **Manual market** → ტიპი *Total* → `total` = `3.5`, ფასები `1.83` და `1.95`, მიზეზი → **Create**. ახალი მარკეტი `manual` ნიშნით ჩნდება. ფასები იქვე იცვლება (**Save prices**). `2.05` ჩაიწერება როგორც `2.04`, რადგან ფასი ყოველთვის ladder-ის ბიჯზე ქვემოთ მრგვალდება. `betgeo-admin` ამ მარკეტს ვერ ხედავს.
+7. **Active overrides**-ზე ჩანს ყველა მოქმედი override და შეჩერება, ვადით. ვადა რომ გავა, ისინი თავისით ქრება (15 წამში).
+8. **Market types**: ცხრილი ჩანს market type × სპორტის მიხედვით. მონიშვნის მოხსნა (მიზეზით) ამ ტიპს ამ სპორტზე მალავს (Trading view-ში `hidden`, „market type switched off“). ხელახლა მონიშვნა ცვლილებას აუქმებს.
+9. `platform`-ით (AcmeBet არჩეული) **Suspend event**-ში ჩანს „For every operator“. ასეთ შეჩერებას ყველა ოპერატორი ხედავს, მაგრამ მოხსნა მხოლოდ ჩვენ შეგვიძლია.
+
+### B6. მოთამაშის შეტყობინებები (CMS, BO-1b)
+შედით `acme-admin`-ით.
+1. **Messages**: ჩანს ყველა reason code (უარყოფილი ფსონი, ლიმიტი, ბალანსი, cash-out, შემოწმება). ka/en ტექსტები ჩვენგან მოდის (`default`), ru ჯერ ცარიელია (`missing`).
+2. გახსენით `LIM_MAX_STAKE_EXCEEDED` → ka ტექსტში ჩაწერეთ საკუთარი ფორმულირება, მაგალითად `ამ არჩევანზე მაქსიმალური ფსონია {maxStake, number} {currency}` → **Save** → **Preview**: `… 150.00 GEL`.
+3. ზედა ფილტრში აირჩიეთ brand *AcmeBet International* და en-ში ჩაწერეთ სხვა ტექსტი. ის მხოლოდ ამ საიტზე მოქმედებს, დანარჩენზე ოპერატორის ტექსტი რჩება.
+4. ტექსტი უცნობი პარამეტრით (`{limit}`) ან შიდა ტერმინით („liability“, „risk group“) არ შეინახება.
+5. `betgeo-admin`-ს AcmeBet-ის ტექსტები არ უჩანს.
+

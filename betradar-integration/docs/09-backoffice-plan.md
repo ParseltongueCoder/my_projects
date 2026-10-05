@@ -1,6 +1,6 @@
 # 09 — ოპერატორის Sportsbook Back Office: შემაჯამებელი გეგმა
 
-> სტატუსი: დიზაინის ეტაპი · 2026-10-04
+> სტატუსი: BO-0 და BO-1a/BO-1b აშენებულია (§5) · 2026-10-05
 > B2B მოდელი: ოპერატორი ყიდულობს **სრულ sportsbook ძრავას**; ოპერატორის **PAM** (მოთამაშე, wallet, KYC) უერთდება API-ით.
 >
 > ეს დოკუმენტი აერთიანებს docs/05–08-ს. სადაც ისინი ერთმანეთს ეწინააღმდეგება, **§2-ის გადაწყვეტილებები სავალდებულოა** და იმ დოკუმენტებზე მაღლა დგას.
@@ -44,7 +44,7 @@
 5. **Tenant isolation: EF global filter + PostgreSQL RLS** (08 §1). `app.operator_id` ტრანზაქციის დონეზე ყენდება; თუ არ არის დაყენებული, მოთხოვნა row-ებს ვერ ხედავს (fail-closed). ეს ეხება `bo`, `bet` და `promo` სქემებს. ორ ოპერატორს შორის იზოლაციის ტესტები P0-ია.
 6. **Platform row-ებისთვის `operator_id IS NULL`** (არა 0). `operator_id` და `brand_id` არის `bigint`, ხოლო admin user-ის id არის Keycloak-ის `sub` (uuid).
 7. **BO-დან void, resettle და cancel bet-engine-ის command API-ით სრულდება** (`POST /internal/bets/{id}/void` და ა.შ.). საერთო DB ტრანზაქცია არ გამოიყენება. ასე wallet-ის მოძრაობა და idempotency ერთ ადგილას რჩება.
-8. **ფასი ერთ ადგილას ითვლება.** `libs/offer-core` (06 §4.2) გამოიყენება distribution API-შიც, bet-engine-შიც და cash-out-ის ფასისთვისაც (07 §5). ყველა bet ინახავს `config_version`-ს.
+8. **ფასი ერთ ადგილას ითვლება.** `libs/offer-core` (06 §4.2; კოდში `platform/src/Offer.Core`) გამოიყენება distribution API-შიც, bet-engine-შიც და cash-out-ის ფასისთვისაც (07 §5). ყველა bet ინახავს `config_version`-ს.
 9. **Manual odds იყენებს ფარდობით offset-ს** (05-ის რეკომენდაცია, OddsMatrix-ის მსგავსი). ფიქსირებული ფასი ცალკე რეჟიმია. თუ override feed-ს X%-ით დაშორდა, ჩაირთვება NOTIF alert.
 10. **ყოველ ბილეთზე ინახება რეგულატორული snapshot.** ბილეთის მიღებისას შემოწმდება ასაკი (25+), აკრძალულ პირთა რეესტრი და self-exclusion (PAM-დან), და შედეგი ბილეთთან ერთად ჩაიწერება (`bet.ticket.eligibility jsonb`).
 11. **FX კურსები:** `bo.fx_rate` ცხრილი, წყარო ეროვნული ბანკის (NBG) დღიური კურსი. ცხრილს REP/platform ფლობს, ის გამოიყენება ლიმიტების base currency-ში გადასაყვანად და რეპორტებში.
@@ -101,7 +101,7 @@ P2: ML risk scoring, early payout, bet builder, ClickHouse, retail.
 | ეტაპი | შინაარსი | რას ვაჩვენებთ ბოლოს | ~კვირა |
 |---|---|---|---|
 | **BO-0 საფუძველი** ✅ | Bo.Api + Bo.Workers ჩონჩხი, `bo.operator/brand`, Keycloak `bo` realm, permission-ები, audit + outbox, RLS, Angular `backoffice` shell, CFG ძრავა | ორი ოპერატორი ერთმანეთის მონაცემებს ვერ ხედავს; პარამეტრი იცვლება და trace ჩანს | 3–4 |
-| **BO-1 შეთავაზება** (CAT + I18N ✅) | CAT, I18N, CMS, ODDS + `offer-core`, distribution API (overlay + WebSocket) | ოპერატორი ცვლის margin-ს და ლიგის სახელს, frontend-ში 1 წამში აისახება | 4–5 |
+| **BO-1 შეთავაზება** (CAT + I18N ✅, ODDS + CMS ✅) | CAT, I18N, CMS, ODDS + `offer-core`, distribution API (overlay + WebSocket; SB-0/SB-1) | ოპერატორი ცვლის margin-ს და ლიგის სახელს, frontend-ში 1 წამში აისახება | 4–5 |
 | **BO-2 ფსონი და ფული** | PAM სიმულატორი (როგორც UOF სიმულატორი), INT, bet-engine (pipeline, settlement), LIM + liability, ticket search, CUS | სიმულატორის მატჩზე ფსონი იდება, სეტლდება, rollback-ზე resettle ხდება, PAM-ის ბალანსი სწორია | 6–8 |
 | **BO-3 რისკი, მონიტორინგი, ანალიტიკა** | MON (ticker, referral რიგი), CASH, REP rollup-ები + dashboard, NOTIF | დიდი ფსონი მიდის referral-ზე, ტრეიდერი სთავაზობს counter-offer-ს და მოთამაშე ადასტურებს; cash-out live მატჩზე; GGR რეპორტი | 5–6 |
 | **BO-4 Promo და რეგულაცია** | freebet ledger + დარიცხვა, საქართველოს რეპორტები, ასაკისა და რეესტრის შემოწმება | freebet-ით დადებული და მოგებული ბილეთი; რეგულატორული export | 3–4 |
@@ -128,6 +128,24 @@ P2: ML risk scoring, early payout, bet builder, ClickHouse, retail.
 | Scheduling, rollback (P1) | არა | P1 |
 | Media: object storage + CDN, ვარიანტები (06 §2.5.6) | ბაზაში (`bo.media_blob`), `/api/media/{id}` immutable cache, ვარიანტების გარეშე | BO-1a; S3/CDN — production-ის წინ |
 | Custom groups, manual ივენთები, participant merge (06 §2.7 P0/P1) | ჯერ არა | BO-1-ის შემდეგი ნაწილი (manual ივენთებს ODDS-ის manual მარკეტები სჭირდება) |
+
+### BO-1b: რა გაკეთდა და სად გადავუხვიეთ დიზაინს (2026-10-05)
+
+აშენდა: `Offer.Core` (ფასის pipeline, 06 §4.2: overround-ის მოხსნა და margin power / proportional / Shin მეთოდით, `feed`/`target`/`delta` mode-ები, override, min/max, ladder ქვემოთ, sanity floor, status-ის პრიორიტეტი), golden ტესტები დამოუკიდებელი იმპლემენტაციით გადამოწმებული მოსალოდნელი მნიშვნელობებით. `V007` ამატებს `bo.odds_override`, `bo.trading_override`, `bo.manual_entity`, `bo.message_def` ცხრილებს RLS-ით. ODDS API და გვერდები: trading view, override-ები TTL-ით, event/market-ის suspend/close (ოპერატორზე ან ყველა ოპერატორზე), manual მარკეტები template-იდან, market type × sport matrix, margin simulator, ვადაგასულის გამწმენდი worker. CMS: reason code-ები ka/en ტექსტებით, ოპერატორისა და brand-ის ტექსტები, lint და preview. E2E: `e2e/backoffice-odds-dev.mjs`.
+
+| დიზაინი | ახლა | რატომ / როდის |
+|---|---|---|
+| `libs/offer-core` | .NET ბიბლიოთეკა `platform/src/Offer.Core`, დამოკიდებულებების გარეშე | bet-engine და distribution API იმავე ბიბლიოთეკას გამოიყენებენ (SB-0, BO-2) |
+| Manual market type: `manual:<orig_code>`, ერთი ყველასთვის (06 §4.6) | `manual:<operator_id>:<orig_code>`, თითო ოპერატორს თავისი | `sb.market` unique-ია (event, market type, specifiers)-ზე. ერთი კოდით ორი ოპერატორი ერთსა და იმავე ივენთზე ერთნაირ special-ს ვერ დაამატებდა. სახელები და თარგმნები ისევ ორიგინალიდან მოდის (`attributes.manual_of`) |
+| BO `sb`-ში მხოლოდ domain ფუნქციებით წერს (06 §1.1) | ამას დამატებით DB-ც იცავს: `bo_app`-ს `sb.market/outcome`-ში მხოლოდ საკუთარი manual row-ების შექმნა და შეცვლა შეუძლია, `market_description`-ში კი მხოლოდ `manual:*` კოდების (RLS, V007) | „BO არ ცვლის feed-ის row-ებს“ ბაზის დონეზეც მოწმდება. Adapter-სა და Feed Ops-ზე ეს წესი არ მოქმედებს |
+| `clear_on` = expiry / feed_change / manual | expiry / feed_change; ვადა ყოველთვის სავალდებულოა | `manual` ვადის გარეშე override-ს ნიშნავდა, ეს კი 06 §4.3 კრძალავს. `shift_pct` და `feed_change` (P1) უკვე გაკეთდა |
+| `odds.override_max_ttl_min` | json `{"live":120,"prematch":1440}`; ახალი key `manual.market_live` (P O, false) | 06 §5.8-ის მნიშვნელობები ერთ key-შია |
+| Override-ის გადახრა feed-იდან → NOTIF alert (§2.9) | API-ის პასუხში warning, UI-ში შეტყობინება | NOTIF BO-3-შია |
+| price_lock, Shin-ის გარდა P2, boost hook, custom manual markets, market groups / display order, `market.max_lines` | ჯერ არა | P1/P2 (06 §4.10). Shin უკვე გაკეთდა |
+| Manual მარკეტის settlement | ჯერ არა | `bo.manual_settlement` + bet-engine, BO-2 (§2.4) |
+| Feed-ის `bet_stop` | Feed ივენთზე manual მარკეტს feed-ის `bet_stop` აჩერებს (06 §4.6). ხელახლა გახსნა ტრეიდერს ხელით უწევს, რადგან feed მას `odds_change`-ით ვერ გახსნის | ⚠ თუ ავტომატური გახსნა დაგვჭირდა, adapter-ს `bet_stop`-ის წყარო უნდა დავამახსოვროთ |
+| CMS: `message_override.map_to_code`, bundle endpoint (P1) | ჯერ არა; ტექსტები `bo.translation`-შია (`entity_type='message'`, `brand_id`) | Bundle Player API-სთან ერთად კეთდება (SB-0) |
+| ვადების scheduler (06 §7.3) | Bo.Api-ში `TradingExpiryWorker`, 15 წამში ერთხელ; Offer.Core ვადაგასულ override-ს წაკითხვისასაც უგულებელყოფს | Bo.Workers-ში გადავა, როცა ის გაჩნდება |
 
 ## 6. ღია საკითხები: ბიზნესი და იურისტი (კოდს ბლოკავს)
 

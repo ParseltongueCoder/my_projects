@@ -270,7 +270,7 @@ GET  /api/bo/i18n/templates/{mdId}/preview?lang=&specifiers=total=2.5&eventId=
 ### 4.1 დანიშნულება
 feed-ის (ოპერატორის Sportradar კონტრაქტის) ფასებზე ოპერატორის **margin პოლიტიკის** გამოყენება, ladder/min/max, ხელით ფასის override ვადით, მარკეტის/ივენთის suspend/price lock, მარკეტ ტიპების ჩართვა/გამორთვა, ხელით მარკეტების დამატება და outcome-ების/მარკეტების რიგი.
 
-### 4.2 ფასის pipeline (`libs/offer-core`, deterministic)
+### 4.2 ფასის pipeline (`libs/offer-core`, deterministic; კოდში `platform/src/Offer.Core`, იხ. docs/09 §5 BO-1b)
 
 ```
 for each market M of event E, operator O, overlay version V:

@@ -107,6 +107,13 @@ docs/08, docs/06 §5 და docs/09 §2-ის პირველი ნაწ�
 
 ტესტები: `PLATFORM_TEST_PG=... dotnet test tests/Bo.Tests` — resolver/validator და API ტესტები, მათ შორის ორ ოპერატორს შორის იზოლაცია (სიები, id-ით 404, სხვისი brand-ის გამოყენება, RLS პირდაპირ SQL-ზე).
 
+## ფასები, ტრეიდინგი, შეტყობინებები (BO-1b) — `src/Offer.Core`, `Bo.Api/Modules/Odds`, `Bo.Api/Modules/Cms`
+
+- **`Offer.Core`** — ფასის ერთადერთი ადგილი (docs/06 §4.2, docs/09 §2.8). Pure ფუნქციაა: feed-ის მარკეტი, CFG-ის მნიშვნელობები, trading state და override-ები იძლევა შეთავაზებას (status + მიზეზები + ფასები). Margin: power / proportional / Shin; ladder-ზე ყოველთვის ქვემოთ მრგვალდება. ტესტები: `dotnet test tests/Offer.Tests`, golden ფაილი `tests/Offer.Tests/Golden/pricing.json` (DB არ სჭირდება).
+- **ODDS API** (`/api/bo/odds/*`): trading view, override-ები (TTL სავალდებულოა), suspend/close (ოპერატორზე ან platform-ზე), manual მარკეტები, market type matrix (`market.enabled`, CFG change set-ით), simulator. `TradingExpiryWorker` ვადაგასულს ასუფთავებს.
+- **`sb` რჩება feed-ის ჭეშმარიტებად**: `V007`-ის RLS-ით `bo_app`-ს მხოლოდ საკუთარი manual row-ების ჩაწერა შეუძლია (`source_producer_id = 0` + `bo.manual_entity`). Adapter-ზე და Feed Ops-ზე ეს არ მოქმედებს.
+- **CMS** (`/api/bo/cms/*`): reason code-ები `Bo.Core/Cms/MessageCatalog.cs`-შია ka/en ტექსტებით (start-ზე `bo.message_def`-ში სინქრონდება). ოპერატორისა და brand-ის ტექსტები `bo.translation`-შია (`entity_type='message'`). `CmsMessages.RenderAsync` აბრუნებს `{code, params, title, message}`-ს, რომელსაც bet API გამოიყენებს.
+
 ## შემდეგი ნაბიჯები
 
 - NATS JetStream (`UOF_RAW`) store-სა და SDK-ს შორის — docs/04-ის მიხედვით (ახლა in-process queue-ა, ერთი consumer).
