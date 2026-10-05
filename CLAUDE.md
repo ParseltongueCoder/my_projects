@@ -50,7 +50,7 @@ Keycloak `bo` login is identity-first (username, then password); invited users m
 - Phase 1 done: simulator, adapter, canonical DB, monitoring, Feed Ops admin.
 - Back office **BO-0 done** (tenants/brands, Keycloak orgs, RBAC 12 roles, audit, outbox→pg_notify, CFG engine with
   trace + change sets + four-eyes) and **BO-1a done** (catalog tree, events overrides, participants, translations with
-  template lint/preview + CSV, media in DB at `/api/media/{id}`). E2E scripts were in the session scratchpad.
+  template lint/preview + CSV, media in DB at `/api/media/{id}`). E2E scripts: `betradar-integration/e2e/`.
 - User decisions: Player API first, white-label later; counter-offer P0 (30 s for the player); referral timeouts live
   30 s / prematch 180 s, market close → auto-cancel, player cannot withdraw; odds format `2.50`. Legal questions open (docs/09 §6).
 
