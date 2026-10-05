@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The one place prices are computed (docs/06 §4.2, docs/09 §2.8): pure functions, no I/O, no dependencies.
+       Used by Bo.Api (trading view, simulator) and later by the distribution API, bet engine and cash-out. -->
+</Project>

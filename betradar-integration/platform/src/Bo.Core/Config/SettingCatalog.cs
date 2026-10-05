@@ -86,7 +86,9 @@ public static class SettingCatalog
         Dec("odds.min", "ODDS", "P O s t e", 1.01m, "Minimum odds offered", 1, 1000, mt: true),
         Dec("odds.max", "ODDS", "P O s t e", 1001m, "Maximum odds offered", 1, 10000, mt: true),
         Enum("odds.ladder", "ODDS", "O s", "std", ["std", "fine", "none"], "Odds ladder for rounding"),
-        Dec("odds.override_feed_tolerance_pct", "ODDS", "O", 0.10m, "Alert when a manual override drifts this far from the feed", 0, 1),
+        Dec("odds.override_feed_tolerance_pct", "ODDS", "O", 0.10m, "Warn when an override is this far from the feed; feed_change overrides end beyond it", 0, 1),
+        new("odds.override_max_ttl_min", "ODDS", ValueType.Json, S("O s"), new JsonObject { ["live"] = 120, ["prematch"] = 1440 },
+            "Longest allowed odds override in minutes (live / prematch)"),
 
         // LIM
         Money("limit.min_stake", "LIM", "P O s c t e m", 1m, "Minimum stake", mt: true, customer: "max"),
@@ -146,6 +148,7 @@ public static class SettingCatalog
         List("i18n.fallback_langs", "I18N", "O", ["en"], "Fallback languages"),
         Bool("i18n.hide_unreviewed", "I18N", "O", false, "Hide machine / unreviewed translations"),
         Bool("manual.non_sport_allowed", "CAT", "P O", false, "Non-sport manual events allowed", operatorEditable: false),
+        Bool("manual.market_live", "ODDS", "P O", false, "Manual markets stay open after the event goes live (else suspended)"),
         Enum("feed.producer_down_policy", "CAT", "P O s", "suspend", ["suspend", "hide"], "Offer behaviour while a feed producer is down"),
         Bool("cms.show_technical_codes", "CMS", "O", false, "Show technical codes next to customer messages"),
         Enum("wl.odds_decimal_separator", "WL", "O", ".", [".", ","], "Decimal separator in odds (2.50)"),

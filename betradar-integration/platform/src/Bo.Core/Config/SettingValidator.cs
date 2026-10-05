@@ -86,6 +86,14 @@ public static partial class SettingValidator
                 }
                 return null;
             default:
+                if (def.Key == "odds.override_max_ttl_min")
+                {
+                    return kind == JsonValueKind.Object && value.AsObject().Count == 2
+                           && new[] { "live", "prematch" }.All(p => value[p] is { } m && m.GetValueKind() == JsonValueKind.Number
+                                                                 && JsonNumbers.Decimal(m) is >= 1 and <= 10080 && JsonNumbers.Decimal(m) % 1 == 0)
+                        ? null
+                        : "Expected {\"live\": minutes, \"prematch\": minutes} (1-10080)";
+                }
                 return kind is JsonValueKind.Object or JsonValueKind.Array ? null : "Expected a JSON object";
         }
     }

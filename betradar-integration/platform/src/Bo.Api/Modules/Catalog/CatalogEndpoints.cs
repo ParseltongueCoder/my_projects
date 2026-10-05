@@ -132,7 +132,7 @@ public static class CatalogEndpoints
                            t.name_i18n::text AS tournamentI18n, e.sport_id::bigint AS sportId, s.name_i18n::text AS sportI18n,
                            e.scheduled_at AS scheduledAt, o.display_start_at AS displayStartAt, e.status::text AS status,
                            coalesce(o.is_featured, false) AS isFeatured,
-                           (SELECT count(*)::int FROM sb.market m WHERE m.event_id = e.id AND m.status IN ('active','suspended')) AS openMarkets,
+                           (SELECT count(*)::int FROM sb.market m WHERE m.event_id = e.id AND m.status IN ('active','suspended') AND {Odds.OfferService.VisibleMarketSql}) AS openMarkets,
                            count(*) OVER ()::int AS total
                     FROM sb.event e
                     JOIN sb.sport s ON s.id = e.sport_id
@@ -166,12 +166,12 @@ public static class CatalogEndpoints
             var operatorId = t.RequireOperator();
             return db.TenantAsync(t, async (conn, tx) =>
             {
-                var row = await conn.QuerySingleOrDefaultAsync<EventSql>("""
+                var row = await conn.QuerySingleOrDefaultAsync<EventSql>($"""
                     SELECT e.id, pm.provider_entity_id AS urn, e.name_i18n::text AS nameI18n, e.tournament_id::bigint AS tournamentId,
                            t.name_i18n::text AS tournamentI18n, e.sport_id::bigint AS sportId, s.name_i18n::text AS sportI18n,
                            e.scheduled_at AS scheduledAt, o.display_start_at AS displayStartAt, e.status::text AS status,
                            coalesce(o.is_featured, false) AS isFeatured,
-                           (SELECT count(*)::int FROM sb.market m WHERE m.event_id = e.id AND m.status IN ('active','suspended')) AS openMarkets, 1 AS total
+                           (SELECT count(*)::int FROM sb.market m WHERE m.event_id = e.id AND m.status IN ('active','suspended') AND {Odds.OfferService.VisibleMarketSql}) AS openMarkets, 1 AS total
                     FROM sb.event e JOIN sb.sport s ON s.id = e.sport_id LEFT JOIN sb.tournament t ON t.id = e.tournament_id
                     LEFT JOIN bo.event_override o ON o.event_id = e.id
                     LEFT JOIN LATERAL (SELECT provider_entity_id FROM sb.provider_mapping

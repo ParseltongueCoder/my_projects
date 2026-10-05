@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Platform.Canonical\Platform.Canonical.csproj" />
     <ProjectReference Include="..\Bo.Core\Bo.Core.csproj" />
+    <ProjectReference Include="..\Offer.Core\Offer.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

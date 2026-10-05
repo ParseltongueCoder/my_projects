@@ -25,6 +25,13 @@ public sealed class BoApiFixture : IAsyncLifetime
     public long EventId { get; private set; }
     public long HomeId { get; private set; }
     public long AwayId { get; private set; }
+    public long OtherEventId { get; private set; }
+    /// <summary>Feed 1x2 on <see cref="EventId"/>: 2.10 / 3.40 / 3.60.</summary>
+    public long FeedMarketId { get; private set; }
+    /// <summary>Feed total=2.5 on <see cref="EventId"/>: over 1.85 / under 1.95.</summary>
+    public long TotalMarketId { get; private set; }
+    /// <summary>Feed 1x2 on <see cref="OtherEventId"/>: 1.80 / 3.60 / 4.50.</summary>
+    public long OtherMarketId { get; private set; }
 
     public async Task InitializeAsync()
     {
@@ -65,6 +72,32 @@ public sealed class BoApiFixture : IAsyncLifetime
             """, new { SportId, TournamentId });
         await conn.ExecuteAsync("INSERT INTO sb.event_competitor (event_id, position, competitor_id, qualifier) VALUES (@EventId, 1, @HomeId, 'home'), (@EventId, 2, @AwayId, 'away')",
             new { EventId, HomeId, AwayId });
+        OtherEventId = await conn.ExecuteScalarAsync<long>("""
+            INSERT INTO sb.event (event_type, sport_id, tournament_id, scheduled_at) VALUES ('match', @SportId, @OtherTournamentId, now() + interval '2 days') RETURNING id
+            """, new { SportId, OtherTournamentId });
+        await conn.ExecuteAsync("INSERT INTO sb.event_competitor (event_id, position, competitor_id, qualifier) VALUES (@OtherEventId, 1, @AwayId, 'home'), (@OtherEventId, 2, @HomeId, 'away')",
+            new { OtherEventId, HomeId, AwayId });
+        await conn.ExecuteAsync("INSERT INTO sb.market_specifier_def (market_description_id, name, type) VALUES (@TotalMarketTypeId, 'total', 'decimal')", new { TotalMarketTypeId });
+        FeedMarketId = await FeedMarketAsync(conn, EventId, MarketTypeId, "", ("1", 2.10m), ("2", 3.40m), ("3", 3.60m));
+        TotalMarketId = await FeedMarketAsync(conn, EventId, TotalMarketTypeId, "total=2.5", ("12", 1.85m), ("13", 1.95m));
+        OtherMarketId = await FeedMarketAsync(conn, OtherEventId, MarketTypeId, "", ("1", 1.80m), ("2", 3.60m), ("3", 4.50m));
+    }
+
+    private static async Task<long> FeedMarketAsync(Npgsql.NpgsqlConnection conn, long eventId, int typeId, string specifiers, params (string Code, decimal Odds)[] outcomes)
+    {
+        var json = specifiers.Length == 0 ? "{}" : JsonSerializer.Serialize(specifiers.Split('|').Select(p => p.Split('=')).ToDictionary(p => p[0], p => p[1]));
+        var id = await conn.ExecuteScalarAsync<long>("""
+            INSERT INTO sb.market (event_id, market_description_id, specifiers, specifiers_json, status, feed_status, source_producer_id, last_feed_ts)
+            VALUES (@eventId, @typeId, @specifiers, @json::jsonb, 'active', 'active', 3, now()) RETURNING id
+            """, new { eventId, typeId, specifiers, json });
+        foreach (var (code, odds) in outcomes)
+        {
+            await conn.ExecuteAsync("""
+                INSERT INTO sb.outcome (market_id, code, description_outcome_id, odds, is_active, odds_updated_at)
+                VALUES (@id, @code, (SELECT id FROM sb.market_description_outcome WHERE market_description_id = @typeId AND code = @code), @odds, true, now())
+                """, new { id, code, typeId, odds });
+        }
+        return id;
     }
 
     public HttpClient Platform(long? operatorId = null, Guid? user = null)

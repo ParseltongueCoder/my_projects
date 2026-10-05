@@ -6,6 +6,7 @@ COPY Directory.Build.props ./
 COPY db/ db/
 COPY src/Platform.Canonical/Platform.Canonical.csproj src/Platform.Canonical/
 COPY src/Bo.Core/Bo.Core.csproj src/Bo.Core/
+COPY src/Offer.Core/Offer.Core.csproj src/Offer.Core/
 COPY src/${PROJECT}/${PROJECT}.csproj src/${PROJECT}/
 RUN dotnet restore src/${PROJECT}/${PROJECT}.csproj
 COPY src/ src/

@@ -6,10 +6,12 @@ using Bo.Api.Modules.Catalog;
 using Bo.Api.Modules.Config;
 using Bo.Api.Modules.I18n;
 using Bo.Api.Modules.Media;
+using Bo.Api.Modules.Odds;
 using Bo.Api.Modules.Platform;
 using Npgsql;
 
-// Operator back office API: tenants, admin users & RBAC, audit, configuration (BO-0); catalogue, translations, media (BO-1).
+// Operator back office API: tenants, admin users & RBAC, audit, configuration (BO-0); catalogue, translations, media (BO-1a);
+// odds, trading, manual markets, messages (BO-1b).
 // docs/06, docs/08, docs/09.
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,8 +25,10 @@ builder.Services.AddSingleton<BoDb>();
 builder.Services.AddSingleton<SettingsSnapshotCache>();
 builder.Services.AddSingleton<ConfigService>();
 builder.Services.AddSingleton<Names>();
+builder.Services.AddSingleton<OfferService>();
 builder.Services.AddScoped<TenantContext>();
 builder.Services.AddHostedService<OutboxRelay>();
+builder.Services.AddHostedService<TradingExpiryWorker>();
 if (string.IsNullOrWhiteSpace(keycloak.AdminUrl))
 {
     builder.Services.AddSingleton<IIdentityProvisioner, NullIdentityProvisioner>();
@@ -70,6 +74,7 @@ api.MapPlatform();
 api.MapCatalog();
 api.MapI18n();
 api.MapMedia();
+api.MapOdds();
 
 app.Run();
 

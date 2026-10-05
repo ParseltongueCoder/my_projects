@@ -1,0 +1,119 @@
+{
+  "_comment": "Golden cases for Offer.Core (docs/06 §4.2). Expected odds were computed with an independent reference implementation; a change here changes what players are offered and what bets are accepted at.",
+  "now": "2026-10-05T12:00:00Z",
+  "cases": [
+    {
+      "name": "docs/06 example: 1x2 target 7% power",
+      "settings": { "mode": "target", "pct": 0.07 },
+      "market": { "outcomes": [ { "code": "1", "odds": 2.10 }, { "code": "2", "odds": 3.40 }, { "code": "3", "odds": 3.60 } ] },
+      "expect": { "status": "Active", "mode": "target", "complete": true, "feedOverround": 0.0481, "odds": { "1": 2.06, "2": 3.30, "3": 3.50 } }
+    },
+    {
+      "name": "same market, proportional both ways cuts the favourite more",
+      "settings": { "mode": "target", "pct": 0.07, "method": "proportional", "removeMethod": "proportional" },
+      "market": { "outcomes": [ { "code": "1", "odds": 2.10 }, { "code": "2", "odds": 3.40 }, { "code": "3", "odds": 3.60 } ] },
+      "expect": { "status": "Active", "mode": "target", "odds": { "1": 2.04, "2": 3.30, "3": 3.50 } }
+    },
+    {
+      "name": "same market, Shin both ways",
+      "settings": { "mode": "target", "pct": 0.07, "method": "shin", "removeMethod": "shin" },
+      "market": { "outcomes": [ { "code": "1", "odds": 2.10 }, { "code": "2", "odds": 3.40 }, { "code": "3", "odds": 3.60 } ] },
+      "expect": { "status": "Active", "mode": "target", "odds": { "1": 2.06, "2": 3.30, "3": 3.50 } }
+    },
+    {
+      "name": "over/under target 8%",
+      "settings": { "mode": "target", "pct": 0.08 },
+      "market": { "outcomes": [ { "code": "12", "odds": 1.85 }, { "code": "13", "odds": 1.95 } ] },
+      "expect": { "status": "Active", "mode": "target", "odds": { "12": 1.80, "13": 1.89 } }
+    },
+    {
+      "name": "lower target than the feed raises prices",
+      "settings": { "mode": "target", "pct": 0.05 },
+      "market": { "outcomes": [ { "code": "1", "odds": 1.30 }, { "code": "2", "odds": 4.50 }, { "code": "3", "odds": 11.0 } ] },
+      "expect": { "status": "Active", "mode": "target", "odds": { "1": 1.31, "2": 4.8, "3": 12.0 } }
+    },
+    {
+      "name": "feed mode only rounds down to the ladder",
+      "settings": { "mode": "feed" },
+      "market": { "outcomes": [ { "code": "12", "odds": 1.955 }, { "code": "13", "odds": 2.03 } ] },
+      "expect": { "status": "Active", "mode": "feed", "odds": { "12": 1.95, "13": 2.02 } }
+    },
+    {
+      "name": "delta on an outright (open outcome set)",
+      "settings": { "mode": "target", "deltaPct": 0.02 },
+      "market": { "closedSet": false, "outcomes": [ { "code": "a", "odds": 5.0 }, { "code": "b", "odds": 12.0 }, { "code": "c", "odds": 26.0 } ] },
+      "expect": { "status": "Active", "mode": "delta", "complete": false, "odds": { "a": 4.9, "b": 11.5, "c": 25 } }
+    },
+    {
+      "name": "target with an inactive outcome falls back to delta",
+      "settings": { "mode": "target", "pct": 0.07, "deltaPct": 0.02 },
+      "market": { "outcomes": [ { "code": "1", "odds": 2.10 }, { "code": "2", "odds": 3.40 }, { "code": "3", "odds": 3.60, "isActive": false } ] },
+      "expect": { "status": "Active", "mode": "delta", "complete": false, "odds": { "1": 2.06, "2": 3.35, "3": null } }
+    },
+    {
+      "name": "target with fewer outcomes than the market type defines is incomplete",
+      "settings": { "mode": "target", "pct": 0.07, "deltaPct": 0.0 },
+      "market": { "definedOutcomes": 3, "outcomes": [ { "code": "1", "odds": 2.10 }, { "code": "2", "odds": 3.40 } ] },
+      "expect": { "mode": "delta", "complete": false, "odds": { "1": 2.10, "2": 3.40 } }
+    },
+    {
+      "name": "absolute override on top of the margin; the market falls below the floor and is suspended",
+      "settings": { "mode": "target", "pct": 0.07 },
+      "market": { "outcomes": [ { "code": "1", "odds": 2.10 }, { "code": "2", "odds": 3.40 }, { "code": "3", "odds": 3.60 } ] },
+      "overrides": [ { "id": 7, "outcomeCode": "1", "kind": "absolute", "value": 2.50, "expiresAt": "2026-10-05T13:00:00Z" } ],
+      "expect": { "status": "Suspended", "reasons": [ "sanity:margin_floor" ], "odds": { "1": 2.50, "2": 3.30, "3": 3.50 }, "sources": { "1": "override", "2": "margin" } }
+    },
+    {
+      "name": "shift override, expired override and feed-moved override",
+      "settings": { "mode": "feed", "overrideFeedTolerancePct": 0.10 },
+      "market": { "outcomes": [ { "code": "1", "odds": 2.00 }, { "code": "2", "odds": 3.40 }, { "code": "3", "odds": 4.00 } ] },
+      "overrides": [
+        { "id": 1, "outcomeCode": "1", "kind": "shift_pct", "value": -0.05, "expiresAt": "2026-10-05T13:00:00Z" },
+        { "id": 2, "outcomeCode": "2", "kind": "absolute", "value": 3.00, "expiresAt": "2026-10-05T11:59:00Z" },
+        { "id": 3, "outcomeCode": "3", "kind": "absolute", "value": 3.70, "expiresAt": "2026-10-05T13:00:00Z", "clearOn": "feed_change", "feedOddsAtSet": 3.50 }
+      ],
+      "expect": { "status": "Active", "odds": { "1": 1.90, "2": 3.40, "3": 4.00 }, "sources": { "1": "override", "2": "feed", "3": "feed" } }
+    },
+    {
+      "name": "odds.min hides an outcome, odds.max caps one",
+      "settings": { "mode": "feed", "minOdds": 1.10, "maxOdds": 50 },
+      "market": { "closedSet": false, "outcomes": [ { "code": "a", "odds": 1.05 }, { "code": "b", "odds": 81.0 }, { "code": "c", "odds": 7.0 } ] },
+      "expect": { "status": "Active", "odds": { "a": null, "b": 50, "c": 7.0 }, "hidden": { "a": "below_min" } }
+    },
+    {
+      "name": "most restrictive status wins and every reason is reported",
+      "settings": { "mode": "feed" },
+      "gate": { "tradingSuspended": true },
+      "market": { "feedStatus": "deactivated", "status": "deactivated", "outcomes": [ { "code": "1", "odds": 2.0 }, { "code": "2", "odds": 1.9 } ] },
+      "expect": { "status": "Deactivated", "reasons": [ "feed:deactivated", "trading:suspend" ] }
+    },
+    {
+      "name": "operator visibility hides whatever the feed says",
+      "settings": { "mode": "feed" },
+      "gate": { "visible": false, "marketTypeEnabled": false },
+      "market": { "outcomes": [ { "code": "1", "odds": 2.0 }, { "code": "2", "odds": 1.9 } ] },
+      "expect": { "status": "Hidden", "reasons": [ "cfg:offer.visible", "cfg:market.enabled" ] }
+    },
+    {
+      "name": "producer down: suspended by default, hidden with feed.producer_down_policy=hide",
+      "settings": { "mode": "feed" },
+      "gate": { "producerDownPolicy": "hide" },
+      "market": { "feedStatus": "active", "status": "suspended", "outcomes": [ { "code": "1", "odds": 2.0 }, { "code": "2", "odds": 1.9 } ] },
+      "expect": { "status": "Hidden", "reasons": [ "producer_down" ] }
+    },
+    {
+      "name": "manual market: trader prices, no margin, ladder applies, suspended once the event is live",
+      "settings": { "mode": "target", "pct": 0.10 },
+      "gate": { "eventLive": true },
+      "market": { "isManual": true, "outcomes": [ { "code": "1", "odds": 1.833 }, { "code": "2", "odds": 1.95 } ] },
+      "overrides": [ { "id": 9, "outcomeCode": "1", "kind": "absolute", "value": 5.0, "expiresAt": "2026-10-05T13:00:00Z" } ],
+      "expect": { "status": "Suspended", "mode": "manual", "reasons": [ "manual:prematch_only" ], "odds": { "1": 1.83, "2": 1.95 }, "sources": { "1": "manual" } }
+    },
+    {
+      "name": "manual market priced below 100% is suspended by the sanity check",
+      "settings": { "mode": "feed" },
+      "market": { "isManual": true, "outcomes": [ { "code": "1", "odds": 2.2 }, { "code": "2", "odds": 2.2 } ] },
+      "expect": { "status": "Suspended", "reasons": [ "sanity:margin_floor" ] }
+    }
+  ]
+}
