@@ -17,4 +17,5 @@ node backoffice.mjs shots     # Back office: change set + four-eyes, isolation, 
 
 `backoffice-odds-dev.mjs` (BO-1b: trading view, override, suspend, manual market, market types, margin simulator, CMS) drives
 the same `ng serve` setup. It needs one soccer match with a feed 1x2 (2.10 / 3.40 / 3.60) and total 2.5 (1.85 / 1.95);
-the derby scenario of the simulator gives such a match, or insert those rows into `sb` by hand.
+the derby scenario of the simulator gives such a match, or load `dev-seed.sql` into the database Bo.Api migrated
+(`dev-proxy.json` is the `ng serve --proxy-config`, `dev-reset.sql` undoes the script's changes). Full recipe: `../HANDOFF.md` §4.

@@ -1,5 +1,7 @@
 # Project memory (read first)
 
+Then read **`betradar-integration/HANDOFF.md`**: last session's details, open questions, sandbox setup, where to start next.
+
 Georgian B2B iGaming startup building a **full sportsbook engine** for operators (their PAM connects via API).
 All real work lives in `betradar-integration/`. The user writes Georgian; answer in Georgian, docs in Georgian
 (identifiers/code in English). The user tests on a **MacBook** (Apple Silicon, Docker Desktop, often a corporate network).
@@ -20,10 +22,11 @@ Branch: `claude/bettor-api-integration-hqk4e1` — commit and push there; no PR 
 ## Map
 | Path | What |
 |---|---|
+| `betradar-integration/HANDOFF.md` | session handoff: what was built last, file/API map, open questions, sandbox recipe, next-step pointers |
 | `betradar-integration/README.md` | master plan, decisions table, 14-week plan |
 | `betradar-integration/docs/01-04` | roadmap, UOF data model + canonical DDL, simulator, platform architecture |
 | `betradar-integration/docs/05-11` | operator back office design: research, CAT/I18N/ODDS/CFG/CMS, BET/LIM/CASH/CUS/INT, ADM/REP/PROMO, **09 = plan + binding decisions + status**, 10 = bet monitoring/referral, 11 = Player API + white-label |
-| `betradar-integration/TESTING.md` | how the user runs and tests everything (Feed Ops §1-6, back office §7 B1-B4) |
+| `betradar-integration/TESTING.md` | how the user runs and tests everything (Feed Ops §1-6, back office §7 B1-B6) |
 | `uof-simulator/` | .NET UOF simulator (RabbitMQ + mock Betradar API, YAML scenarios) |
 | `platform/` | `Platform.Canonical` (sb schema, migrations `db/migrations/V001..`), `Uof.Adapter`, `Admin.Api` (Feed Ops), **`Bo.Core` + `Bo.Api`** (back office), **`Offer.Core`** (the one price pipeline), tests `Platform.Tests`, `Bo.Tests`, `Offer.Tests` |
 | `admin/admin-web/` | Angular workspace: `feed-ops`, **`backoffice`**, shared `@admin/ui` |
