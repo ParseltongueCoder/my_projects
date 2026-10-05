@@ -193,3 +193,106 @@ export interface Problem {
   title: string;
   code?: string;
 }
+
+// ---- BO-1: catalogue, translations, media
+
+export interface MediaRef {
+  role: 'icon' | 'flag' | 'logo' | 'banner';
+  mediaId: string;
+  url: string;
+  inherited: boolean;
+}
+
+export interface TreeNode {
+  type: 'sport' | 'category' | 'tournament';
+  id: number;
+  feedName: string;
+  name: string;
+  nameSource: 'operator' | 'platform' | 'provider' | 'id';
+  visible: boolean;
+  hiddenHere: boolean;
+  sortOrder: number | null;
+  isTop: boolean;
+  topOrder: number | null;
+  slug: string | null;
+  openEvents: number;
+  countryCode: string | null;
+  media: MediaRef[];
+  children: TreeNode[];
+}
+
+export interface CatalogEvent {
+  id: number;
+  urn: string | null;
+  name: string;
+  tournamentName: string | null;
+  tournamentId: number | null;
+  sportId: number;
+  sportName: string;
+  scheduledAt: string | null;
+  displayStartAt: string | null;
+  status: string;
+  isFeatured: boolean;
+  openMarkets: number;
+}
+
+export interface EventOverride {
+  displayStartAt: string | null;
+  isFeatured: boolean;
+  featuredOrder: number | null;
+  featuredFrom: string | null;
+  featuredTo: string | null;
+  note: string | null;
+  version: number;
+}
+
+export interface EventDetail {
+  event: CatalogEvent;
+  override: EventOverride | null;
+  competitors: { id: number; position: number; qualifier: string | null; name: string }[];
+  policy: Record<string, Json>;
+}
+
+export interface Participant {
+  id: number;
+  feedName: string;
+  name: string;
+  nameSource: string;
+  shortName: string | null;
+  abbreviation: string | null;
+  countryCode: string | null;
+  sportId: number | null;
+  events: number;
+  media: MediaRef[];
+}
+
+export type I18nEntityType = 'sport' | 'category' | 'tournament' | 'competitor' | 'market_type' | 'outcome_type';
+
+export interface TranslationCell {
+  operator: string | null;
+  platform: string | null;
+  provider: string | null;
+}
+
+export interface TranslationRow {
+  entityType: I18nEntityType;
+  entityId: string;
+  field: string;
+  source: string;
+  context: string | null;
+  values: Record<string, TranslationCell>;
+}
+
+export interface TranslationEdit {
+  entityType: string;
+  entityId: string;
+  field: string;
+  lang: string;
+  text: string | null;
+  platform: boolean;
+}
+
+export interface TemplatePreview {
+  market: { template: string; source: string; rendered: string };
+  outcomes: { code: string; template: string; source: string; rendered: string }[];
+}

@@ -51,12 +51,17 @@ and keep auth disabled here.
 Keycloak realm `bo` (one Organization per operator), API `platform/src/Bo.Api`, http://localhost:8089 in compose.
 
 ![Settings editor with a staged change](docs/screenshots/bo-01-settings-staged.png)
+
+![Catalog tree](docs/screenshots/bo-05-catalog-tree.png)
 Dev users (password `<user>-devpass`): `platform`, `support` (our staff), `acme-admin`, `acme-head`, `acme-trader` (AcmeBet),
 `betgeo-admin` (BetGeo).
 
 | Route | Shows |
 |---|---|
 | `/` | operator home: brands, change sets waiting for approval, recent activity |
+| `/cat` | **catalog tree**: sports → countries → leagues in the content language; rename inline, order, top leagues, icons/flags/logos, visibility (a change set; hidden at a parent hides everything below) |
+| `/cat/events`, `/cat/participants` | events with featured / display start overrides (betting still follows the feed); team names, short names, logos |
+| `/i18n` | **translations**: one column per operator language, platform/feed text as placeholder; market/outcome templates with `{placeholders}` (linted) and a live preview; CSV export / import with a dry run |
 | `/cfg/scope` | **settings editor**: pick a level (platform → operator → brand → sport → country → league → event, optional market type), see what is set here and what applies (with its source); edits are staged and submitted as one change set |
 | `/cfg/effective` | "why is a value X": effective values at a point of the offer, every candidate row and the winner |
 | `/cfg/change-sets` | history with before/after; four-eyes approval of keys that need it |

@@ -24,9 +24,11 @@ const NAV: { group: string; items: NavItem[] }[] = [
   {
     group: 'Offer',
     items: [
-      { path: '/cat', label: 'Catalog', icon: 'account_tree', soon: 'BO-1' },
+      { path: '/cat', label: 'Catalog', icon: 'account_tree', permission: 'cat.view', needsOperator: true },
+      { path: '/cat/events', label: 'Events', icon: 'event', permission: 'cat.view', needsOperator: true },
+      { path: '/cat/participants', label: 'Participants', icon: 'groups', permission: 'cat.view', needsOperator: true },
+      { path: '/i18n', label: 'Translations', icon: 'translate', permission: 'i18n.view', needsOperator: true },
       { path: '/odds', label: 'Odds & margins', icon: 'percent', soon: 'BO-1' },
-      { path: '/i18n', label: 'Translations', icon: 'translate', soon: 'BO-1' },
       { path: '/cms', label: 'Messages', icon: 'chat', soon: 'BO-1' },
     ],
   },

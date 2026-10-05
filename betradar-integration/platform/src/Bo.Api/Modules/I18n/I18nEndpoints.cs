@@ -23,6 +23,13 @@ public static partial class I18nEndpoints
 
     public sealed record Cell(string? Operator, string? Platform, string? Provider);
 
+    public sealed class Language
+    {
+        public string Code { get; init; } = "";
+        public string Name { get; init; } = "";
+        public string NativeName { get; init; } = "";
+    }
+
     public sealed record GridRow(string EntityType, string EntityId, string Field, string Source, string? Context, Dictionary<string, Cell> Values);
 
     [GeneratedRegex(@"\{[^{}]+\}")]
@@ -40,7 +47,7 @@ public static partial class I18nEndpoints
                 operatorLanguages = t.OperatorId is { } op
                     ? await conn.ExecuteScalarAsync<string[]>("SELECT languages FROM bo.operator WHERE id = @op", new { op }, tx)
                     : null,
-                all = await conn.QueryAsync<(string Code, string Name, string NativeName)>("SELECT code, name, native_name FROM bo.language ORDER BY code", transaction: tx),
+                all = await conn.QueryAsync<Language>("SELECT code, name, native_name AS nativename FROM bo.language ORDER BY code", transaction: tx),
             }, ct);
         });
 

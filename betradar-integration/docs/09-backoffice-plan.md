@@ -101,7 +101,7 @@ P2: ML risk scoring, early payout, bet builder, ClickHouse, retail.
 | ეტაპი | შინაარსი | რას ვაჩვენებთ ბოლოს | ~კვირა |
 |---|---|---|---|
 | **BO-0 საფუძველი** ✅ | Bo.Api + Bo.Workers ჩონჩხი, `bo.operator/brand`, Keycloak `bo` realm, permission-ები, audit + outbox, RLS, Angular `backoffice` shell, CFG ძრავა | ორი ოპერატორი ერთმანეთის მონაცემებს ვერ ხედავს; პარამეტრი იცვლება და trace ჩანს | 3–4 |
-| **BO-1 შეთავაზება** | CAT, I18N, CMS, ODDS + `offer-core`, distribution API (overlay + WebSocket) | ოპერატორი ცვლის margin-ს და ლიგის სახელს, frontend-ში 1 წამში აისახება | 4–5 |
+| **BO-1 შეთავაზება** (CAT + I18N ✅) | CAT, I18N, CMS, ODDS + `offer-core`, distribution API (overlay + WebSocket) | ოპერატორი ცვლის margin-ს და ლიგის სახელს, frontend-ში 1 წამში აისახება | 4–5 |
 | **BO-2 ფსონი და ფული** | PAM სიმულატორი (როგორც UOF სიმულატორი), INT, bet-engine (pipeline, settlement), LIM + liability, ticket search, CUS | სიმულატორის მატჩზე ფსონი იდება, სეტლდება, rollback-ზე resettle ხდება, PAM-ის ბალანსი სწორია | 6–8 |
 | **BO-3 რისკი, მონიტორინგი, ანალიტიკა** | MON (ticker, referral რიგი), CASH, REP rollup-ები + dashboard, NOTIF | დიდი ფსონი მიდის referral-ზე, ტრეიდერი სთავაზობს counter-offer-ს და მოთამაშე ადასტურებს; cash-out live მატჩზე; GGR რეპორტი | 5–6 |
 | **BO-4 Promo და რეგულაცია** | freebet ledger + დარიცხვა, საქართველოს რეპორტები, ასაკისა და რეესტრის შემოწმება | freebet-ით დადებული და მოგებული ბილეთი; რეგულატორული export | 3–4 |
@@ -126,6 +126,8 @@ P2: ML risk scoring, early payout, bet builder, ClickHouse, retail.
 | Outbox → NATS | Outbox → PostgreSQL NOTIFY | NATS ჯერ არ არის გაშლილი (docs/04); relay-ის შეცვლა ერთ ადგილას ხდება |
 | Settings snapshot Valkey-ში | in-process snapshot, `config_version`-ით ვალიდირებული | ერთი სერვისი კითხულობს; Valkey — როცა bet-engine/distribution დაემატება |
 | Scheduling, rollback (P1) | არა | P1 |
+| Media: object storage + CDN, ვარიანტები (06 §2.5.6) | ბაზაში (`bo.media_blob`), `/api/media/{id}` immutable cache, ვარიანტების გარეშე | BO-1a; S3/CDN — production-ის წინ |
+| Custom groups, manual ივენთები, participant merge (06 §2.7 P0/P1) | ჯერ არა | BO-1-ის შემდეგი ნაწილი (manual ივენთებს ODDS-ის manual მარკეტები სჭირდება) |
 
 ## 6. ღია საკითხები: ბიზნესი და იურისტი (კოდს ბლოკავს)
 
