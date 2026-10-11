@@ -4,6 +4,8 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი პასუხობს 09 §6.1-ის ღია საკითხს („მოთამაშის frontend“) და **ცვლის** 07 §2.8-ს, 07 §5.5-ის player endpoint-ებს, 08 §5.9-ის `/api/player/*`-ს, 06 §6.3-ის `/api/sb/v1/*` გზებს და 10 §4.4-ის მოთამაშის API-ს. რა უნდა შეიცვალოს სხვა დოკუმენტებში, ჩამოწერილია §12-ში.
 
+> ⚠ **2026-10-11 (docs/12 D30):** API-ის ბიზნეს-პროცესები SB Software-ს მიჰყვება (სისტემური ბილეთები, banker/blocks, add game, cash-out-ის ოთხი რეჟიმი, approve flow); Europebet-ის ფრონტისთვის ემატება SB-თავსებადი ფენა (docs/12 §19.4).
+
 > **სტატუსი:** design draft v0.1 · **თარიღი:** 2026-10-04
 > **სფერო:** მოთამაშისთვის განკუთვნილი ფენა — საჯარო **Sportsbook Player API** (`/v1`), real-time WebSocket, **white-label frontend** (ჩვენი sportsbook UI, რომელიც ოპერატორის საიტზე iFrame-ით ჩაიდგმება), postMessage კონტრაქტი, ბრენდის theming (BO ეკრანი), უსაფრთხოება და ოპერატორის onboarding.
 > **დაკავშირებული:** [04](04-platform-architecture.md) (§2 სერვისები, §9.4 operator API, §9.5 widgets) · [06](06-backoffice-catalog-odds-config.md) (§3.4 fallback, §4.2 offer-core, §5.8 CFG, §6 CMS, §7 propagation) · [07](07-backoffice-trading-risk-customers.md) (§2 bet engine, §5 cash-out, §7 PAM, §10 reason code-ები) · [08](08-backoffice-platform-reporting-promo.md) (§1 არქიტექტურა, §5.6 freebet placement) · [10](10-backoffice-bet-monitoring.md) (§3.1 `referral.*`, §4 referral lifecycle, §7.3 კოდები).

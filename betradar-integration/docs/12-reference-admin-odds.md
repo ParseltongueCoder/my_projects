@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.2, დეველოპმენტისთვის · **თარიღი:** 2026-10-11 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა)
+> **სტატუსი:** spec v1.3, დეველოპმენტისთვის · **თარიღი:** 2026-10-11 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results) და Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map). დანარჩენი სექციები (Register, Lives, Disallowed, Categories, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -30,6 +30,7 @@
 16. [ცვლილებები სხვა დოკუმენტებში](#16-ცვლილებები-სხვა-დოკუმენტებში)
 17. [ღია კითხვები](#17-ღია-კითხვები)
 18. [სამუშაო პაკეტები, თანმიმდევრობა, შეფასება](#18-სამუშაო-პაკეტები-თანმიმდევრობა-შეფასება)
+19. [SB Software API-ის ანალიზი და თავსებადობის ფენა](#19-sb-software-api-ის-ანალიზი-და-თავსებადობის-ფენა)
 
 ---
 
@@ -99,6 +100,7 @@
 | D26 | Templates (Game types) აღარ გამოიყენება — არ ვაკეთებთ. Long term ფილტრი (Results) არ გამოიყენება — არ ვაკეთებთ. | — |
 | D27 | Template map-ის ფუნქცია (პრემატჩის და ლაივის პროვაიდერის ტიპების შესაბამისობა, cash-out-ისთვის) საჭიროა. | §14 |
 | D28 | **Prematch და live game type-ები ცალ-ცალკე ჩანაწერებია** (როგორც რეფერენსში): თითოეულს თავისი სახელი, კონფიგურაცია, ტაბები და რიგი აქვს. | §9.1 |
+| D30 | **ჩვენი API ბიზნეს-პროცესებით SB Software-ს მიჰყვება, ტექნიკურად კი გაუმჯობესებულია.** Europebet-ის არსებული ფრონტისთვის საჭიროა **SB-თავსებადი ფენა** (compat adapter) ჩვენს Player API-ზე. | §19 |
 | D29 | **Mapping-ს საწყისად პლატფორმა (ჩვენი გუნდი) აკეთებს.** ოპერატორებს სხვადასხვა მარკეტი და სია სჭირდებათ, ამიტომ **ერთი ოპერატორისთვის გაკეთებული mapping მეორეზე არ უნდა მოქმედებდეს**. კლიენტის მოთხოვნით მას საკუთარი mapping-ის უფლება ადვილად უნდა მიეცეს. | §9.1, §13.1 |
 
 ### 2.2 ჩვენი რეკომენდაციები (default დიზაინი)
@@ -861,7 +863,7 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q1 | Preview Register-ის შენახვამდე (R7) — თანახმა ხართ? | მფლობელი | WP-5 UI |
 | Q2 | ტაბის „Visible“ = მხოლოდ ტაბის დამალვა (R3) — თანახმა ხართ? | მფლობელი | WP-3 |
 | Q3 | Cancelled ივენთის აღდგენა (un-cancel) საჭიროა? | მფლობელი | BO-2 |
-| Q4 | „1 in event“ რეალურად რას აკეთებს რეფერენსში? | მფლობელი | არა (P1) |
+| Q4 | „1 in event“ რეალურად რას აკეთებს რეფერენსში? ჰიპოთეზა (§19.2): `combinationType = 1` = ერთი ივენთიდან ბილეთში ერთი არჩევანი. შემოწმება: ერთ ბილეთში ერთი ივენთის 1X2 + ჰანდიკაპი | მფლობელი | არა (P1) |
 | Q5 | ✅ გადაწყდა (D29): საწყისად პლატფორმა; ოპერატორის override იზოლირებულია და მოგვიანებით ოპერატორსაც შეიძლება მიეცეს | — | — |
 | Q6 | Re-map ღია მარკეტებზე: ახალი ტიპით ხელახლა შექმნა თუ მხოლოდ ახალ ივენთებზე? | ტექნიკური | WP-2 |
 | Q7 | პროვაიდერის პრიორიტეტი (prematch Radar / live Genius) — სად და რა დონეზე? | მფლობელი (შემდეგი walkthrough) | WP-8 |
@@ -869,6 +871,9 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q9 | ✅ გადაწყდა (D28): prematch და live game type-ები ცალ-ცალკე | — | — |
 | Q10 | R4 (ქვეტაბი ⇒ ტაბი ავტომატურად) — საბოლოო დადასტურება | მფლობელი | WP-3 |
 | Q11 | Awaiting approval სისტემა ავტომატურად სვამს რაიმე შემთხვევაში (რეფერენსი SB Software-ის მხრიდან)? | მფლობელი | არა |
+| Q12 | Europebet-ის ფრონტი SBS ODDS API-ის რომელ endpoint-ებს იყენებს რეალურად (HAR / proxy log)? ეს განსაზღვრავს compat ფენის მოცულობას (§19.4) | მფლობელი / Europebet | WP-9 |
+| Q13 | `eventCodeId` / `gameCode` (855, 226140) — Categories › Code ranges-იდან ენიჭება (retail / სწრაფი ძებნა)? | მფლობელი (Categories walkthrough) | არა |
+| Q14 | ⚖ SBS-თავსებადი interface-ის აწყობა SB Software-თან Europebet-ის ხელშეკრულებას ხომ არ ეწინააღმდეგება? (docs/09 §6) | იურისტი | WP-9 |
 
 ---
 
@@ -885,7 +890,8 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | **WP-5 Manage + Results (BO-1-ის ნაწილი)** | V008, V011; Manage გვერდი (§4, ფსონების სვეტების გარეშე), სტატუსები, start time (ჩანაწერი), კომენტარები, changelog, ტიკერის ჩონჩხი; `Settle.Core` + schema-ები (4 სპორტი) + golden; Results რიგი, Register popup, preview, outcome pick, `bo.manual_settlement` ჩანაწერები | WP-1, WP-2 (`settle_rule`) | BO-1c | 6 |
 | **WP-6 BO-2 ინტეგრაცია** | ფსონების სვეტები, liability + auto-close + alert, cancel/void, void window, settlement hold, feed conflict email, resettle + INT debit, Events without bets auto, Resulting progress | BO-2 bet engine | BO-2 | 4 |
 | **WP-7 Player API** | tabs/subTabs/conflictTags/layout, ხილვადობა, invalidation | WP-3, SB-0 | SB-1 | 1.5 |
-| **WP-8 Multi-provider** | Genius adapter, LSports adapter (enrichment), event matching, provider პრიორიტეტი | WP-2, შემდეგი walkthrough | BO-2/3 პარალელურად | 8–10 |
+| **WP-8 Multi-provider** | Genius adapter, LSports adapter (enrichment), event matching (§19.3), provider პრიორიტეტი | WP-2, შემდეგი walkthrough | BO-2/3 პარალელურად | 8–10 |
+| **WP-9 SB-compat ფენა** | §19.4: ID mapping, endpoint-ების ქვესიმრავლე (Q12), კოდების ცხრილები, session bridge, contract ტესტები | SB-1, BO-2 (place bet, cash-out) | SB-2 / pilot-მდე | 5–7 (Q12-ზე დამოკიდებული) |
 
 **თანმიმდევრობა:** WP-1 → WP-2 → (WP-3 ‖ WP-5) → WP-4 → WP-7; WP-6 BO-2-თან ერთად; WP-8 ცალკე ნაკადი.
 
@@ -897,3 +903,52 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 - `Offer.Tests` და `Settle.Tests` golden ფაილების ცვლილება = მოთამაშის ფასის/შედეგის ცვლილება → review აუცილებელია.
 - UI: Angular Material, ka/en, კლავიატურით მართვადი ძირითადი ნაკადები; E2E სკრიპტი `e2e/`-ში თითო WP-ზე (Playwright).
 - TESTING.md-ს ემატება სცენარები B7+ (Manage, Results, Sort order, Mapping) მომხმარებლის MacBook-ზე გასაშვებად.
+
+---
+
+## 19. SB Software API-ის ანალიზი და თავსებადობის ფენა
+
+წყარო: SB Software-ის სამი დოკუმენტი (ODDS API v1.20, Admin Console API v1.4, „prematch Betradar / live Betgenius mapping for cash-out“), Restricted. აქ მხოლოდ **ჩვენი დასკვნებია**; მათი ტექსტი repo-ში არ ინახება.
+
+### 19.1 რას ადასტურებს
+
+| ჩვენი დიზაინი | SBS API |
+|---|---|
+| სტატუსები (D2) | კოდები: 0 awaiting approval, 10 cancelled, 20 closed, 100 active, 105 settled. **იგივე ნაკრები მარკეტსა (game) და outcome-ზეც** — ჩვენთანაც სტატუსი სამივე დონეზე იქნება (§5; მარკეტის/outcome-ის დონე = `bo.trading_override`-ის გაფართოება `awaiting_approval`-ით და მუდმივი რეჟიმით) |
+| ტაბები/ქვეტაბები (§12) | game-ზე `marketTypes: [..]` + `subMarketTypeMap`, ივენთზე `marketTypesOrder`; ცალკე endpoint აბრუნებს **სპორტის ტაბების სიას** → §12: ტაბების ხელმისაწვდომობა სპორტის მიხედვით (`bo.market_group_order`-ის sport row-ი = ამ სპორტის ტაბების სია + რიგი) |
+| Combinations (§9.3) | `combinationTypes: [..]` თითო game-ზე, ფრონტამდე მიდის |
+| Builder-ები (§9.3) | `gameLayout`, `eventLayout` (prematch), `eventBuilder`, `categoryBuilder` (live) — int კოდები |
+| Pattern | ერთი პოზიციური `argument` (`{0}`); game type details = id + default name + pattern |
+| Template map (D27, §14) | cash-out მხოლოდ დაკავშირებულ ივენთებზე და დამეპილ ტიპებზე; outcome-ების რაოდენობა ტოლი, რიგი სწორდება |
+| Game ≠ game type | game = მარკეტი ივენთში (`gameId`, `gameType`, `argument`, outcome-ები); game type = ზოგადი ტიპი |
+
+### 19.2 ახალი ფაქტები
+
+- **Prematch და live = ორი ცალკე ივენთი SBS-ში** (`eventId` ცალ-ცალკე, `liveEventId` კავშირით, live-ს სახელში „(live)“). ჩვენთან ერთი canonical ივენთია (§14). Compat ფენა ორ ID-ს აჩვენებს (§19.4), მიგრაციისას კი მათი ორი ივენთი ჩვენს ერთზე ერთიანდება.
+- **კომბინაციის წესები:** `combinationType` (game-ზე) + `combinationTypes` (ტეგები); შეცდომის კოდები: ერთი ივენთის რამდენიმე game, game არაკომბინირებადი, ივენთი არაკომბინირებადი, „მხოლოდ იმავე ID-თან“ / „არა იმავე ID-თან“. ⇒ §9.3: `bet.conflict_tags` ორი რეჟიმით (`exclusive` — საერთო ტეგი კრძალავს, `inclusive` — მხოლოდ საერთო ტეგით) + `bet.max_selections_per_event` (mt) — ⚠ Q4-ის ჰიპოთეზა.
+- **`periodId`** game-ზეა (მნიშვნელობები დოკუმენტში არ არის). ჩვენ პერიოდს resolver-ის წესში ვინახავთ (§8.4); ცალკე ველი არ ემატება, სანამ ცოცხალი API-ით არ დავადგენთ, რას შეიცავს.
+- **Event code / game code** (`eventCodeId`, `gameCode`) — მოკლე რიცხვითი კოდები, ⚠ Q13.
+- **BO-2/BO-3 მოცულობა, რომელიც რეფერენსში მუშაობს** (docs/07, 10-ის შესავსებად): სისტემური ბილეთები (Trixie … Goliath, Canadian, Round Robin) + **banker** + **blocks**; cash-out: სრული, ნაწილობრივი, **order** (ავტომატური cash-out თანხაზე), live countdown; **Add game** (დადებულ ბილეთზე არჩევანის დამატება ტრეიდერის დადასტურებით); approve flow (stake/odds changed = referral + counter-offer, docs/10); **odds history** (`sb` outcome odds history ჩასართავია); custom bet (Betradar, Kickertech); ~100 ბილეთის შეცდომის კოდი = CMS reason code-ების checklist (live timeout, liability limit, ერთ outcome-ზე ბევრი ბილეთი, outcome similarity, დაბლოკილი სპორტი/კატეგორია, MTS…); პასუხისმგებლიანი თამაშის ლიმიტები (დღე/კვირა/თვე stake/loss/deposit, session time, exclusion) — PAM/INT.
+- **Admin Console API:** login (session cookie, `allowedViews` + `allowedButtons` = view-ისა და ღილაკის დონის უფლებები — ჩვენი permission-ების სიზუსტე ემთხვევა), ბონუსის მიბმა (Techsson ID-ით), სეგმენტაცია (ხელით/ავტომატური) — CUS/PROMO-ს შენიშვნა BO-2/4-ისთვის.
+
+### 19.3 ივენთების ავტომატური mapping (WP-8-ის სპეციფიკაცია)
+
+რეფერენსის ალგორითმი, ჩვენს მოდელზე (ივენთები ერთ canonical ივენთად ერთიანდება, არა წყვილად):
+- წინაპირობა: ორივე მონაწილე დამეპილია (Participants › Mapping; კატეგორიის ყველა გუნდი);
+- start time-ის სხვაობა ≤ 60 წთ (CFG, პლატფორმა) სპორტებზე: ფეხბურთი, კალათბურთი, ბეისბოლი, ჰოკეი, ჩოგბურთი, ხელბურთი, ფრენბურთი, რაგბი, MMA; დანარჩენზე ზუსტი დამთხვევა;
+- ორივე აქტიური; start ≤ 3 დღეში; ერთ ივენთზე ერთი live წყარო;
+- job ყოველ 2 წთ-ში; ხელით pairing (Add → Select → Pair) და გაყოფა (unpair) Feed Ops-ში;
+- ორი კომბინაცია: Radar prematch + Genius live, Radar prematch + Radar live.
+
+### 19.4 SB-თავსებადი ფენა (D30, WP-9)
+
+**მიზანი:** Europebet-ის ამჟამინდელი ფრონტი (რომელიც SBS ODDS API-ს იყენებს) ჩვენზე მინიმალური ცვლილებით გადმოვიდეს. ჩვენი ძირითადი API (`/v1`, docs/11) და მოდელი SBS-ის ტექნიკურ შეზღუდვებს **არ** იღებს.
+
+- **ცალკე სერვისი** `SbCompat.Api` (Player API-ის წინ, ან მისი ცალკე host): მხოლოდ თარგმნის, ბიზნეს-ლოგიკა არ აქვს. ჩვენი `/v1`-ის კლიენტია, როგორც white-label ფრონტი (docs/09 §2.16).
+- **Endpoint-ების ქვესიმრავლე** = ის, რასაც Europebet-ის ფრონტი რეალურად იძახებს (Q12). სავარაუდო ბირთვი: market (categories, events by categories, event details, game type details, market groups by sport), livebetting running, betting (place / calculate / approve / add-outcome / refresh), cashout (bets, maxAmount, full, partial, order, countdown), transactions, customer session, favourites.
+- **ID-ები:** SBS-ს int ID-ები აქვს და prematch/live ცალკე ივენთებია. `compat.id_map(kind: event|game|outcome|category|participant, our_ref, mode, compat_id int)` — სტაბილური int-ები, prematch და live ცალ-ცალკე. **მიგრაციისას** Europebet-ის არსებული ID-ები (განსაკუთრებით კატეგორიები: 1 = Soccer და ა.შ., რომლებიც ფრონტში შეიძლება hardcoded იყოს) ამ ცხრილში იმპორტდება.
+- **კოდების ცხრილები:** სტატუსები, bet type, event type, ბილეთის შეცდომები (ჩვენი reason code → SBS კოდი), ტაბების ID-ები, layout-ები — კონფიგურაციად, ვერსიონირებული.
+- **Session:** SBS-ის `X-ODDS-SESSION` (adapter `gameContent` launch-ით) → ჩვენი player token (docs/11 §6 launch).
+- **ხარისხი:** contract ტესტები — SBS test env-ის ჩაწერილი პასუხები (anonymized, repo-ს გარეთ ან მხოლოდ სტრუქტურა) vs compat-ის პასუხები, ველების და ტიპების დონეზე.
+- **ვადა:** compat მიგრაციის ხიდია; ახალი ოპერატორები `/v1`-ს იყენებენ. ⚖ Q14.
+
