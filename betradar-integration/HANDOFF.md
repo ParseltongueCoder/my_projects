@@ -1,6 +1,6 @@
 # HANDOFF: სესიიდან სესიაზე გადასაცემი ინფორმაცია
 
-> ბოლო განახლება: 2026-10-05, BO-1b-ის დასრულების შემდეგ.
+> ბოლო განახლება: 2026-10-11, რეფერენს-ადმინის (Odds) walkthrough-ისა და docs/12-ის შემდეგ.
 > ახალი სესია ჯერ `/CLAUDE.md`-ს კითხულობს (წესები, რუკა, სტატუსი), შემდეგ ამ ფაილს: აქ არის ბოლო სამუშაოს დეტალები,
 > ღია კითხვები, გარემოს მომზადების რეცეპტი და შემდეგი ნაბიჯის საწყისი წერტილები.
 > სავალდებულო გადაწყვეტილებები ისევ docs/09 §2-შია, გადახვევები docs/09 §5-ში.
@@ -115,7 +115,20 @@ CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome node backoffice
 ```
 Auth-ის გარეშე მომხმარებელი platform super admin-ია. სკრიპტი switcher-ში AcmeBet-ს ირჩევს.
 
+## 5a. რეფერენს-ადმინის walkthrough (2026-10-11)
+
+მომხმარებელი ოპერატორის ამჟამინდელ ადმინს (SB Software) გვერდ-გვერდ გადის; ის თამასაა. ანალიზი და სპეციფიკაცია: **docs/12**
+(გადაწყვეტილებები D1–D27, რეკომენდაციები R1–R12, ღია კითხვები Q1–Q11, სამუშაო პაკეტები WP-1…WP-8). კოდი ჯერ არ შეცვლილა.
+- გავლილია: Odds › Manage, Results (Register popup), Game types › Manage, Sport assign, Sort order, Market types, Sub-market,
+  Mapping, Template map. Templates და Long term არ გამოიყენება.
+- შემდეგი walkthrough: Categories (Manage, Order, Default factor, Code ranges, Flags, Top leagues, Icons), Participants,
+  Events mapping (პროვაიდერის პრიორიტეტი prematch/live — Q7), Disallowed, Lives, Register, Add games, Odds list.
+  ყოველი ახალი სექცია docs/12-ს ემატება (ან docs/13-ში, თუ ძალიან გაიზრდება).
+- მნიშვნელოვანი: four-eyes default-ად გამორთულია (D1); feed-ის მარკეტი აღარ ჩანს default-ად (ხილვადობის ჯაჭვი, docs/12 §3).
+
 ## 5. შემდეგი ნაბიჯი: BO-1-ის დარჩენილი ნაწილი (CLAUDE.md „Next“ 1)
+
+> docs/12-ის შემდეგ პრიორიტეტი შეიცვალა: ჯერ BO-1c (docs/12 §18), შემდეგ ქვემოთ აღწერილი.
 
 **Custom groups** (docs/06 §2.2, §2.5, DDL §8 `custom_group`, `custom_group_member`):
 - ახალი მიგრაცია `V008`. `bo` ცხრილებს RLS და იზოლაციის ტესტი სჭირდება (CLAUDE.md-ის წესი).

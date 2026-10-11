@@ -26,6 +26,7 @@ Branch: `claude/bettor-api-integration-hqk4e1` — commit and push there; no PR 
 | `betradar-integration/README.md` | master plan, decisions table, 14-week plan |
 | `betradar-integration/docs/01-04` | roadmap, UOF data model + canonical DDL, simulator, platform architecture |
 | `betradar-integration/docs/05-11` | operator back office design: research, CAT/I18N/ODDS/CFG/CMS, BET/LIM/CASH/CUS/INT, ADM/REP/PROMO, **09 = plan + binding decisions + status**, 10 = bet monitoring/referral, 11 = Player API + white-label |
+| `betradar-integration/docs/12` | **Odds module spec from the reference admin walkthrough** (owner decisions D1–D27, visibility chain, results/resolver, game types, mapping, work packages WP-1…WP-8) |
 | `betradar-integration/TESTING.md` | how the user runs and tests everything (Feed Ops §1-6, back office §7 B1-B6) |
 | `uof-simulator/` | .NET UOF simulator (RabbitMQ + mock Betradar API, YAML scenarios) |
 | `platform/` | `Platform.Canonical` (sb schema, migrations `db/migrations/V001..`), `Uof.Adapter`, `Admin.Api` (Feed Ops), **`Bo.Core` + `Bo.Api`** (back office), **`Offer.Core`** (the one price pipeline), tests `Platform.Tests`, `Bo.Tests`, `Offer.Tests` |
@@ -60,10 +61,12 @@ Keycloak `bo` login is identity-first (username, then password); invited users m
   manual markets from templates as `manual:{op}:{code}`, market-type matrix over `market.enabled`, simulator, expiry
   worker), CMS reason codes (ka/en defaults, operator/brand texts, lint, preview). V007 also restricts `bo_app` in `sb`
   to its own manual rows (RLS). Deviations: docs/09 §5 "BO-1b". E2E scripts: `betradar-integration/e2e/`.
+- Four-eyes is **off by default** (docs/12 D1); market visibility = mapping → sport assign → sort order (docs/12 §3).
 - User decisions: Player API first, white-label later; counter-offer P0 (30 s for the player); referral timeouts live
   30 s / prematch 180 s, market close → auto-cancel, player cannot withdraw; odds format `2.50`. Legal questions open (docs/09 §6).
 
 ## Next (in order)
+0. **BO-1c Odds (docs/12 §18)**: WP-1 CFG (`mode`, four-eyes off by default) → WP-2 catalog + per-sport mapping → WP-3 visibility chain ‖ WP-5 Manage + Results/`Settle.Core` → WP-4 Game types page. Reference-admin walkthrough continues (Categories, Participants, Events mapping, Add games…): extend docs/12.
 1. **BO-1 rest**: custom groups, manual events (+ result entry); then P1 market groups / display order, `market.max_lines`.
 2. **SB-0/SB-1**: Player API skeleton (`/v1` catalog/events/event, OpenAPI, tenant via API key/brand host) on top of the
    same overlay and `Offer.Core` (docs/11); messages bundle endpoint for CMS.
