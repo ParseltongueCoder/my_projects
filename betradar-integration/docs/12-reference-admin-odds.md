@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.1, დეველოპმენტისთვის · **თარიღი:** 2026-10-11 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა)
+> **სტატუსი:** spec v1.2, დეველოპმენტისთვის · **თარიღი:** 2026-10-11 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results) და Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map). დანარჩენი სექციები (Register, Lives, Disallowed, Categories, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -43,7 +43,7 @@
 4. **ხილვადობა და რიგი**: ტიპი სპორტზე მიბმული (Sport assign), სპორტის/ქვეყნის/ლიგის სიაში დამატებული და დალაგებული (Sort order), ტაბებად და ქვეტაბებად დაჯგუფებული.
 5. **Mapping**: Betradar / Genius / LSports-ის ტიპები ჩვენს game type-ებზე, სპორტის მიხედვით.
 
-ჩვენთვის ყველაზე დიდი ახალი კომპონენტებია: **ხილვადობის ჯაჭვი** (§3; ცვლის default-ს „ყველაფერი ჩანს“-დან „ჩანს მხოლოდ დამატებული“-ზე), **resolver** (`Settle.Core`, §8.4) და **სპორტის მიხედვით mapping** (§13). დანარჩენი არსებულ მექანიზმებზე (CFG, I18N, `bo.event_override`, `bo.trading_override`, `bo.manual_settlement`) აშენდება.
+ჩვენთვის ყველაზე დიდი ახალი კომპონენტებია: **ხილვადობის ჯაჭვი** (§3; ცვლის default-ს „ყველაფერი ჩანს“-დან „ჩანს მხოლოდ დამატებული“-ზე), **resolver** (`Settle.Core`, §8.4) და **game type ფენა + mapping** (prematch/live ცალ-ცალკე, სპორტის მიხედვით, ოპერატორის override-ით; §9.1, §13). დანარჩენი არსებულ მექანიზმებზე (CFG, I18N, `bo.event_override`, `bo.trading_override`, `bo.manual_settlement`) აშენდება.
 
 ---
 
@@ -52,7 +52,7 @@
 | რეფერენსი | მნიშვნელობა | ჩვენთან (კოდი / UI) |
 |---|---|---|
 | **Game** | კონკრეტული მარკეტი ივენთზე (მაგ. „Handicap (1X2) 2:0“) | `sb.market` / UI: „მარკეტი“ |
-| **Game type** | მარკეტის ტიპი (1X2, Total Goals…) | `sb.market_description` / UI: „მარკეტის ტიპი (game type)“ |
+| **Game type** | მარკეტის ტიპი (1X2, Total Goals…); prematch და live ცალკე (D28) | `sb.game_type` → canonical მარკეტი `sb.market_description` (§9.1) / UI: „მარკეტის ტიპი (game type)“ |
 | **Market type** | ფრონტის **ტაბი** ივენთის გვერდზე (Main, Corner, Offside…) | `bo.market_group` (level 1) / UI: „ტაბი“ |
 | **Sub market type** | ტაბის ქვეტაბი (Corner → 1st Half) | `bo.market_group` (level 2, `parent_id`) / UI: „ქვეტაბი“ |
 | **Category / subcategory** | სპორტი / ქვეყანა (+ ლიგა) | `sb.sport` / `sb.category` / `sb.tournament` |
@@ -128,8 +128,8 @@
 
 | # | პირობა | წყარო | ვინ მართავს |
 |---|---|---|---|
-| 1 | პროვაიდერის ტიპი დამეპილია canonical მარკეტზე (manual მარკეტს ეს არ სჭირდება) **და** canonical მარკეტს სპორტ S-სა და რეჟიმ M-ზე აქვს game type G (binding) | `sb.market_type_map` (§13), `sb.game_type_binding` (§9.1) | პლატფორმა |
-| 2 | G მიბმულია S-ზე რეჟიმ M-ისთვის | Sport assign (§10) | ოპერატორი |
+| 1 | პროვაიდერის ტიპი დამეპილია canonical მარკეტზე (manual მარკეტს ეს არ სჭირდება) **და** canonical მარკეტს სპორტ S-სა და რეჟიმ M-ზე აქვს game type G (binding) | `sb.market_type_map` (§13), `sb.game_type_binding` (§9.1) | პლატფორმა; binding-ს + ოპერატორის override (D29) |
+| 2 | G (რეჟიმ M-ის game type) მიბმულია S-ზე | Sport assign (§10) | ოპერატორი |
 | 3 | G არის O-ს effective Sort order სიაში (S → C → T მემკვიდრეობით, რეჟიმი M) და იქ დამალული არ არის | Sort order (§11) | ოპერატორი |
 | 4 | CFG: `offer.visible`, `offer.prematch_enabled` / `offer.live_enabled`, `market.enabled` | CFG (არსებული) | ოპერატორი |
 | 5 | ივენთის სტატუსი = Active (§5), არ არის trading close / suspend, liability ლიმიტი არ არის მიღწეული (§6) | `bo.event_override`, `bo.trading_override`, LIM | ოპერატორი / სისტემა |
@@ -420,7 +420,7 @@ Resolve(ResultSheet sheet, MarketInstance market, RuleBinding rule) → MarketRe
 MarketResult = { outcomes: [{ code, result: won|lost|void|half_won|half_lost, deadHeat? }] }
 ```
 
-**წესის ოჯახები** (თითო game type-ს ერთი ოჯახი + პარამეტრები `stat`, `period` ∈ {ft, regular, h1, h2, q1…, et, ot, shootout}, `team` ∈ {home, away, any}):
+**წესის ოჯახები** (თითო canonical მარკეტს ერთი ოჯახი + პარამეტრები `stat`, `period` ∈ {ft, regular, h1, h2, q1…, et, ot, shootout}, `team` ∈ {home, away, any}):
 
 | ოჯახი | მაგალითები |
 |---|---|
@@ -434,7 +434,7 @@ MarketResult = { outcomes: [{ code, result: won|lost|void|half_won|half_lost, de
 | `htft`, `combo` | Halftime/Fulltime, Result & Total |
 | `first_last` (P1, მოითხოვს მოვლენების თანმიმდევრობას) | First/Last goal — popup-ით არ რეზალტდება, outcome-ის არჩევით |
 
-**წესის მიბმა game type-ზე** = **პლატფორმის** კატალოგი (`sb.market_settle_rule(market_description_id, family, params jsonb)`), რომელსაც platform staff მართავს (Feed Ops). ეს **არ არის** ოპერატორის Game types › Manage გვერდის ველი (D20). ოპერატორის საკუთარ (custom) game type-ზე წესი არასავალდებულოა: თუ არ აქვს, მარკეტი outcome-ის ხელით არჩევით რეზალტდება.
+**წესის მიბმა canonical მარკეტზე** (არა game type-ზე: prematch და live ტიპი ერთ წესს იზიარებს, D28) = **პლატფორმის** კატალოგი (`sb.market_settle_rule(market_description_id, family, params jsonb)`), რომელსაც platform staff მართავს (Feed Ops). ეს **არ არის** ოპერატორის Game types › Manage გვერდის ველი (D20). ოპერატორის საკუთარ (custom) game type-ზე წესი არასავალდებულოა: თუ არ აქვს, მარკეტი outcome-ის ხელით არჩევით რეზალტდება.
 
 ### 8.5 Save → „upload to games“ (D13)
 
@@ -622,7 +622,7 @@ diff(X)      = { reorder: [ids…], hidden: [ids…], added: [ids…] }  // მ�
 - ყოველ ელემენტს ნიშანი: „სპორტიდან“, „აქ გადალაგებული“, „აქ დამალული“, „მხოლოდ აქ“. ღილაკები: „ამ ლიგისთვის შეცვლა“, „მშობელზე დაბრუნება“.
 - Add: autocomplete მხოლოდ სპორტზე assign-ით მიბმული ტიპებიდან.
 - **Preview**: მარჯვნივ რეალური (ან ბოლო) ივენთის მარკეტები ტაბებით, ზუსტად ფრონტის რიგით.
-- კოპირება: prematch → live, სპორტი → სპორტი, ლიგა → ლიგა.
+- კოპირება: prematch → live (prematch ტიპი იცვლება თავისი live წყვილით, §14; წყვილის გარეშე ტიპი გამოტოვდება და ჩამოიწერება), სპორტი → სპორტი, ლიგა → ლიგა.
 - Undo ბოლო ცვლილებაზე (ვერსიის დაბრუნება). შენახვა ავტომატური (debounce 1 წმ), audit + outbox.
 - „Resort“ ღილაკი არ არის (რიცხვები აღარ იწერება).
 
@@ -642,7 +642,7 @@ POST /api/bo/odds/order/copy                        {from:{…}, to:{…}}
 ### 12.1 მოდელი
 
 - `bo.market_group(id, operator_id NULL=template, parent_id NULL, code, name, sort_pos, is_active, created_at, updated_at)`, RLS. ორი დონე (`parent_id` ერთი დონით).
-- `bo.market_group_member(operator_id, group_id, market_description_id)`, RLS. Many-to-many.
+- `bo.market_group_member(operator_id, group_id, game_type_id)`, RLS. Many-to-many; prematch და live ტიპი ცალ-ცალკე ებმება (D28).
 - თარგმანი: I18N ახალი entity type `market_group` (ka/en/ru/tr, CSV-ით).
 - ტაბების რიგი: გლობალური (`sort_pos`) + სპორტის override (`bo.market_group_order(operator_id, sport_id, items)`), იგივე diff-ის ლოგიკით (D25).
 - ცარიელი ტაბი/ქვეტაბი ივენთზე იმალება (D25) — Player API-ს ლოგიკა.
@@ -733,11 +733,11 @@ CREATE TABLE sb.market_type_map (
 ### 13.4 UI (Feed Ops: `/mapping/markets`)
 
 - Provider, Prematch/Live, ძებნა, სპორტი, Mapped / Unmapped / Detached.
-- ცხრილი: ჩვენი game type, სპორტი, provider ID, provider-ის სახელის შაბლონი, MAP / UNMAP / DETACH.
+- ცხრილი: ჩვენი canonical მარკეტი (და მისი game type-ები), სპორტი, provider ID, provider-ის სახელის შაბლონი, MAP / UNMAP / DETACH.
 - **დაუმეპავების რიგი პრიორიტეტით:** `events_count` (რამდენ ღია ივენთზე მოდის) კლებით. მასში ჩანს ოპერატორების „Request mapping“ მოთხოვნებიც.
 - **Binding-ის ეკრანი:** canonical მარკეტი → game type სპორტისა და რეჟიმის მიხედვით (ცხრილი: სპორტი × prematch/live); ცარიელი უჯრა = ამ სპორტში/რეჟიმში არ ჩანს.
-- **ავტო-შეთავაზება:** სახელი + specifier-ები + outcome-ები → top-3 game type, ერთი დაჭერით დადასტურება.
-- MAP dialog: მარცხნივ provider-ის outcome-ები, მარჯვნივ game type-ის, შეთავაზებული წყვილებით; specifier-ების შესაბამისობა; preview რეალური ივენთის მარკეტზე.
+- **ავტო-შეთავაზება:** სახელი + specifier-ები + outcome-ები → top-3 canonical მარკეტი, ერთი დაჭერით დადასტურება.
+- MAP dialog: მარცხნივ provider-ის outcome-ები, მარჯვნივ canonical მარკეტის, შეთავაზებული წყვილებით; specifier-ების შესაბამისობა; preview რეალური ივენთის მარკეტზე.
 - Bulk: ერთი ტიპი რამდენიმე სპორტზე.
 
 ### 13.5 API (Admin.Api)
