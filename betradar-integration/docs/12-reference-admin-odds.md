@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.1, დეველოპმენტისთვის · **თარიღი:** 2026-10-11 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე)
+> **სტატუსი:** spec v1.1, დეველოპმენტისთვის · **თარიღი:** 2026-10-11 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results) და Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map). დანარჩენი სექციები (Register, Lives, Disallowed, Categories, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -99,6 +99,7 @@
 | D26 | Templates (Game types) აღარ გამოიყენება — არ ვაკეთებთ. Long term ფილტრი (Results) არ გამოიყენება — არ ვაკეთებთ. | — |
 | D27 | Template map-ის ფუნქცია (პრემატჩის და ლაივის პროვაიდერის ტიპების შესაბამისობა, cash-out-ისთვის) საჭიროა. | §14 |
 | D28 | **Prematch და live game type-ები ცალ-ცალკე ჩანაწერებია** (როგორც რეფერენსში): თითოეულს თავისი სახელი, კონფიგურაცია, ტაბები და რიგი აქვს. | §9.1 |
+| D29 | **Mapping-ს საწყისად პლატფორმა (ჩვენი გუნდი) აკეთებს.** ოპერატორებს სხვადასხვა მარკეტი და სია სჭირდებათ, ამიტომ **ერთი ოპერატორისთვის გაკეთებული mapping მეორეზე არ უნდა მოქმედებდეს**. კლიენტის მოთხოვნით მას საკუთარი mapping-ის უფლება ადვილად უნდა მიეცეს. | §9.1, §13.1 |
 
 ### 2.2 ჩვენი რეკომენდაციები (default დიზაინი)
 
@@ -114,7 +115,7 @@
 | R8 | „Events without bets“ ავტომატური: ბილეთის გარეშე მარკეტი რიგში არ ჩანს და ავტომატურად იხურება. | §8.9 |
 | R9 | S1/SX/S2 → **P&L, თუ ეს შედეგი მოვიდა** (ფერით). | §4.3 |
 | R10 | Event type ფილტრი = ერთი multi-select (Prematch match · Prematch outright · Live) ორი ცალკე ფილტრის ნაცვლად. | §4.2 |
-| R11 | **B2B გაყოფა:** game type კატალოგი და provider mapping = **პლატფორმა** (Feed Ops, platform staff). Sport assign, Sort order, ტაბები, game type-ის კონფიგურაცია, თარგმანის override და საკუთარი (custom) game type-ები = **ოპერატორი**. ⚠ | §9.1, §13.1 |
+| R11 | **B2B გაყოფა:** canonical მარკეტები და provider → canonical mapping = **პლატფორმა**; binding (canonical → game type) = პლატფორმის default + **ოპერატორის override** (D29). Sport assign, Sort order, ტაბები, game type-ის კონფიგურაცია, თარგმანის override და custom game type-ები = **ოპერატორი**. | §9.2, §13.1 |
 | R12 | პლატფორმა ახალ ოპერატორს აძლევს **default სიებს** (Sort order თითო სპორტზე, ტაბები), რომ ფრონტი ცარიელი არ იყოს. | §3.3 |
 
 ---
@@ -512,12 +513,15 @@ CREATE TABLE sb.game_type (
   created_at   timestamptz NOT NULL DEFAULT now()
 );
 CREATE TABLE sb.game_type_binding (
+  operator_id           bigint,                               -- NULL = პლატფორმის default; არა NULL = ოპერატორის override (D29, RLS)
   market_description_id integer NOT NULL REFERENCES sb.market_description(id),
   sport_id              integer REFERENCES sb.sport(id),   -- NULL = ყველა სპორტი
   mode                  text NOT NULL CHECK (mode IN ('prematch','live')),
   game_type_id          integer NOT NULL REFERENCES sb.game_type(id),
-  PRIMARY KEY (market_description_id, sport_id, mode)       -- NULLS NOT DISTINCT; resolution: (md, sport, mode) → (md, NULL, mode)
+  is_hidden             boolean NOT NULL DEFAULT false,       -- ოპერატორის override: „ეს canonical მარკეტი ამ სპორტში/რეჟიმში ჩემთან არ არსებობს“
+  PRIMARY KEY (operator_id, market_description_id, sport_id, mode)  -- NULLS NOT DISTINCT
 );
+-- resolution ოპერატორ O-სთვის: (O, md, sport, mode) → (O, md, NULL, mode) → (NULL, md, sport, mode) → (NULL, md, NULL, mode)
 ```
 
 - Betradar-ის ახალი ტიპის პირველ მიღებაზე adapter (როგორც დღეს) ქმნის canonical მარკეტს და **ორ** game type-ს (prematch + live) `sport_id = NULL` binding-ით, ერთნაირი სახელით. სპორტის მიხედვით გაყოფა და live-ის სახელი — Duplicate-ით (§9.4).
@@ -530,7 +534,9 @@ CREATE TABLE sb.game_type_binding (
 | ნაწილი | დონე | ცხრილი / მექანიზმი |
 |---|---|---|
 | Canonical მარკეტი, outcome შაბლონები, specifier-ები, resolver-ის წესი | **პლატფორმა** | `sb.market_description` (+ `_outcome`, `market_specifier_def`), `sb.market_settle_rule` |
-| პლატფორმის game type-ები და binding-ები, provider mapping | **პლატფორმა** | `sb.game_type`, `sb.game_type_binding`, `sb.market_type_map` (§13) — ⚠ Q5 |
+| Provider → canonical mapping (outcome/specifier map) | **პლატფორმა** (ყველასთვის საერთო: ბილეთის იდენტობა და settlement) | `sb.market_type_map` (§13) |
+| პლატფორმის game type-ები და default binding-ები | **პლატფორმა** | `sb.game_type`, `sb.game_type_binding` (`operator_id IS NULL`) |
+| ოპერატორის binding override (D29) | **ოპერატორი** (საწყისად მხოლოდ ჩვენი გუნდი მისი სახელით; მოგვიანებით თვითონ, permission-ით) | `sb.game_type_binding` (`operator_id = O`), RLS |
 | სახელი/pattern/description | პლატფორმა default + **ოპერატორის override** | I18N `game_type` |
 | Combinations, alert/liability, layout-ები | **ოპერატორი** | CFG `mt` = game type (§9.3) |
 | Sport assign, Sort order, ტაბები | **ოპერატორი** | §10–12 |
@@ -671,9 +677,23 @@ PUT  /api/bo/odds/tabs/order?sportId=                     {items}
 
 ## 13. Mapping: პროვაიდერი → game type
 
-### 13.1 ფლობა და ადგილი (R11)
+### 13.1 ფლობა და ადგილი (R11, D29)
 
-Provider mapping = პროვაიდერის მარკეტის ტიპის (Betradar `18`, Genius `10414`) მიბმა ჩვენს canonical მარკეტზე outcome-ებით და specifier-ებით, და canonical მარკეტის მიბმა game type-ზე სპორტისა და რეჟიმის მიხედვით (binding, §9.1). რეკომენდაცია (R11): ორივე პლატფორმის ფუნქციაა (Feed Ops / `Admin.Api`, `feedops` realm, platform staff), ერთხელ ყველა ოპერატორისთვის. ოპერატორი მას **ხედავს** (read-only, „რატომ არ ჩანს მარკეტი“) და შეუძლია მოითხოვოს („Request mapping“ → Feed Ops-ის რიგი), მაგრამ არ ცვლის. ⚠ §17 Q5.
+Mapping ორი ფენისგან შედგება და ისინი სხვადასხვანაირად იყოფა:
+
+| ფენა | რას აკეთებს | ვინ | რატომ |
+|---|---|---|---|
+| **Provider → canonical** (`sb.market_type_map`) | Betradar `18` / Genius `10414` = ჩვენი canonical „total“, outcome-ებითა და specifier-ებით | **მხოლოდ პლატფორმა**, ყველასთვის ერთი | `sb.market` row და ბილეთები ამაზეა დამოკიდებული (იდენტობა, settlement). ორ ოპერატორს ერთი feed მარკეტი ორ სხვადასხვა მარკეტად ვერ ექნება |
+| **Canonical → game type** (`sb.game_type_binding`) | რა სახელით და რომელ game type-ად ჩანს canonical მარკეტი ამ სპორტსა და რეჟიმში, ან საერთოდ არ ჩანს | პლატფორმის default + **ოპერატორის override** | ეს ბიზნესია: სხვადასხვა ოპერატორს სხვადასხვა მარკეტი და სია სჭირდება (D29) |
+
+**იზოლაციის გარანტიები (D29):**
+- ოპერატორის binding override მხოლოდ მასზე მოქმედებს (RLS, `operator_id`); ტესტი: A-ს override B-ს ხილვადობას და სახელებს არ ცვლის.
+- პლატფორმის **ახალი** mapping (მაგ. A-ს მოთხოვნით დამატებული Genius ტიპი) სხვა ოპერატორთან **არ ჩნდება**, რადგან ხილვადობის ჯაჭვში მათ Sort order სიაში ეს ტიპი არ არის (§3).
+- პლატფორმის **არსებული** default binding-ის შეცვლა (მაგ. game type-ის გადარქმევა / სხვა ტიპზე გადატანა) ოპერატორებზე ჩუმად არ ვრცელდება: ვინც ამ binding-ს იყენებს (Sport assign / Sort order-ში აქვს), მას მიმდინარე მნიშვნელობა ავტომატურად override-ად ეწერება (snapshot) და შეტყობინება მოდის „პლატფორმამ შესთავაზა ცვლილება: მიღება / უარი“.
+
+**დღეს (საწყისი ვერსია):** ორივე ფენას ჩვენი გუნდი მართავს Feed Ops-იდან. ოპერატორის override-საც ჩვენი გუნდი ქმნის კლიენტის თხოვნით (ოპერატორის არჩევით ეკრანზე). ოპერატორი BO-ში **ხედავს** (read-only, „რატომ არ ჩანს მარკეტი“) და შეუძლია მოითხოვოს („Request mapping“ → Feed Ops-ის რიგი).
+
+**მოგვიანებით (კლიენტის მოთხოვნით), დამატებითი სამუშაოს გარეშე მოდელში:** BO-ში იგივე binding-ის ეკრანი (საერთო Angular კომპონენტი `@admin/ui`-ში), ოპერატორის override row-ებზე, permission `odds.mapping.edit`-ით და CFG `odds.operator_mapping_enabled` (O, default false). Provider → canonical ფენა ოპერატორისთვის ისევ მხოლოდ მოთხოვნით რჩება.
 
 ### 13.2 მოდელი
 
@@ -792,10 +812,11 @@ OutcomeKey = MarketKey + outcome code
 | `display.category_layout` | enum | O s t | mt | `three_way` |
 | `display.event_layout` | enum | O s t | mt | `three_way` |
 | `notif.result_change_recipients` | string_list | O | — | [] |
+| `odds.operator_mapping_enabled` | bool | P O | — | false (D29: ოპერატორი binding-ს თვითონ ცვლის) |
 
 ### 15.4 ახალი permission-ები
 
-`odds.event.edit`, `odds.event.status`, `odds.event.cancel`, `odds.event.comment`, `odds.event.comment.manage`, `odds.result.enter`, `odds.result.reopen`, `odds.catalog.edit` (game type config, custom types), `odds.visibility.edit` (sport assign, order, tabs). როლებზე განაწილება: trader — event.*, result.enter; head_trader — + cancel, result.reopen, catalog, visibility; viewer — მხოლოდ view.
+`odds.event.edit`, `odds.event.status`, `odds.event.cancel`, `odds.event.comment`, `odds.event.comment.manage`, `odds.result.enter`, `odds.result.reopen`, `odds.catalog.edit` (game type config, custom types), `odds.visibility.edit` (sport assign, order, tabs), `odds.mapping.edit` (ოპერატორის binding override; მოქმედებს მხოლოდ `odds.operator_mapping_enabled = true`-ზე). როლებზე განაწილება: trader — event.*, result.enter; head_trader — + cancel, result.reopen, catalog, visibility; viewer — მხოლოდ view.
 
 ### 15.5 Frontend (backoffice, Angular Material)
 
@@ -841,7 +862,7 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q2 | ტაბის „Visible“ = მხოლოდ ტაბის დამალვა (R3) — თანახმა ხართ? | მფლობელი | WP-3 |
 | Q3 | Cancelled ივენთის აღდგენა (un-cancel) საჭიროა? | მფლობელი | BO-2 |
 | Q4 | „1 in event“ რეალურად რას აკეთებს რეფერენსში? | მფლობელი | არა (P1) |
-| Q5 | Provider mapping (§13.1) პლატფორმის staff-ის ფუნქციაა (R11)? თუ ოპერატორიც მეპავს? | მფლობელი | WP-2 |
+| Q5 | ✅ გადაწყდა (D29): საწყისად პლატფორმა; ოპერატორის override იზოლირებულია და მოგვიანებით ოპერატორსაც შეიძლება მიეცეს | — | — |
 | Q6 | Re-map ღია მარკეტებზე: ახალი ტიპით ხელახლა შექმნა თუ მხოლოდ ახალ ივენთებზე? | ტექნიკური | WP-2 |
 | Q7 | პროვაიდერის პრიორიტეტი (prematch Radar / live Genius) — სად და რა დონეზე? | მფლობელი (შემდეგი walkthrough) | WP-8 |
 | Q8 | Four-eyes პლატფორმის staff-ის (`P` scope) ცვლილებებზე — ჩართული დარჩეს? | მფლობელი | WP-1 |
@@ -858,7 +879,7 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | WP | შინაარსი | დამოკიდებულება | ეტაპი | ~დკ |
 |---|---|---|---|---|
 | **WP-1 CFG** | `cfg.four_eyes_enabled` (D1), ახალი key-ები (§15.3), ტესტები | — | BO-1c | 1 |
-| **WP-2 Catalog + mapping** | V009, `sb.game_type` + binding (adapter ქმნის prematch/live წყვილს), `mt` → game type ID (`Offer.Core`, `OfferService`, CFG, I18N `game_type`), adapter-ის resolution, `provider_market_seen`, outcome/specifier map, Feed Ops mapping + binding UI + suggest, `event_change_log` წერა | WP-1 | BO-1c | 5 |
+| **WP-2 Catalog + mapping** | V009, `sb.game_type` + binding პლატფორმის default-ით და ოპერატორის override-ით (RLS + იზოლაციის ტესტი, snapshot პლატფორმის ცვლილებაზე; adapter ქმნის prematch/live წყვილს), `mt` → game type ID (`Offer.Core`, `OfferService`, CFG, I18N `game_type`), adapter-ის resolution, `provider_market_seen`, outcome/specifier map, Feed Ops mapping + binding UI + suggest, `event_change_log` წერა | WP-1 | BO-1c | 5 |
 | **WP-3 ხილვადობა** | V010, `OfferVisibility.Resolve` + `Offer.Core` gate-ები, Sport assign, Sort order (diff, drag & drop, preview), ტაბები/ქვეტაბები, template seed, golden + RLS ტესტები | WP-1, WP-2 (ნაწილობრივ) | BO-1c | 5 |
 | **WP-4 Game types გვერდი** | §9: სია, config, bulk, custom, duplicate, I18N `description`/`market_group` | WP-1, WP-3 | BO-1c | 2.5 |
 | **WP-5 Manage + Results (BO-1-ის ნაწილი)** | V008, V011; Manage გვერდი (§4, ფსონების სვეტების გარეშე), სტატუსები, start time (ჩანაწერი), კომენტარები, changelog, ტიკერის ჩონჩხი; `Settle.Core` + schema-ები (4 სპორტი) + golden; Results რიგი, Register popup, preview, outcome pick, `bo.manual_settlement` ჩანაწერები | WP-1, WP-2 (`settle_rule`) | BO-1c | 6 |
