@@ -124,6 +124,10 @@ Auth-ის გარეშე მომხმარებელი platform sup
 - შემდეგი walkthrough: Categories (Manage, Order, Default factor, Code ranges, Flags, Top leagues, Icons), Participants,
   Events mapping (პროვაიდერის პრიორიტეტი prematch/live — Q7), Disallowed, Lives, Register, Add games, Odds list.
   ყოველი ახალი სექცია docs/12-ს ემატება (ან docs/13-ში, თუ ძალიან გაიზრდება).
+- მოლოდინში (მომხმარებელი მოგვიანებით გამოგზავნის): **replica DWH-ის დიაგრამა** (EB_DWH, `public`-ის გარდა სხვა სქემებიც)
+  და dictionary-ების შიგთავსი (`transaction_type`, `slip_types_dic`, `game_type`, `bet_slip.status`, `event.event_type`).
+  მხოლოდ სტრუქტურა/dictionary — PII არა. მიღების შემდეგ: docs/12 D10 გასწორება (event code = `category.event_code_id_start/end`
+  დიაპაზონი, Q13) და SBS → ჩვენი სქემის მიგრაციის რუკის მონახაზი (WP-9). EB_DWH-ის აღწერა skill-შია (`eb-dwh-schema`).
 - მნიშვნელოვანი: four-eyes default-ად გამორთულია (D1); feed-ის მარკეტი აღარ ჩანს default-ად (ხილვადობის ჯაჭვი, docs/12 §3).
 
 ## 5. შემდეგი ნაბიჯი: BO-1-ის დარჩენილი ნაწილი (CLAUDE.md „Next“ 1)
