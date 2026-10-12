@@ -1,6 +1,6 @@
 # HANDOFF: სესიიდან სესიაზე გადასაცემი ინფორმაცია
 
-> ბოლო განახლება: 2026-10-11, რეფერენს-ადმინის (Odds) walkthrough-ისა და docs/12-ის შემდეგ.
+> ბოლო განახლება: 2026-10-12, რეფერენს-ადმინის walkthrough (Odds + Game types) და SB Software API-ის ანალიზის შემდეგ. **ახალი სესია: §5a.**
 > ახალი სესია ჯერ `/CLAUDE.md`-ს კითხულობს (წესები, რუკა, სტატუსი), შემდეგ ამ ფაილს: აქ არის ბოლო სამუშაოს დეტალები,
 > ღია კითხვები, გარემოს მომზადების რეცეპტი და შემდეგი ნაბიჯის საწყისი წერტილები.
 > სავალდებულო გადაწყვეტილებები ისევ docs/09 §2-შია, გადახვევები docs/09 §5-ში.
@@ -115,20 +115,50 @@ CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome node backoffice
 ```
 Auth-ის გარეშე მომხმარებელი platform super admin-ია. სკრიპტი switcher-ში AcmeBet-ს ირჩევს.
 
-## 5a. რეფერენს-ადმინის walkthrough (2026-10-11)
+## 5a. რეფერენს-ადმინის walkthrough (2026-10-11 … 10-12) — **ახალი სესია აქედან იწყება**
 
-მომხმარებელი ოპერატორის ამჟამინდელ ადმინს (SB Software) გვერდ-გვერდ გადის; ის თამასაა. ანალიზი და სპეციფიკაცია: **docs/12**
-(გადაწყვეტილებები D1–D27, რეკომენდაციები R1–R12, ღია კითხვები Q1–Q11, სამუშაო პაკეტები WP-1…WP-8). კოდი ჯერ არ შეცვლილა.
-- გავლილია: Odds › Manage, Results (Register popup), Game types › Manage, Sport assign, Sort order, Market types, Sub-market,
-  Mapping, Template map. Templates და Long term არ გამოიყენება.
-- შემდეგი walkthrough: Categories (Manage, Order, Default factor, Code ranges, Flags, Top leagues, Icons), Participants,
-  Events mapping (პროვაიდერის პრიორიტეტი prematch/live — Q7), Disallowed, Lives, Register, Add games, Odds list.
-  ყოველი ახალი სექცია docs/12-ს ემატება (ან docs/13-ში, თუ ძალიან გაიზრდება).
-- მოლოდინში (მომხმარებელი მოგვიანებით გამოგზავნის): **replica DWH-ის დიაგრამა** (EB_DWH, `public`-ის გარდა სხვა სქემებიც)
-  და dictionary-ების შიგთავსი (`transaction_type`, `slip_types_dic`, `game_type`, `bet_slip.status`, `event.event_type`).
-  მხოლოდ სტრუქტურა/dictionary — PII არა. მიღების შემდეგ: docs/12 D10 გასწორება (event code = `category.event_code_id_start/end`
-  დიაპაზონი, Q13) და SBS → ჩვენი სქემის მიგრაციის რუკის მონახაზი (WP-9). EB_DWH-ის აღწერა skill-შია (`eb-dwh-schema`).
-- მნიშვნელოვანი: four-eyes default-ად გამორთულია (D1); feed-ის მარკეტი აღარ ჩანს default-ად (ხილვადობის ჯაჭვი, docs/12 §3).
+მომხმარებელი ოპერატორის ამჟამინდელ ადმინს (SB Software, Europebet-ის „Admin Console“) სკრინებით გვერდ-გვერდ გადის; ის
+**თამასაა**: ფუნქციურად არ უნდა ჩამოუვარდეთ, UX-ში უკეთესი უნდა ვიყოთ. სესიის რეჟიმი: **მხოლოდ ანალიზი და დოკუმენტაცია,
+კოდი არ იცვლება**, სანამ მომხმარებელი არ იტყვის. ყოველ გვერდზე: გაიგე → ჩვენს მოდელზე დაიტანე → მკაფიო კითხვები →
+გადაწყვეტილება D# ან რეკომენდაცია R# docs/12-ში → commit + push → ClickUp-ის შესაბამისი გვერდის განახლება.
+
+**სად არის ყველაფერი**
+- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.3): D1–D30, R1–R12, Q1–Q14, WP-1…WP-9, §19 = SB Software API-ის ანალიზი.
+  docs/09 §2 პუნქტები 17–18 მასზე მიუთითებს.
+- **ClickUp** (workspace 1100320000015036, space „Space“): დოკუმენტი „Odds და Game types — სპეციფიკაცია (BO-1c)“,
+  `document_id = z8qgvbuynw-318`, გვერდები 01–10 (page id-ები: 01 `z8qgvbuynw-38`, 02 `-58`, 03 `-78`, 04 `-98`, 05 `-118`,
+  06 `-138`, 07 `-158`, 08 `-178`, 09 `-198`, 10 `-218`). ClickUp = ასლი; მთავარი ვერსია repo-შია. ახალი სექცია → ახალი გვერდი.
+- **SB Software-ის დოკუმენტები** (ODDS API v1.20, Admin Console API v1.4, prematch Radar / live Genius mapping) იყო სესიის
+  upload-ებში და ახალ სესიაში აღარ იქნება. Restricted-ია: repo-ში **არ** ინახება, მხოლოდ ჩვენი დასკვნები (docs/12 §19).
+  საჭიროების შემთხვევაში მომხმარებელს ხელახლა სთხოვე.
+- **EB_DWH** (Europebet-ის replica DWH, SBS-ის მონაცემები): აღწერა skill-შია `anthropic-skills:eb-dwh-schema` (მხოლოდ `public`).
+  მისგან უკვე ჩანს: `category.event_code_id_start/end` (= Code ranges), ლიმიტები 3 დონეზე (category / game_type / game),
+  `event.cant_combine_with(_categories)`, `game.can_combine/min_outcomes`, `local_status` ≠ `remote_status`,
+  `category_aggregator`, banker/blocks/system combos, `customer_limits`, betting shops + agent იერარქია.
+
+**გავლილია:** Odds › Manage, Results (Register popup 4 სპორტზე), Game types › Manage, Sport assign, Sort order, Market types
+(ტაბები), Sub-market, Mapping, Template map. Templates და Long term არ გამოიყენება.
+
+**მთავარი გადაწყვეტილებები (დეტალები docs/12 §2):** four-eyes default off (D1); სტატუსები active/closed/awaiting_approval/
+cancelled ივენთზე, მარკეტზე და outcome-ზე (D2, §19.1); ხელით რეზალტი ნებისმიერ მარკეტზე, popup = ყველა დაურეზალტებელი,
+manual იგებს + email ალერტი (D12–D14); resettle მინუსამდე (D15); game type წყაროსგან დამოუკიდებელია (D20), სპორტით სხვა
+სახელი = სხვა ტიპი (D21), **prematch და live ტიპები ცალკე** (D28) canonical მარკეტზე binding-ით (§9.1); ხილვადობა =
+mapping → sport assign → sort order (D24, §3); mapping-ს პლატფორმა აკეთებს, ოპერატორის override იზოლირებულია (D29);
+**API SB-ს ბიზნეს-პროცესებით + SB-compat ფენა Europebet-ის ფრონტისთვის** (D30, WP-9).
+
+**შემდეგი walkthrough (რიგით):** **Categories** (Manage, Order, Default factor, Code ranges, Flags, Top leagues, Icons) →
+Participants (Manage, Mapping, LSport) → Events mapping / LSport map (პროვაიდერის პრიორიტეტი prematch/live — Q7) →
+Disallowed (By event, By category, Game by event) → Lives (Events, Match status, Status & limits) → Register (Single, Multi)
+→ Add games → Odds list → BetGenius Categories. Categories-ზე შესამოწმებელი: Code ranges = event code (Q13, D10-ის გასწორება),
+Default factor = მარჟის default, category-ის default alert/liability, Top leagues, `category_aggregator`.
+
+**მოლოდინში (მომხმარებელი გამოგზავნის):** replica DWH-ის დიაგრამა (სხვა სქემებიც) და dictionary-ები
+(`transaction_type`, `slip_types_dic`, `game_type`, `bet_slip.status`, `event.event_type`). მხოლოდ სტრუქტურა — PII არა.
+შემდეგ: D10-ის გასწორება და SBS → ჩვენი სქემის მიგრაციის რუკა (WP-9).
+
+**ღია კითხვები მომხმარებლისთვის (docs/12 §17):** Q1 preview, Q2 ტაბის visible, Q3 un-cancel, Q4 „1 in event“
+(ჰიპოთეზა `combinationType = 1`), Q6 re-map, Q7 პროვაიდერის პრიორიტეტი, Q8 four-eyes პლატფორმაზე, Q10 ქვეტაბი ⇒ ტაბი,
+Q11 awaiting approval ავტომატურად, Q12 ფრონტის endpoint-ები (HAR), Q13 event code, Q14 ⚖ compat-ის ლეგალურობა.
 
 ## 5. შემდეგი ნაბიჯი: BO-1-ის დარჩენილი ნაწილი (CLAUDE.md „Next“ 1)
 

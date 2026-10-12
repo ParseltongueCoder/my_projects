@@ -26,7 +26,7 @@ Branch: `claude/bettor-api-integration-hqk4e1` — commit and push there; no PR 
 | `betradar-integration/README.md` | master plan, decisions table, 14-week plan |
 | `betradar-integration/docs/01-04` | roadmap, UOF data model + canonical DDL, simulator, platform architecture |
 | `betradar-integration/docs/05-11` | operator back office design: research, CAT/I18N/ODDS/CFG/CMS, BET/LIM/CASH/CUS/INT, ADM/REP/PROMO, **09 = plan + binding decisions + status**, 10 = bet monitoring/referral, 11 = Player API + white-label |
-| `betradar-integration/docs/12` | **Odds module spec from the reference admin walkthrough** (owner decisions D1–D30, SB Software API analysis §19, visibility chain, results/resolver, game types, mapping, work packages WP-1…WP-8) |
+| `betradar-integration/docs/12` | **Odds module spec from the reference admin walkthrough** (owner decisions D1–D30, SB Software API analysis §19, visibility chain, results/resolver, game types, mapping, work packages WP-1…WP-9; ClickUp copy: doc `z8qgvbuynw-318`) |
 | `betradar-integration/TESTING.md` | how the user runs and tests everything (Feed Ops §1-6, back office §7 B1-B6) |
 | `uof-simulator/` | .NET UOF simulator (RabbitMQ + mock Betradar API, YAML scenarios) |
 | `platform/` | `Platform.Canonical` (sb schema, migrations `db/migrations/V001..`), `Uof.Adapter`, `Admin.Api` (Feed Ops), **`Bo.Core` + `Bo.Api`** (back office), **`Offer.Core`** (the one price pipeline), tests `Platform.Tests`, `Bo.Tests`, `Offer.Tests` |
@@ -51,7 +51,7 @@ session scratchpad (`node24/bin`); Docker builds need the proxy CA — copy cont
 `docker compose up -d --no-build`. Playwright: `chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })`;
 Keycloak `bo` login is identity-first (username, then password); invited users must enrol TOTP.
 
-## Status (2026-10-05)
+## Status (2026-10-12)
 - Phase 1 done: simulator, adapter, canonical DB, monitoring, Feed Ops admin.
 - Back office **BO-0 done** (tenants/brands, Keycloak orgs, RBAC 12 roles, audit, outbox→pg_notify, CFG engine with
   trace + change sets + four-eyes) and **BO-1a done** (catalog tree, events overrides, participants, translations with
@@ -67,7 +67,7 @@ Keycloak `bo` login is identity-first (username, then password); invited users m
   30 s / prematch 180 s, market close → auto-cancel, player cannot withdraw; odds format `2.50`. Legal questions open (docs/09 §6).
 
 ## Next (in order)
-0. **BO-1c Odds (docs/12 §18)**: WP-1 CFG (four-eyes off by default) → WP-2 game type layer (`sb.game_type`, prematch/live separate, binding per sport) + provider mapping → WP-3 visibility chain ‖ WP-5 Manage + Results/`Settle.Core` → WP-4 Game types page. Reference-admin walkthrough continues (Categories, Participants, Events mapping, Add games…): extend docs/12.
+0. **BO-1c Odds (docs/12 §18)**: WP-1 CFG (four-eyes off by default) → WP-2 game type layer (`sb.game_type`, prematch/live separate, binding per sport) + provider mapping → WP-3 visibility chain ‖ WP-5 Manage + Results/`Settle.Core` → WP-4 Game types page. Reference-admin walkthrough continues with **Categories** (then Participants, Events mapping, Disallowed, Lives, Add games…): analysis only, no code; extend docs/12 + ClickUp. Start from HANDOFF §5a.
 1. **BO-1 rest**: custom groups, manual events (+ result entry); then P1 market groups / display order, `market.max_lines`.
 2. **SB-0/SB-1**: Player API skeleton (`/v1` catalog/events/event, OpenAPI, tenant via API key/brand host) on top of the
    same overlay and `Offer.Core` (docs/11); messages bundle endpoint for CMS.
