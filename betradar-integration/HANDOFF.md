@@ -1,6 +1,6 @@
 # HANDOFF: სესიიდან სესიაზე გადასაცემი ინფორმაცია
 
-> ბოლო განახლება: 2026-10-12, რეფერენს-ადმინის walkthrough (Odds + Game types) და SB Software API-ის ანალიზის შემდეგ. **ახალი სესია: §5a.**
+> ბოლო განახლება: 2026-10-13, Categories walkthrough-ის დასაწყისი და DWH-ის dictionary-ები (docs/12 §19.5). **ახალი სესია: §5a.**
 > ახალი სესია ჯერ `/CLAUDE.md`-ს კითხულობს (წესები, რუკა, სტატუსი), შემდეგ ამ ფაილს: აქ არის ბოლო სამუშაოს დეტალები,
 > ღია კითხვები, გარემოს მომზადების რეცეპტი და შემდეგი ნაბიჯის საწყისი წერტილები.
 > სავალდებულო გადაწყვეტილებები ისევ docs/09 §2-შია, გადახვევები docs/09 §5-ში.
@@ -123,7 +123,7 @@ Auth-ის გარეშე მომხმარებელი platform sup
 გადაწყვეტილება D# ან რეკომენდაცია R# docs/12-ში → commit + push → ClickUp-ის შესაბამისი გვერდის განახლება.
 
 **სად არის ყველაფერი**
-- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.3): D1–D30, R1–R12, Q1–Q14, WP-1…WP-9, §19 = SB Software API-ის ანალიზი.
+- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.4): D1–D30, R1–R13, Q1–Q16, WP-1…WP-9, §19 = SB Software API-ის ანალიზი.
   docs/09 §2 პუნქტები 17–18 მასზე მიუთითებს.
 - **ClickUp** (workspace 1100320000015036, space „Space“): დოკუმენტი „Odds და Game types — სპეციფიკაცია (BO-1c)“,
   `document_id = z8qgvbuynw-318`, გვერდები 01–10 (page id-ები: 01 `z8qgvbuynw-38`, 02 `-58`, 03 `-78`, 04 `-98`, 05 `-118`,
@@ -152,13 +152,25 @@ Disallowed (By event, By category, Game by event) → Lives (Events, Match statu
 → Add games → Odds list → BetGenius Categories. Categories-ზე შესამოწმებელი: Code ranges = event code (Q13, D10-ის გასწორება),
 Default factor = მარჟის default, category-ის default alert/liability, Top leagues, `category_aggregator`.
 
-**მოლოდინში (მომხმარებელი გამოგზავნის):** replica DWH-ის დიაგრამა (სხვა სქემებიც) და dictionary-ები
-(`transaction_type`, `slip_types_dic`, `game_type`, `bet_slip.status`, `event.event_type`). მხოლოდ სტრუქტურა — PII არა.
+**Categories walkthrough (2026-10-13, მიმდინარე):** Manage-ის პირველი სკრინი გავლილია. მომხმარებლის განმარტებით Level 1 = სპორტი,
+Level 2 = ქვეყანა/ფედერაცია, Level 3 = ლიგა/თასი, რაც ზუსტად ემთხვევა `sb.sport → sb.category → sb.tournament`-ს (docs/12-ში ჯერ არ
+ჩაწერილა, მომავალში D31). ფორმის ველები: Parent, ID, name, Level, status Online, Provider, Registered by/date, Alert, Market
+liability, Include in the odds feed, Display as, Treat as sport, Local names (ენის მიხედვით + Visible); ღილაკები: Add sport, Add
+category, Game limits, Change parent category, Live curtain. მომხმარებელს **დაესვა 7 კითხვა და პასუხი ჯერ არ მოსულა**: odds feed vs
+status, Display as, Treat as sport, ენის Visible, Change parent (პლატფორმა თუ ოპერატორის override, CFG მემკვიდრეობა), Live curtain,
+კატეგორიის mapping პროვაიდერებს შორის. ასევე ვითხოვეთ სკრინები: Game limits, Change parent, Live curtain, Add category, Level 3-ის
+ფორმა, ჩამოშლილი dropdown-ები. Manage-ის დასრულების შემდეგ იწერება docs/12 §20 და ClickUp-ის გვერდი 11.
+
+**DWH dictionary-ები მიღებულია** (`game_type`, `slip_types_dic`, `transaction_type`, `bet_slip.status`). დასკვნები docs/12 §19.5-შია,
+ნედლი ფაილები repo-ში არ ინახება. მთავარი: game type ID-ის ნიშანი = prematch/live, ID-ის ბლოკები პროვაიდერის მიხედვით, ~1 700 manual
+ტიპი (R13), ბილეთის ტიპები სტრუქტურულია, Q15 (bet slip tax), Q16 (`bet_slip.status`). **მოლოდინში:** replica DWH-ის დიაგრამა,
+`event.event_type`, `bet_slip.status`-ის მნიშვნელობა, `game_group` 0/1-ის დადასტურება, `category`-ის ველების მაგალითები. ამის
 შემდეგ: D10-ის გასწორება და SBS → ჩვენი სქემის მიგრაციის რუკა (WP-9).
 
 **ღია კითხვები მომხმარებლისთვის (docs/12 §17):** Q1 preview, Q2 ტაბის visible, Q3 un-cancel, Q4 „1 in event“
 (ჰიპოთეზა `combinationType = 1`), Q6 re-map, Q7 პროვაიდერის პრიორიტეტი, Q8 four-eyes პლატფორმაზე, Q10 ქვეტაბი ⇒ ტაბი,
-Q11 awaiting approval ავტომატურად, Q12 ფრონტის endpoint-ები (HAR), Q13 event code, Q14 ⚖ compat-ის ლეგალურობა.
+Q11 awaiting approval ავტომატურად, Q12 ფრონტის endpoint-ები (HAR), Q13 event code, Q14 ⚖ compat-ის ლეგალურობა,
+Q15 ⚖ bet slip tax, Q16 `bet_slip.status`.
 
 ## 5. შემდეგი ნაბიჯი: BO-1-ის დარჩენილი ნაწილი (CLAUDE.md „Next“ 1)
 

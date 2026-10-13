@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.3, დეველოპმენტისთვის · **თარიღი:** 2026-10-11 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი)
+> **სტატუსი:** spec v1.4, დეველოპმენტისთვის · **თარიღი:** 2026-10-13 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results) და Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map). დანარჩენი სექციები (Register, Lives, Disallowed, Categories, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -119,6 +119,7 @@
 | R10 | Event type ფილტრი = ერთი multi-select (Prematch match · Prematch outright · Live) ორი ცალკე ფილტრის ნაცვლად. | §4.2 |
 | R11 | **B2B გაყოფა:** canonical მარკეტები და provider → canonical mapping = **პლატფორმა**; binding (canonical → game type) = პლატფორმის default + **ოპერატორის override** (D29). Sport assign, Sort order, ტაბები, game type-ის კონფიგურაცია, თარგმანის override და custom game type-ები = **ოპერატორი**. | §9.2, §13.1 |
 | R12 | პლატფორმა ახალ ოპერატორს აძლევს **default სიებს** (Sort order თითო სპორტზე, ტაბები), რომ ფრონტი ცარიელი არ იყოს. | §3.3 |
+| R13 | ერთჯერადი special-ისთვის ახალი game type არ იქმნება: manual მარკეტი თავისუფალი სახელით ზოგად custom ტიპზე. მიგრაციით მხოლოდ ბოლო დროს გამოყენებული ტიპები გადმოდის. | §19.5 |
 
 ---
 
@@ -874,6 +875,8 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q12 | Europebet-ის ფრონტი SBS ODDS API-ის რომელ endpoint-ებს იყენებს რეალურად (HAR / proxy log)? ეს განსაზღვრავს compat ფენის მოცულობას (§19.4) | მფლობელი / Europebet | WP-9 |
 | Q13 | `eventCodeId` / `gameCode` (855, 226140) — Categories › Code ranges-იდან ენიჭება (retail / სწრაფი ძებნა)? | მფლობელი (Categories walkthrough) | არა |
 | Q14 | ⚖ SBS-თავსებადი interface-ის აწყობა SB Software-თან Europebet-ის ხელშეკრულებას ხომ არ ეწინააღმდეგება? (docs/09 §6) | იურისტი | WP-9 |
+| Q15 | ⚖ Bet slip tax (`transaction_type` 506/507) ახლაც გამოიყენება? ვინ ითვლის (sportsbook / PAM) და რა წესით? | მფლობელი / იურისტი | BO-2 (INT) |
+| Q16 | `bet_slip.status` 1 / 2 / 5 / 10 — რას ნიშნავს? (DWH query, §19.5) | მფლობელი (DWH) | WP-9 |
 
 ---
 
@@ -952,3 +955,22 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 - **ხარისხი:** contract ტესტები — SBS test env-ის ჩაწერილი პასუხები (anonymized, repo-ს გარეთ ან მხოლოდ სტრუქტურა) vs compat-ის პასუხები, ველების და ტიპების დონეზე.
 - **ვადა:** compat მიგრაციის ხიდია; ახალი ოპერატორები `/v1`-ს იყენებენ. ⚖ Q14.
 
+
+### 19.5 EB_DWH-ის dictionary-ები (2026-10-13)
+
+წყარო: მომხმარებლის მიერ გაშვებული select-ები Europebet-ის replica DWH-ზე (`public.game_type`, `slip_types_dic`, `transaction_type`, `bet_slip.status`). ნედლი ფაილები repo-ში **არ** ინახება, აქ მხოლოდ სტრუქტურა და დასკვნებია.
+
+**`game_type` (10 054 row, 8 913 განსხვავებული სახელი):**
+- **ID-ს ნიშანი = რეჟიმი:** უარყოფითი = prematch (4 080), დადებითი = live (5 974). ეს **D28-ს ადასტურებს**: SBS-შიც prematch და live ცალ-ცალკე ტიპებია. გამონაკლისია ძველი ბლოკი `1…199` (1X2 = 1, Double chance = 4) და `200 Livebetting`-ის შემდეგ live-ის ასლები (1X2 = 201, Double chance = 247).
+- **ID-ის ბლოკები პროვაიდერის მიხედვით.** ბლოკს მარკერ-row-ი იწყებს (`BETRADAR PREMATCH` −8000, `BETGENIUS LIVE` 6000, `LSPORT LIVE` 15000, `Start of manual PREMATCH game types` −30000, `Start of manual LIVE game types` 20000 და სხვ.). ისტორიულად ნახსენებია 10 პროვაიდერი: Betradar, Betgenius, LSports, Odds&More, Playtech, RTSmunity, BetConstruct, Bayes/Bodex, Betbazar, SIS. ⇒ SBS-ში game type **პროვაიდერზეა მიბმული**. ჩვენთან ის წყაროსგან დამოუკიდებელია (D20), ამიტომ მიგრაციის რუკა (WP-9) ასეთია: `SBS game_type_id → (პროვაიდერი, რეჟიმი, პროვაიდერის market id) → ჩვენი canonical მარკეტი + game type`. ერთ ჩვენს game type-ს რამდენიმე SBS ID შეესაბამება, `compat.id_map(kind = game_type)` ორივე მიმართულებით.
+- **Manual ტიპები:** prematch ≈ 1 600 (≤ −30000), live ≈ 100 (≥ 20000). ბევრი მათგანი ერთჯერადი special-ია: გუნდის ან სპორტსმენის სახელი, „World Cup 2014 (Winner)“, ტემპერატურა. **R13:** special-ისთვის ახალი game type არ იქმნება. ესაა manual მარკეტი თავისუფალი სახელით ერთ ზოგად custom ტიპზე (`custom:{op}:special`, P1 „custom manual markets“, HANDOFF §3.3). ასე კატალოგი არ ივსება ერთჯერადი ტიპებით. მიგრაციისას გადმოდის მხოლოდ ის ტიპები, რომლებიც ბოლო N თვეში გამოიყენებოდა (N ⚠ მიგრაციის გეგმაში).
+- **ერთი სახელი, ბევრი ტიპი:** „Match Winner“ 9-ჯერაა, „1st Half Handicap“ 8-ჯერ. ესაა სპორტების და რეჟიმების ასლები, რაც **D21-ს ადასტურებს**.
+- **`game_group`** (0–4, −1 = მარკერი) = outcome-ების სტრუქტურა. 3 = three-way (1X2, Double chance, Next team to score), 2 = two-way (Under/Over, Odd/Even, 1 2), 4 = outright/winner (League winner, Racing, medal) — ეს სამი თვალით ჩანს და §9.3-ის „Group“-ს ემთხვევა. ⚠ ჰიპოთეზა: 0 = სია (მოთამაშეები, correct score), 1 = კომბინირებული/მრავალ-outcome-იანი (HT/FT, Matchbet + Totals). ჩვენთან ეს outcome-ების რაოდენობიდან და layout hint-იდან გამოითვლება (§9.3), ცალკე ველი არ სჭირდება.
+- **Pattern:** `{0}` = ერთი პოზიციური არგუმენტი (§19.1-ის დადასტურება, 3 122 ტიპი). `{1}`/`{2}` = გუნდების სახელები („{2} - To Win At Least One Half“). ~900 ტიპში Betradar UOF-ის სინტაქსია (`{!mapnr}`, `{$competitor1}`, `{%player}`, `{+-0}`), ანუ UOF-ის template-ებია გადმოწერილი. ჩვენი name template-ები UOF-ს პირდაპირ კითხულობს, ამიტომ compat ფენამ named → `{0}` უნდა გარდაქმნას.
+- **„zzz“ პრეფიქსი** (19) და „Test x“ = გაუქმებული/სატესტო ჩანაწერები. ჩვენთან ამისთვის `sb.game_type.is_active` გვაქვს, პრეფიქსი არ არის საჭირო.
+
+**`slip_types_dic` (ბილეთის ტიპი):** 0 ACCUMULATOR, 1 SINGLES, 100 SINGLE, 2–9 DOUBLES … NINE_FOLD, 10–40 SYSTEM_BET_k, 101–111 full cover (Trixie, Patent, Round Robin, Yankee, Lucky 15/31/63, Heinz, Super Heinz, Goliath, Canadian), **200 + k** = „k + ACCUMULATOR“, **300 + k** = „k AND UP“ (350 = ზღვარი). ⇒ BO-2-ის bet engine-ში ბილეთის ტიპი **სტრუქტურულია** და ენუმერაცია არ არის: `kind (single | accumulator | system | full_cover)`, `k`, `plus_accumulator`, `and_up`, `full_cover_name`. SBS-ის რიცხვითი კოდი compat ფენის ცხრილშია (§19.4). docs/07-ის ბილეთის მოდელს ეს ემატება BO-2-ში.
+
+**`transaction_type` (~350):** სპორტის ბირთვი: 1 Bet placed, 2 Bet won, 3 Bet cancelled, 4 Bet won reversal, 5 Bet stake reversal, 11 / 12 Cashout / reversal, 504 / 505 Promotion betting / reversal, 506 / 507 **Bet slip tax** / reversal, 1501 / 1502 Bet cashback / cancel, 2670 / 2671 slip cashback bonus. დანარჩენი გადახდებს, კაზინოს/გარე პროვაიდერებს, მაღაზიებს/აგენტებს და სესხებს ეხება (PAM-ის სფეროა, ჩვენი არა). ⇒ INT-ის (PAM wallet) ტრანზაქციების მინიმალური ნაკრები BO-2-ში: `stake`, `win`, `refund` (cancel/void), `win_reversal` (resettle, D15), `stake_reversal`, `cashout`, `cashout_reversal`, `tax`, `tax_reversal`, `promo_*`. ⚠ **Q15:** bet slip tax ახლაც გამოიყენება? ვინ ითვლის (sportsbook თუ PAM) და რა წესით? (⚖ docs/09 §6)
+
+**`bet_slip.status`:** განსხვავებული მნიშვნელობებია **1, 2, 5, 10**. მნიშვნელობა ჯერ უცნობია (⚠ Q16, შემოწმება: რაოდენობა, `confirmed_return > 0`-ის წილი და თარიღები სტატუსის მიხედვით). ჰიპოთეზა SBS-ის სხვა კოდების მიხედვით: 10 = cancelled, 1 = open, 2 / 5 = won / lost.
