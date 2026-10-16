@@ -123,7 +123,7 @@ Auth-ის გარეშე მომხმარებელი platform sup
 გადაწყვეტილება D# ან რეკომენდაცია R# docs/12-ში → commit + push → ClickUp-ის შესაბამისი გვერდის განახლება.
 
 **სად არის ყველაფერი**
-- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.5): D1–D38, R1–R17, Q1–Q18, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories.
+- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.6): D1–D38, R1–R18, Q1–Q23, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories.
   docs/09 §2 პუნქტები 17–18 მასზე მიუთითებს.
 - **ClickUp** (workspace 1100320000015036, space „Space“): დოკუმენტი „Odds და Game types — სპეციფიკაცია (BO-1c)“,
   `document_id = z8qgvbuynw-318`, გვერდები 01–11 (page id-ები: 01 `z8qgvbuynw-38`, 02 `-58`, 03 `-78`, 04 `-98`, 05 `-118`,
@@ -158,16 +158,16 @@ ClickUp-ის გვერდი 11). მოკლედ: დონეები
 შესწორება Feed Ops-ში (`sb.tournament_parent_override`); Game limits = CFG `mt` row-ები `c`/`t`-ზე. **შემდეგი:** Add sport / Add category
 ფორმა, Level 3-ის ფორმა, Categories-ის ტაბები (Order, Default factor, Code ranges, Flags, Top leagues, Icons), მერე Participants.
 
-**DWH dictionary-ები მიღებულია** (`game_type`, `slip_types_dic`, `transaction_type`, `bet_slip.status`). დასკვნები docs/12 §19.5-შია,
-ნედლი ფაილები repo-ში არ ინახება. მთავარი: game type ID-ის ნიშანი = prematch/live, ID-ის ბლოკები პროვაიდერის მიხედვით, ~1 700 manual
-ტიპი (R13), ბილეთის ტიპები სტრუქტურულია, Q15 (bet slip tax), Q16 (`bet_slip.status`). **მოლოდინში:** replica DWH-ის დიაგრამა,
-`event.event_type`, `bet_slip.status`-ის მნიშვნელობა, `game_group` 0/1-ის დადასტურება, `category`-ის ველების მაგალითები. ამის
-შემდეგ: D10-ის გასწორება და SBS → ჩვენი სქემის მიგრაციის რუკა (WP-9).
+**DWH:** dictionary-ები და 5 query-ის შედეგი მიღებულია (docs/12 §19.5, §20.10–20.11; ნედლი ფაილები repo-ში არ ინახება).
+`bet_slip.status`: 0 pending, 1 open, 2 settled, 5 cash-out, 10 cancelled; `event_type`: 1 prematch, 2 live (ცალკე ივენთი), 3 outright;
+გამოყენებული game type-ები 1 757 / 10 054; Code ranges = ტურის მატჩების მოკლე კოდები (R18, Q19, D10 გასასწორებელია). **მოლოდინში:**
+query 2 (`game_group`) არ დაბრუნებულა; ახალი query-ები Q20–Q23-ისთვის (Level 4, status 2/3, treat_as_sport, event_type 5–19);
+replica DWH-ის დიაგრამა. შემდეგ: SBS → ჩვენი სქემის მიგრაციის რუკა (WP-9).
 
 **ღია კითხვები მომხმარებლისთვის (docs/12 §17):** Q1 preview, Q2 ტაბის visible, Q3 un-cancel, Q4 „1 in event“
 (ჰიპოთეზა `combinationType = 1`), Q6 re-map, Q7 პროვაიდერის პრიორიტეტი, Q8 four-eyes პლატფორმაზე, Q10 ქვეტაბი ⇒ ტაბი,
 Q11 awaiting approval ავტომატურად, Q12 ფრონტის endpoint-ები (HAR), Q13 event code, Q14 ⚖ compat-ის ლეგალურობა,
-Q15 ⚖ bet slip tax, Q16 `bet_slip.status`.
+Q15 ⚖ bet slip tax, Q19 event code, Q20–Q23 DWH-ის კოდები.
 
 ## 5. შემდეგი ნაბიჯი: BO-1-ის დარჩენილი ნაწილი (CLAUDE.md „Next“ 1)
 

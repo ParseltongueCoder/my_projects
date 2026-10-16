@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.5, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10)
+> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18, Q19–Q23)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories › Manage (§20). დანარჩენი სექციები (Register, Lives, Disallowed, Categories-ის სხვა ტაბები, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -82,7 +82,7 @@
 | D7 | Outright პრემატჩის ქვეტიპია; ფილტრი შეიძლება გაუმჯობესდეს. | §4.2 |
 | D8 | **Multi-provider საჭიროა.** Genius = სრული პროვაიდერი (ივენთები, მარკეტები, კოეფიციენტები; ITF-ისა და ლაივისთვის). LSports = გამამდიდრებელი: არსებულ Radar/Genius ივენთს ებმება და მარკეტებს ამატებს (კუთხურები, ბარათები…), ჯერ ლაივში. | §13, §14 |
 | D9 | Changelog აჩვენებს ბუკმეკერის **და** სისტემის/პროვაიდერის ცვლილებებს (თვისების დონეზე, IP-ით). | §7 |
-| D10 | Event code id = პროვაიდერის ID. | §1 |
+| D10 | Event code id = პროვაიდერის ID. ⚠ DWH-ის მონაცემები ეწინააღმდეგება: ეს ლიგის Code range-იდან მინიჭებული მოკლე კოდია (§20.11, Q19). | §1 |
 | D11 | ხელით რეზალტი **ძირითადი ფუნქციაა**: manual მარკეტები feed ივენთის შიგნით ჩვეულებრივია. | §8 |
 | D12 | ხელით შეიძლება დარეზალტდეს **ნებისმიერი** მარკეტი (პროვაიდერისაც): ივენთის შიგნიდან (outcome-ის არჩევით) ან Register popup-იდან (სტატისტიკით). | §8 |
 | D13 | Popup-ის შენახვა არეზალტებს ივენთის **ყველა ჯერ დაურეზალტებელ** მარკეტს (პროვაიდერისაც და manual-საც). უკვე დარეზალტებულს არ ეხება. | §8.5 |
@@ -133,6 +133,7 @@
 | R15 | Live delay პროვაიდერის მიხედვით = CFG-ის ახალი qualifier `pv` `betdelay.live_sec`-ზე. ბილეთის delay = max legs-ზე, თითო leg-ისთვის მისი მარკეტის პროვაიდერის მნიშვნელობით. ⚠ | §20.4 |
 | R16 | Display as მხოლოდ **ჩვენებაა**: CFG, settlement და რეპორტინგი ორიგინალ კატეგორიას მიჰყვება. ჯაჭვი არ იქმნება, მხოლოდ იმავე სპორტში და დონეზე. ✅ D38 | §20.6 |
 | R17 | Treat as sport და ენის მიხედვით Visible არ კეთდება, სანამ use case არ გამოჩნდება. თუ დაგვჭირდება, ხილვადობა ბრენდით იმართება. | §20.7 |
+| R18 | Event code: ოპერატორის Code range-ები ლიგაზე / ქვეყანაზე / სპორტზე, ავტომატური მინიჭება და გათავისუფლება, უნიკალური აქტიურ ივენთებს შორის, ბილეთზე ფიქსირდება. P1 (retail). ⚠ | §20.11 |
 
 ---
 
@@ -886,12 +887,17 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q10 | R4 (ქვეტაბი ⇒ ტაბი ავტომატურად) — საბოლოო დადასტურება | მფლობელი | WP-3 |
 | Q11 | Awaiting approval სისტემა ავტომატურად სვამს რაიმე შემთხვევაში (რეფერენსი SB Software-ის მხრიდან)? | მფლობელი | არა |
 | Q12 | Europebet-ის ფრონტი SBS ODDS API-ის რომელ endpoint-ებს იყენებს რეალურად (HAR / proxy log)? ეს განსაზღვრავს compat ფენის მოცულობას (§19.4) | მფლობელი / Europebet | WP-9 |
-| Q13 | `eventCodeId` / `gameCode` (855, 226140) — Categories › Code ranges-იდან ენიჭება (retail / სწრაფი ძებნა)? | მფლობელი (Categories walkthrough) | არა |
+| Q13 | ⚠ მონაცემებით (§20.11): `eventCodeId` (855) = მოკლე კოდი ლიგის Code range-იდან (Premier League 101–110 = ტურის 10 მატჩი), **არა** პროვაიდერის ID. D10 სწორდება → Q19 | მფლობელი | არა |
 | Q14 | ⚖ SBS-თავსებადი interface-ის აწყობა SB Software-თან Europebet-ის ხელშეკრულებას ხომ არ ეწინააღმდეგება? (docs/09 §6) | იურისტი | WP-9 |
 | Q15 | ⚖ Bet slip tax (`transaction_type` 506/507) ახლაც გამოიყენება? ვინ ითვლის (sportsbook / PAM) და რა წესით? | მფლობელი / იურისტი | BO-2 (INT) |
-| Q16 | `bet_slip.status` 1 / 2 / 5 / 10 — რას ნიშნავს? (DWH query, §19.5) | მფლობელი (DWH) | WP-9 |
+| Q16 | ✅ მონაცემებით (§19.5): 0 pending, 1 open, 2 settled, 5 cash-out, 10 cancelled | — | — |
 | Q17 | ✅ გადაწყდა (D37): Change parent პლატფორმის შესწორებაა, CFG ახალ მშობელს მიჰყვება | — | — |
 | Q18 | ✅ გადაწყდა (D38): Display as მხოლოდ ჩვენებაა | — | — |
+| Q19 | Event code = ლიგის Code range-იდან მინიჭებული მოკლე კოდი, ყოველ ტურზე თავიდან (§20.11)? სად გამოიყენება (მაღაზია, ტელეფონი, ძებნა)? `gameCode` რა არის? | მფლობელი | P1 (retail) |
+| Q20 | `event.event_type` 5, 6, 8, 13, 15, 17, 19 (2019–2022) — რა პროდუქტებია? | მფლობელი (DWH) | არა |
+| Q21 | Treat as sport (~730 კატეგორია) და `category_type = 2` — რას აკეთებს? | მფლობელი / SBS | მიგრაცია |
+| Q22 | Category Level 4 (33 კატეგორია) — რა არის? | მფლობელი (DWH) | მიგრაცია |
+| Q23 | Category status 2 და 3 — რას ნიშნავს? | მფლობელი (dropdown სკრინი) | WP-10 |
 
 ---
 
@@ -989,13 +995,27 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 
 **`transaction_type` (~350):** სპორტის ბირთვი: 1 Bet placed, 2 Bet won, 3 Bet cancelled, 4 Bet won reversal, 5 Bet stake reversal, 11 / 12 Cashout / reversal, 504 / 505 Promotion betting / reversal, 506 / 507 **Bet slip tax** / reversal, 1501 / 1502 Bet cashback / cancel, 2670 / 2671 slip cashback bonus. დანარჩენი გადახდებს, კაზინოს/გარე პროვაიდერებს, მაღაზიებს/აგენტებს და სესხებს ეხება (PAM-ის სფეროა, ჩვენი არა). ⇒ INT-ის (PAM wallet) ტრანზაქციების მინიმალური ნაკრები BO-2-ში: `stake`, `win`, `refund` (cancel/void), `win_reversal` (resettle, D15), `stake_reversal`, `cashout`, `cashout_reversal`, `tax`, `tax_reversal`, `promo_*`. ⚠ **Q15:** bet slip tax ახლაც გამოიყენება? ვინ ითვლის (sportsbook თუ PAM) და რა წესით? (⚖ docs/09 §6)
 
-**`bet_slip.status`:** განსხვავებული მნიშვნელობებია **1, 2, 5, 10**. მნიშვნელობა ჯერ უცნობია (⚠ Q16, შემოწმება: რაოდენობა, `confirmed_return > 0`-ის წილი და თარიღები სტატუსის მიხედვით). ჰიპოთეზა SBS-ის სხვა კოდების მიხედვით: 10 = cancelled, 1 = open, 2 / 5 = won / lost.
+**`bet_slip.status` (ბოლო 90 დღე, 1.31 მლნ ბილეთი):**
+
+| კოდი | რაოდენობა | `confirmed_return > 0` | საშ. return / stake | დასკვნა |
+|---|---|---|---|---|
+| 0 | 1 (ახლახან) | 0 | 0 | მიღების პროცესშია (delay / approve) |
+| 1 | 2 851 | 0.7 % | 0.01 | **ღია** (accepted, not settled) |
+| 2 | 1 282 171 | 13.8 % | 0.63 | **დარეზალტებული** (მოგებული და წაგებული ერთად) |
+| 5 | 25 272 | 100 % | 1.24 | **cash-out** |
+| 10 | 13 | 100 % | 1.00 | **გაუქმებული** (stake დაბრუნდა) |
+
+⇒ მოგება და წაგება სტატუსში ცალკე არ ინახება, ის `confirmed_return`-იდან (და `bet_slip_stat.won_status`-იდან) ჩანს. ჩვენს ბილეთს (docs/07) აქვს `status` (pending / open / settled / cashed_out / cancelled) და `result` (won / lost / void / half_won / half_lost) ცალ-ცალკე. compat-ის ცხრილი: `0 ↔ pending`, `1 ↔ open`, `2 ↔ settled`, `5 ↔ cashed_out`, `10 ↔ cancelled`. Q16 მონაცემებით დადგინდა, ⚠ მფლობელის დადასტურება სასურველია.
+
+**`event.event_type`:** 1 = 5.2 მლნ (prematch მატჩი), 2 = 2.2 მლნ, 2017 წლიდან (**live, ცალკე ივენთი**, §19.2-ის დადასტურება), 3 = 61 ათასი (outright). 5, 6, 8, 13, 15, 17, 19 მხოლოდ 2019–2022 წლებშია (≈ 42 ათასი), სავარაუდოდ ვირტუალები ან შეწყვეტილი პროდუქტები. ⇒ მიგრაციაში მხოლოდ 1 / 2 / 3 შედის, 2 იერთიანდება 1-თან ერთ canonical ივენთად (§19.2). ⚠ სხვა ტიპების მნიშვნელობა: Q20.
+
+**გამოყენებული game type-ები (ბოლო 12 თვე):** prematch 1 159, live 598, ჯამში **1 757 / 10 054 (17 %)**. ეს არის მიგრაციის რეალური მოცულობა (R13, N = 12 თვე). ID-ის ნიშნით დათვლილია, ამიტომ ძველი ბლოკი `1…199` live-ში მოხვდა; ცდომილება მცირეა.
 
 ---
 
 ## 20. Categories (კატეგორიების ხე)
 
-წყარო: რეფერენსის Odds › Categories › Manage (Africa, Level 2, ფეხბურთი) და მისი სამი dialog-ი: Game limits, Live curtain, Change parent category; walkthrough 2026-10-13 … 10-16. Categories-ის დანარჩენი ტაბები (Order, Default factor, Code ranges, Flags, Top leagues, Icons) და Add sport / Add category ფორმა ჯერ არ გავლილა (§20.10).
+წყარო: რეფერენსის Odds › Categories › Manage (Africa, Level 2, ფეხბურთი) და მისი სამი dialog-ი: Game limits, Live curtain, Change parent category; walkthrough 2026-10-13 … 10-16. Categories-ის დანარჩენი ტაბები (Order, Default factor, Code ranges, Flags, Top leagues, Icons) და Add sport / Add category ფორმა ჯერ არ გავლილა (§20.12).
 
 ### 20.1 იერარქია (D31)
 
@@ -1071,7 +1091,7 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | ველი | მიზეზი |
 |---|---|
 | Include in the odds feed | მფლობელი: არ გამოიყენება (D32) |
-| Treat as sport | დანიშნულება უცნობია. DWH-ის query (`category.treat_as_sport IS NOT NULL`) აჩვენებს, სადმე გამოიყენება თუ არა. სანამ use case არ გამოჩნდება, არ ვაკეთებთ |
+| Treat as sport | დანიშნულება უცნობია. DWH: **~730 კატეგორიაზეა შევსებული** (სპორტი 5, ქვეყანა 22, ლიგა ~700; განსაკუთრებით `category_type = 2`-ზე). ანუ გამოიყენება. ⚠ Q21: ჯერ არ ვაკეთებთ, მაგრამ მიგრაციამდე უნდა გავარკვიოთ, რას აკეთებს |
 | Local names › Visible (ენის მიხედვით) | use case უცნობია. თუ დაგვჭირდება, ხილვადობა **ბრენდით** იმართება (CFG `O` scope brand-ით), არა ენით |
 
 ### 20.8 კატეგორიები პროვაიდერებს შორის (D36)
@@ -1101,7 +1121,28 @@ Feed Ops (Admin.Api): `POST /api/tournaments/{id}/move {categoryId, reason}`, `D
 
 **WP-10 Categories** (BO-1c, WP-1-ისა და WP-2-ის შემდეგ): ~2.5 დკ (ხე + პანელი 1, Game limits 0.5, Display as + Player API 0.5, Feed Ops move + adapter 0.5). CFG `pv` qualifier: +0.5 WP-1-ში.
 
-### 20.10 დარჩენილი (შემდეგი walkthrough)
+### 20.10 DWH-ის მონაცემები `category`-ზე (2026-10-16)
+
+- **არსებობს Level 4** (33 კატეგორია) და Level −1 (1, root). D31 სამ დონეს აღწერს, ამიტომ ⚠ Q22: რა არის Level 4 (ჯგუფი / ეტაპი / outright ლიგის ქვეშ?). ჩვენთან ახალი დონის ნაცვლად, სავარაუდოდ, ცალკე ლიგა იქნება + Display as (D33).
+- **`status` 0–3:** 1 ≈ online, 0 ≈ offline. 2 ≈ 24.5 ათასი ლიგა, 3 = 95 სპორტი. ⚠ Q23: რას ნიშნავს 2 და 3 (archived / finished / deleted?). Category status dropdown-ის სკრინი ამას პირდაპირ აჩვენებს.
+- **`category_type`:** 1 თითქმის ყველგან, 2 მხოლოდ ლიგის დონეზე (~310), უმეტესად `treat_as_sport`-ით. ⚠ Q21-ის ნაწილი.
+- **`include_in_odds_feed`:** ~5.6 ათას კატეგორიაზე true, მაგრამ მფლობელის თქმით არ გამოიყენება (D32). ისტორიული ველია.
+- **Code ranges:** სპორტი 5, ქვეყანა 142, ლიგა 51. §20.11.
+
+### 20.11 Event codes (Code ranges)
+
+DWH-ის მაგალითები: Premier League **101–110**, FA Cup 111–114, Championship 115–126, League One 127–138, Bundesliga 301–309, LaLiga 475–484, Ligue 1 571–580. დიაპაზონის სიგრძე **ერთი ტურის მატჩების რაოდენობაა** (PL 10, Championship 12, Bundesliga 9). Q13-ის `eventCodeId = 855` ამ სივრცეშია.
+
+**დასკვნა (⚠ Q19):** event code = მოკლე რიცხვი, რომელიც ივენთს ენიჭება მისი ლიგის (ან მშობლის) დიაპაზონიდან და ყოველ ტურზე **ხელახლა გამოიყენება**. სავარაუდო მიზანი: retail (მაღაზიის კუპონი, მოლარე / ტერმინალი, ტელეფონით ფსონი) და სწრაფი ძებნა. ეს **არ არის** პროვაიდერის ID, ამიტომ D10 გასასწორებელია.
+
+**ჩვენთან (R18, P1, retail-ის გაჩენამდე არ ბლოკავს):**
+- `bo.code_range(operator_id, node_type, node_id, code_from, code_to)`: ოპერატორის დონეზე, RLS. დიაპაზონები ერთი ოპერატორის შიგნით არ უნდა გადაიფაროს (exclusion constraint).
+- `bo.event_code(operator_id, event_id, code, assigned_at, released_at)`. **უნიკალურია ოპერატორის აქტიურ ივენთებს შორის** (partial unique index `WHERE released_at IS NULL`).
+- მინიჭება ავტომატურია, როცა ივენთი ოპერატორის ოფერში ჩნდება: ლიგის დიაპაზონი → თუ არ არის, ქვეყნის → სპორტის; პირველი თავისუფალი კოდი start time-ის რიგით. კოდი თავისუფლდება ივენთის settlement-ზე / გაუქმებაზე (CFG `catalog.event_code_release`: `settled | ended`). დიაპაზონის ამოწურვაზე NOTIF alert, ივენთი კოდის გარეშე რჩება.
+- Player API და compat: `eventCode` ივენთზე, ძებნა კოდით (`/v1/events?code=`). ბილეთზე ფიქსირდება მიღების მომენტის კოდი, რადგან კოდი მერე სხვა ივენთს გადაეცემა.
+- `gameCode` (226140) ჯერ გაურკვეველია, სავარაუდოდ მარკეტის / outcome-ის მოკლე კოდი retail-ისთვის. Q19-ის ნაწილი.
+
+### 20.12 დარჩენილი (შემდეგი walkthrough)
 
 - **Add sport / Add category:** ფორმა. ხეში ჩანს „Oscar (1)“, ანუ არასპორტული special-ის ხელით შექმნილი სპორტი. ჩვენთან ესაა `bo.manual_entity` (`sport` / `category` / `tournament`), CLAUDE.md „Next“ 1-ის manual ივენთების ნაწილი.
 - Level 3-ის ფორმა (თუ Level 2-ისგან განსხვავდება).
