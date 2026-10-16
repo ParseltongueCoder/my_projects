@@ -2,9 +2,9 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.4, დეველოპმენტისთვის · **თარიღი:** 2026-10-13 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16)
+> **სტატუსი:** spec v1.5, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D36, R14–R17, Q17–Q18, WP-10)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
-> **სფერო:** Odds › Odds (Manage, Results) და Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map). დანარჩენი სექციები (Register, Lives, Disallowed, Categories, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
+> **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories › Manage (§20). დანარჩენი სექციები (Register, Lives, Disallowed, Categories-ის სხვა ტაბები, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
 >
 > ნიშნები: **[D#]** = პროდუქტის მფლობელის გადაწყვეტილება (სავალდებულო). **[R#]** = ჩვენი რეკომენდაცია, რომელსაც მფლობელი არ შეწინააღმდეგებია; ⚠ ნიშნიანი R-ები §17-ში დასადასტურებლად რჩება. „რეფერენსი“ = ოპერატორის ამჟამინდელი ადმინი.
@@ -31,6 +31,7 @@
 17. [ღია კითხვები](#17-ღია-კითხვები)
 18. [სამუშაო პაკეტები, თანმიმდევრობა, შეფასება](#18-სამუშაო-პაკეტები-თანმიმდევრობა-შეფასება)
 19. [SB Software API-ის ანალიზი და თავსებადობის ფენა](#19-sb-software-api-ის-ანალიზი-და-თავსებადობის-ფენა)
+20. [Categories (კატეგორიების ხე)](#20-categories-კატეგორიების-ხე)
 
 ---
 
@@ -102,6 +103,12 @@
 | D28 | **Prematch და live game type-ები ცალ-ცალკე ჩანაწერებია** (როგორც რეფერენსში): თითოეულს თავისი სახელი, კონფიგურაცია, ტაბები და რიგი აქვს. | §9.1 |
 | D30 | **ჩვენი API ბიზნეს-პროცესებით SB Software-ს მიჰყვება, ტექნიკურად კი გაუმჯობესებულია.** Europebet-ის არსებული ფრონტისთვის საჭიროა **SB-თავსებადი ფენა** (compat adapter) ჩვენს Player API-ზე. | §19 |
 | D29 | **Mapping-ს საწყისად პლატფორმა (ჩვენი გუნდი) აკეთებს.** ოპერატორებს სხვადასხვა მარკეტი და სია სჭირდებათ, ამიტომ **ერთი ოპერატორისთვის გაკეთებული mapping მეორეზე არ უნდა მოქმედებდეს**. კლიენტის მოთხოვნით მას საკუთარი mapping-ის უფლება ადვილად უნდა მიეცეს. | §9.1, §13.1 |
+| D31 | კატეგორიის დონეები: **Level 1 = სპორტი, Level 2 = ქვეყანა / ფედერაცია, Level 3 = ლიგა / თასი** (= `sb.sport` / `sb.category` / `sb.tournament`). | §20.1 |
+| D32 | Category status **Offline მალავს** კატეგორიას. „Include in the odds feed“ არ გამოიყენება და არ კეთდება. | §20.2, §20.7 |
+| D33 | **Display as საჭიროა**: რამდენიმე კატეგორიის ერთის ქვეშ გაერთიანება ფრონტზე (მაგ. ტურნირის ჯგუფური და პლეი-ოფის ლიგები; `aggregateCategoryId`). | §20.6 |
+| D34 | **Live curtain = live bet delay** წამებში, კატეგორიაზე, ცალ-ცალკე პროვაიდერის მიხედვით (Betradar, Betgenius, LSports, Manual). | §20.4 |
+| D35 | **Change parent** გამოიყენება, როცა პროვაიდერი ლიგას არასწორ ქვეყანაში დებს. | §20.5 |
+| D36 | ერთი კატეგორია **ყველა პროვაიდერისთვის ერთი** უნდა იყოს (რეფერენსში ჯერ ყოველთვის ასე არ არის). | §20.8 |
 
 ### 2.2 ჩვენი რეკომენდაციები (default დიზაინი)
 
@@ -120,6 +127,10 @@
 | R11 | **B2B გაყოფა:** canonical მარკეტები და provider → canonical mapping = **პლატფორმა**; binding (canonical → game type) = პლატფორმის default + **ოპერატორის override** (D29). Sport assign, Sort order, ტაბები, game type-ის კონფიგურაცია, თარგმანის override და custom game type-ები = **ოპერატორი**. | §9.2, §13.1 |
 | R12 | პლატფორმა ახალ ოპერატორს აძლევს **default სიებს** (Sort order თითო სპორტზე, ტაბები), რომ ფრონტი ცარიელი არ იყოს. | §3.3 |
 | R13 | ერთჯერადი special-ისთვის ახალი game type არ იქმნება: manual მარკეტი თავისუფალი სახელით ზოგად custom ტიპზე. მიგრაციით მხოლოდ ბოლო დროს გამოყენებული ტიპები გადმოდის. | §19.5 |
+| R14 | Change parent = **პლატფორმის შესწორება** Feed Ops-ში (ყველა ოპერატორისთვის), adapter-ი მას არ ფარავს. CFG-ის მემკვიდრეობა შესწორებულ ხეს მიჰყვება. ⚠ | §20.5 |
+| R15 | Live delay პროვაიდერის მიხედვით = CFG-ის ახალი qualifier `pv` `betdelay.live_sec`-ზე. ბილეთის delay = max legs-ზე, თითო leg-ისთვის მისი მარკეტის პროვაიდერის მნიშვნელობით. ⚠ | §20.4 |
+| R16 | Display as მხოლოდ **ჩვენებაა**: CFG, settlement და რეპორტინგი ორიგინალ კატეგორიას მიჰყვება. ჯაჭვი არ იქმნება, მხოლოდ იმავე სპორტში და დონეზე. ⚠ | §20.6 |
+| R17 | Treat as sport და ენის მიხედვით Visible არ კეთდება, სანამ use case არ გამოჩნდება. თუ დაგვჭირდება, ხილვადობა ბრენდით იმართება. | §20.7 |
 
 ---
 
@@ -877,6 +888,8 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q14 | ⚖ SBS-თავსებადი interface-ის აწყობა SB Software-თან Europebet-ის ხელშეკრულებას ხომ არ ეწინააღმდეგება? (docs/09 §6) | იურისტი | WP-9 |
 | Q15 | ⚖ Bet slip tax (`transaction_type` 506/507) ახლაც გამოიყენება? ვინ ითვლის (sportsbook / PAM) და რა წესით? | მფლობელი / იურისტი | BO-2 (INT) |
 | Q16 | `bet_slip.status` 1 / 2 / 5 / 10 — რას ნიშნავს? (DWH query, §19.5) | მფლობელი (DWH) | WP-9 |
+| Q17 | Change parent (R14): შესწორება ყველა ოპერატორზე უნდა მოქმედებდეს (პლატფორმა) და ლიგამ ახალი ქვეყნის ლიმიტები/მარჟა მიიღოს — თანახმა ხართ? | მფლობელი | WP-10 |
+| Q18 | Display as (R16): გაერთიანებულ ლიგას ორიგინალის ლიმიტები და მარჟა რჩება, გაერთიანება მხოლოდ ჩვენებაა — თანახმა ხართ? | მფლობელი | WP-10 |
 
 ---
 
@@ -895,6 +908,7 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | **WP-7 Player API** | tabs/subTabs/conflictTags/layout, ხილვადობა, invalidation | WP-3, SB-0 | SB-1 | 1.5 |
 | **WP-8 Multi-provider** | Genius adapter, LSports adapter (enrichment), event matching (§19.3), provider პრიორიტეტი | WP-2, შემდეგი walkthrough | BO-2/3 პარალელურად | 8–10 |
 | **WP-9 SB-compat ფენა** | §19.4: ID mapping, endpoint-ების ქვესიმრავლე (Q12), კოდების ცხრილები, session bridge, contract ტესტები | SB-1, BO-2 (place bet, cash-out) | SB-2 / pilot-მდე | 5–7 (Q12-ზე დამოკიდებული) |
+| **WP-10 Categories** | §20: ხე + პანელი (status, limits, live delay, Display as, history), Game limits dialog, Display as + Player API, Feed Ops-ის „Move to category“ + adapter, `pv` qualifier (WP-1-ში) | WP-1, WP-2 | BO-1c | 2.5 (+0.5 WP-1) |
 
 **თანმიმდევრობა:** WP-1 → WP-2 → (WP-3 ‖ WP-5) → WP-4 → WP-7; WP-6 BO-2-თან ერთად; WP-8 ცალკე ნაკადი.
 
@@ -974,3 +988,119 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 **`transaction_type` (~350):** სპორტის ბირთვი: 1 Bet placed, 2 Bet won, 3 Bet cancelled, 4 Bet won reversal, 5 Bet stake reversal, 11 / 12 Cashout / reversal, 504 / 505 Promotion betting / reversal, 506 / 507 **Bet slip tax** / reversal, 1501 / 1502 Bet cashback / cancel, 2670 / 2671 slip cashback bonus. დანარჩენი გადახდებს, კაზინოს/გარე პროვაიდერებს, მაღაზიებს/აგენტებს და სესხებს ეხება (PAM-ის სფეროა, ჩვენი არა). ⇒ INT-ის (PAM wallet) ტრანზაქციების მინიმალური ნაკრები BO-2-ში: `stake`, `win`, `refund` (cancel/void), `win_reversal` (resettle, D15), `stake_reversal`, `cashout`, `cashout_reversal`, `tax`, `tax_reversal`, `promo_*`. ⚠ **Q15:** bet slip tax ახლაც გამოიყენება? ვინ ითვლის (sportsbook თუ PAM) და რა წესით? (⚖ docs/09 §6)
 
 **`bet_slip.status`:** განსხვავებული მნიშვნელობებია **1, 2, 5, 10**. მნიშვნელობა ჯერ უცნობია (⚠ Q16, შემოწმება: რაოდენობა, `confirmed_return > 0`-ის წილი და თარიღები სტატუსის მიხედვით). ჰიპოთეზა SBS-ის სხვა კოდების მიხედვით: 10 = cancelled, 1 = open, 2 / 5 = won / lost.
+
+---
+
+## 20. Categories (კატეგორიების ხე)
+
+წყარო: რეფერენსის Odds › Categories › Manage (Africa, Level 2, ფეხბურთი) და მისი სამი dialog-ი: Game limits, Live curtain, Change parent category; walkthrough 2026-10-13 … 10-16. Categories-ის დანარჩენი ტაბები (Order, Default factor, Code ranges, Flags, Top leagues, Icons) და Add sport / Add category ფორმა ჯერ არ გავლილა (§20.10).
+
+### 20.1 იერარქია (D31)
+
+| რეფერენსი | მნიშვნელობა | ჩვენთან |
+|---|---|---|
+| Level 1 | სპორტი | `sb.sport` |
+| Level 2 | ქვეყანა / ფედერაცია (Africa, England, UEFA) | `sb.category` |
+| Level 3 | ლიგა / თასი | `sb.tournament` |
+
+ჩვენი სამდონიანი მოდელი რეფერენსს ზუსტად ემთხვევა, ახალი დონე არ სჭირდება. DWH-ში (`category.level`, `sport_id`, `parent_category`) იგივე სამი დონეა.
+
+### 20.2 Manage: ფორმა → ჩვენთან
+
+| რეფერენსის ველი | ჩვენთან | შენიშვნა |
+|---|---|---|
+| Parent category, Level | ხის პოზიცია | მხოლოდ ჩვენება |
+| Category ID | `sb.category.id` / `sb.tournament.id` | SBS-ის ID compat-ში (§19.4, `compat.id_map(kind = category)`) |
+| Category name, Local names | `bo.translation` (`field = 'name'`) | `sb`-ის სახელს BO არ ცვლის (docs/09 §2). „Copy from Name“ = ღილაკი, რომელიც ცარიელ ენებს ავსებს |
+| Category status: Online / Offline | CFG `offer.visible` (`c` / `t`) | **D32:** Offline მალავს კატეგორიას და ყველა შვილს |
+| Provider | `sb.provider_mapping` | badge-ები B / G / L / M. ერთ კატეგორიაზე რამდენიმე პროვაიდერი (D36) |
+| Registered by / date | audit (`bo.audit_log`) / feed-ის პირველი მიღება | changelog §7 |
+| Alert, Market liability | `limit.alert_liability_market`, `limit.max_liability_market` (`c` / `t`) | §6.1; ცარიელი = მემკვიდრეობა |
+| Game limits | იგივე key-ები game type qualifier-ით | §20.3 |
+| Live curtain | `betdelay.live_sec` პროვაიდერის qualifier-ით | §20.4 |
+| Change parent category | პლატფორმის შესწორება Feed Ops-ში | §20.5 |
+| Display as | `bo.catalog_node.display_as_*` | §20.6 |
+| Include in the odds feed, Treat as sport, ენის Visible | — | არ ვაკეთებთ, §20.7 |
+
+### 20.3 Game limits
+
+**რეფერენსი:** dialog „Manage game limits“. ფილტრებია Event type (Prematch / Live) და Market group (ტაბი). ცხრილში game type-ებია Alert amount და Market liability სვეტებით, „Change for all“ ორივე მნიშვნელობას ყველა ხაზს ერთად უსვამს, გვერდებად არის დაყოფილი.
+
+**ჩვენთან:** ცალკე ცხრილი არ არის. ეს `limit.alert_liability_market` / `limit.max_liability_market`-ის CFG row-ებია `c` ან `t` scope-ზე, `mt` qualifier-ით. `mt` = game type (§9.1), ამიტომ Event type ფილტრი უბრალოდ game type-ის `mode`-ია (D28) და ცალკე qualifier-ს არ საჭიროებს. ყველა ცვლილება ერთ change set-ში მიდის (four-eyes default-ად გამორთულია, D1).
+
+**UX-ის გაუმჯობესება:**
+- ცარიელ უჯრაში ჩანს მემკვიდრეობით მიღებული მნიშვნელობა და მისი წყარო („500 · Soccer“ ან „200 · game type default“), CFG trace-ით. რეფერენსში ცარიელი უჯრა არაფერს გვეუბნება.
+- სია ნაგულისხმევად შეიცავს მხოლოდ ამ სპორტზე მიბმულ ტიპებს (Sport assign, §10), გადამრთველით „ყველა“. გვაქვს ძებნა სახელით.
+- „Change for all“ ზემოქმედებს **გაფილტრულ ან მონიშნულ** ხაზებზე, არა ყველა გვერდზე. შენახვამდე ჩანს diff („12 ტიპი: 200 → 300“).
+- „მემკვიდრეობაზე დაბრუნება“ (row-ის წაშლა) თითო ხაზზე და მასობრივად.
+- ამავე dialog-ში იმავე ნიმუშით შეიძლება სხვა `mt` key-ების (max stake, margin) ჩვენება, ჩანართებად. ეს P1-ია.
+
+### 20.4 Live curtain = live bet delay (D34)
+
+**რეფერენსი:** „Live curtain delay [in seconds]“ კატეგორიაზე, ცალ-ცალკე Betradar, Betgenius, LSports და Manual. ყველგან 0 წერია.
+
+**ჩვენთან (R15 ⚠):**
+- `betdelay.live_sec` უკვე არსებობს (`O s c t e`, `mt`, customer max, default 5). ემატება **პროვაიდერის qualifier** (`pv`: `betradar | betgenius | lsports | manual`), `mt`-ის ანალოგიურად. ეს CFG-ის ძრავის ზოგადი ცვლილებაა: qualifier-ის მეორე განზომილება. resolution: `(scope, mt, pv) → (scope, mt) → (scope, pv) → (scope)`, შემდეგ მშობელი scope.
+- ბილეთის delay = `max` ყველა live leg-ზე, თითო leg-ისთვის აიღება იმ პროვაიდერის მნიშვნელობა, რომლისგანაც ამ leg-ის **მარკეტი** მოდის. LSports-ით გამდიდრებულ ივენთზე (D8) ერთი ივენთის მარკეტებს სხვადასხვა delay შეიძლება ჰქონდეს. ესაა docs/07 §2.3, ნაბიჯი 9.
+- რეფერენსში default 0-ია, ჩვენთან 5 წმ. Europebet-ის onboarding-ზე ოპერატორის default მიგრაციით გადმოდის (R12).
+
+### 20.5 Change parent category (D35)
+
+**რეფერენსი:** dialog-ში მხოლოდ ერთი ველია „Parent ID“, რიცხვი ხელით იწერება. გამოიყენება, როცა პროვაიდერი ლიგას არასწორ ქვეყანაში დებს.
+
+**ჩვენთან (R14 ⚠ Q17):** ეს **პლატფორმის შესწორებაა** და ყველა ოპერატორზე მოქმედებს, რადგან ეს feed-ის შეცდომაა და არა ოპერატორის ჩვენების არჩევანი. ოპერატორის დონეზე გაერთიანებისთვის Display as გამოიყენება (§20.6). ასე მიჰყვება ის D29-ის ლოგიკას: mapping-ს პლატფორმა აკეთებს.
+- Feed Ops: „Move to category“ ლიგაზე, საძიებო picker-ით (სპორტი → ქვეყანა), ID-ის ხელით აკრეფის ნაცვლად. ჩანს ღია ივენთების რაოდენობა, რომლებსაც ცვლილება შეეხება.
+- შენახვა: `sb.tournament_parent_override(tournament_id, category_id, reason, by, at)`. adapter ამ ცხრილს პატივს სცემს და `fixture_change`-ზე მშობელს აღარ გადააწერს. ასეთ შემთხვევაში audit-ში იწერება „პროვაიდერი სხვა მშობელს აგზავნის“, რომ ცვლილება ჩანდეს.
+- CFG-ის მემკვიდრეობა **შესწორებულ** ხეს მიჰყვება: ლიგა ახალი ქვეყნის ლიმიტებს და მარჟას იღებს. თუ ლიგაზე უკვე არსებობს ოპერატორის row-ები, ისინი რჩება. გადატანის წინ UI აჩვენებს, რომელი მემკვიდრეობითი მნიშვნელობა შეიცვლება.
+- Level 2-ის სხვა სპორტში გადატანა არ არის დაშვებული.
+
+### 20.6 Display as = კატეგორიების გაერთიანება (D33)
+
+**რეფერენსი:** dropdown-ში სხვა კატეგორიებია. გამოიყენება, როცა ტურნირის ჯგუფური და პლეი-ოფის მატჩები ცალ-ცალკე ლიგებად მოდის და ფრონტზე ერთი ლიგის ქვეშ უნდა გამოჩნდეს. API-ში ეს `aggregateCategoryId`-ია, DWH-ში `category_aggregator`.
+
+**ჩვენთან:**
+- `bo.catalog_node` იღებს ველებს `display_as_type`, `display_as_id`. გაერთიანება ოპერატორის დონეზეა, RLS უკვე არსებული ცხრილის policy-ით ხდება.
+- წესები: იმავე სპორტში და იმავე დონეზე (ლიგა → ლიგა, ქვეყანა → ქვეყანა). ჯაჭვი არ იქმნება: თუ სამიზნე თავადაა სხვაში გაერთიანებული, შენახვა უარყოფილია. გაერთიანებული კვანძი მენიუში ცალკე აღარ ჩანს.
+- **R16 ⚠ Q18:** გაერთიანება მხოლოდ **ჩვენებაა**: ხე, Player API (`/v1/catalog/tree`, ივენთის `displayTournamentId`), compat-ის `aggregateCategoryId`. CFG (ლიმიტები, მარჟა, ხილვადობა), settlement და რეპორტინგი ორიგინალ კატეგორიას მიჰყვება. ასე ჯგუფური ეტაპის ლიმიტები პლეი-ოფში არ „გადაიპარება“. რეპორტში გაერთიანებული ხედი ფილტრით იქნება.
+- docs/06-ის custom groups (P1) სხვა რამეა: ის **ახალ** კვანძს ქმნის („ქართული ფეხბურთი“), Display as კი არსებულ კვანძში აერთიანებს.
+
+### 20.7 რას არ ვაკეთებთ (R17)
+
+| ველი | მიზეზი |
+|---|---|
+| Include in the odds feed | მფლობელი: არ გამოიყენება (D32) |
+| Treat as sport | დანიშნულება უცნობია. DWH-ის query (`category.treat_as_sport IS NOT NULL`) აჩვენებს, სადმე გამოიყენება თუ არა. სანამ use case არ გამოჩნდება, არ ვაკეთებთ |
+| Local names › Visible (ენის მიხედვით) | use case უცნობია. თუ დაგვჭირდება, ხილვადობა **ბრენდით** იმართება (CFG `O` scope brand-ით), არა ენით |
+
+### 20.8 კატეგორიები პროვაიდერებს შორის (D36)
+
+ერთი კატეგორია (ქვეყანა ან ლიგა) ყველა პროვაიდერისთვის ერთი უნდა იყოს. რეფერენსში ეს ყოველთვის ასე არ არის: იგივე ლიგა ორჯერ შეიძლება შეგხვდეს, Radar-ისა და Genius-ის ცალ-ცალკე ჩანაწერებად. ჩვენთან:
+- პროვაიდერის category/tournament → canonical `sb.category` / `sb.tournament`: `sb.provider_mapping`-ით, პლატფორმის ოპერაცია (Feed Ops, WP-8). ავტომატური შეთავაზება სახელისა და ქვეყნის მიხედვით, საბოლოო დადასტურება ხელით.
+- ივენთების mapping-ის (§19.3) წინაპირობაა მონაწილეების mapping და **ლიგის mapping**.
+- მიგრაცია (WP-9): SBS-ის დუბლიკატი კატეგორიები ჩვენს ერთზე ერთიანდება. `compat.id_map` ორივე ძველ ID-ს ერთ კვანძზე მიუთითებს.
+
+### 20.9 UI და API
+
+**`/cat` (არსებული `features/cat/tree.ts`, გაფართოება):**
+- ხე ძებნით. ზედა ხატულები: „მხოლოდ ივენთებით“, „დამალულიც“, „თარგმანი აკლია“. თითო კვანძზე: badge-ები (Offline, გაერთიანებული → სამიზნე, provider B/G/L/M, manual) და ღია/live ივენთების რაოდენობა.
+- მარჯვენა პანელი ტაბებით: **General** (სახელი, თარგმანები, სტატუსი, Display as), **Limits** (Alert / Market liability, Game limits, Live delay, ყველგან მემკვიდრეობა + trace), **History** (audit + changelog).
+- ერთდროული მონიშვნა რამდენიმე კვანძზე: Offline / Online, ლიმიტი, Display as.
+
+**API (`/api/bo/cat`, არსებულზე დამატება):**
+```
+PATCH /api/bo/cat/nodes/{type}/{id}         + displayAs: {type,id} | null
+GET   /api/bo/cat/nodes/{type}/{id}/limits?mode=prematch|live&tab=&q=   game type-ები + effective მნიშვნელობა + წყარო
+PUT   /api/bo/cat/nodes/{type}/{id}/limits  [{gameTypeId, alert, liability}] (null = მემკვიდრეობა) → ერთი change set
+```
+Live delay და Offline / Online არსებული CFG endpoint-ებით (`/api/bo/cfg/...`) იმართება, ახალი endpoint არ სჭირდება.
+Feed Ops (Admin.Api): `POST /api/tournaments/{id}/move {categoryId, reason}`, `DELETE .../move` (override-ის მოხსნა).
+
+**მიგრაციები:** `bo.catalog_node.display_as_*` (+ CHECK იმავე `node_type`-ზე), `sb.tournament_parent_override` (პლატფორმა; `bo_app`-ს წვდომა არ აქვს), CFG qualifier `pv`. ტესტები: RLS (BetGeo ვერ ხედავს Acme-ს Display as-ს), ჯაჭვის აკრძალვა, adapter-ი override-ს არ ფარავს, `pv` resolution, ბილეთის delay = max legs-ზე.
+
+**WP-10 Categories** (BO-1c, WP-1-ისა და WP-2-ის შემდეგ): ~2.5 დკ (ხე + პანელი 1, Game limits 0.5, Display as + Player API 0.5, Feed Ops move + adapter 0.5). CFG `pv` qualifier: +0.5 WP-1-ში.
+
+### 20.10 დარჩენილი (შემდეგი walkthrough)
+
+- **Add sport / Add category:** ფორმა. ხეში ჩანს „Oscar (1)“, ანუ არასპორტული special-ის ხელით შექმნილი სპორტი. ჩვენთან ესაა `bo.manual_entity` (`sport` / `category` / `tournament`), CLAUDE.md „Next“ 1-ის manual ივენთების ნაწილი.
+- Level 3-ის ფორმა (თუ Level 2-ისგან განსხვავდება).
+- ტაბები: Order (`bo.catalog_node.sort_order`), Default factor (მარჟა `c` / `t`), Code ranges (Q13), Flags, Top leagues (`is_top`), Icons (`bo.media_link`).

@@ -1,6 +1,6 @@
 # HANDOFF: სესიიდან სესიაზე გადასაცემი ინფორმაცია
 
-> ბოლო განახლება: 2026-10-13, Categories walkthrough-ის დასაწყისი და DWH-ის dictionary-ები (docs/12 §19.5). **ახალი სესია: §5a.**
+> ბოლო განახლება: 2026-10-16, Categories › Manage (docs/12 §20) და DWH-ის dictionary-ები (docs/12 §19.5). **ახალი სესია: §5a.**
 > ახალი სესია ჯერ `/CLAUDE.md`-ს კითხულობს (წესები, რუკა, სტატუსი), შემდეგ ამ ფაილს: აქ არის ბოლო სამუშაოს დეტალები,
 > ღია კითხვები, გარემოს მომზადების რეცეპტი და შემდეგი ნაბიჯის საწყისი წერტილები.
 > სავალდებულო გადაწყვეტილებები ისევ docs/09 §2-შია, გადახვევები docs/09 §5-ში.
@@ -123,10 +123,10 @@ Auth-ის გარეშე მომხმარებელი platform sup
 გადაწყვეტილება D# ან რეკომენდაცია R# docs/12-ში → commit + push → ClickUp-ის შესაბამისი გვერდის განახლება.
 
 **სად არის ყველაფერი**
-- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.4): D1–D30, R1–R13, Q1–Q16, WP-1…WP-9, §19 = SB Software API-ის ანალიზი.
+- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.5): D1–D36, R1–R17, Q1–Q18, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories.
   docs/09 §2 პუნქტები 17–18 მასზე მიუთითებს.
 - **ClickUp** (workspace 1100320000015036, space „Space“): დოკუმენტი „Odds და Game types — სპეციფიკაცია (BO-1c)“,
-  `document_id = z8qgvbuynw-318`, გვერდები 01–10 (page id-ები: 01 `z8qgvbuynw-38`, 02 `-58`, 03 `-78`, 04 `-98`, 05 `-118`,
+  `document_id = z8qgvbuynw-318`, გვერდები 01–11 (page id-ები: 01 `z8qgvbuynw-38`, 02 `-58`, 03 `-78`, 04 `-98`, 05 `-118`,
   06 `-138`, 07 `-158`, 08 `-178`, 09 `-198`, 10 `-218`). ClickUp = ასლი; მთავარი ვერსია repo-შია. ახალი სექცია → ახალი გვერდი.
 - **SB Software-ის დოკუმენტები** (ODDS API v1.20, Admin Console API v1.4, prematch Radar / live Genius mapping) იყო სესიის
   upload-ებში და ახალ სესიაში აღარ იქნება. Restricted-ია: repo-ში **არ** ინახება, მხოლოდ ჩვენი დასკვნები (docs/12 §19).
@@ -152,14 +152,11 @@ Disallowed (By event, By category, Game by event) → Lives (Events, Match statu
 → Add games → Odds list → BetGenius Categories. Categories-ზე შესამოწმებელი: Code ranges = event code (Q13, D10-ის გასწორება),
 Default factor = მარჟის default, category-ის default alert/liability, Top leagues, `category_aggregator`.
 
-**Categories walkthrough (2026-10-13, მიმდინარე):** Manage-ის პირველი სკრინი გავლილია. მომხმარებლის განმარტებით Level 1 = სპორტი,
-Level 2 = ქვეყანა/ფედერაცია, Level 3 = ლიგა/თასი, რაც ზუსტად ემთხვევა `sb.sport → sb.category → sb.tournament`-ს (docs/12-ში ჯერ არ
-ჩაწერილა, მომავალში D31). ფორმის ველები: Parent, ID, name, Level, status Online, Provider, Registered by/date, Alert, Market
-liability, Include in the odds feed, Display as, Treat as sport, Local names (ენის მიხედვით + Visible); ღილაკები: Add sport, Add
-category, Game limits, Change parent category, Live curtain. მომხმარებელს **დაესვა 7 კითხვა და პასუხი ჯერ არ მოსულა**: odds feed vs
-status, Display as, Treat as sport, ენის Visible, Change parent (პლატფორმა თუ ოპერატორის override, CFG მემკვიდრეობა), Live curtain,
-კატეგორიის mapping პროვაიდერებს შორის. ასევე ვითხოვეთ სკრინები: Game limits, Change parent, Live curtain, Add category, Level 3-ის
-ფორმა, ჩამოშლილი dropdown-ები. Manage-ის დასრულების შემდეგ იწერება docs/12 §20 და ClickUp-ის გვერდი 11.
+**Categories walkthrough (2026-10-13 … 10-16):** Manage გავლილია და ჩაწერილია docs/12 §20-ში (D31–D36, R14–R17, Q17–Q18, WP-10;
+ClickUp-ის გვერდი 11). მოკლედ: დონეები = sport / ქვეყანა / ლიგა; Offline = დამალვა; Display as = გაერთიანება (`aggregateCategoryId`) →
+`bo.catalog_node.display_as_*`; Live curtain = live bet delay პროვაიდერის მიხედვით → CFG qualifier `pv`; Change parent = პლატფორმის
+შესწორება Feed Ops-ში (`sb.tournament_parent_override`); Game limits = CFG `mt` row-ები `c`/`t`-ზე. **შემდეგი:** Add sport / Add category
+ფორმა, Level 3-ის ფორმა, Categories-ის ტაბები (Order, Default factor, Code ranges, Flags, Top leagues, Icons), მერე Participants.
 
 **DWH dictionary-ები მიღებულია** (`game_type`, `slip_types_dic`, `transaction_type`, `bet_slip.status`). დასკვნები docs/12 §19.5-შია,
 ნედლი ფაილები repo-ში არ ინახება. მთავარი: game type ID-ის ნიშანი = prematch/live, ID-ის ბლოკები პროვაიდერის მიხედვით, ~1 700 manual
@@ -170,7 +167,7 @@ status, Display as, Treat as sport, ენის Visible, Change parent (პლ�
 **ღია კითხვები მომხმარებლისთვის (docs/12 §17):** Q1 preview, Q2 ტაბის visible, Q3 un-cancel, Q4 „1 in event“
 (ჰიპოთეზა `combinationType = 1`), Q6 re-map, Q7 პროვაიდერის პრიორიტეტი, Q8 four-eyes პლატფორმაზე, Q10 ქვეტაბი ⇒ ტაბი,
 Q11 awaiting approval ავტომატურად, Q12 ფრონტის endpoint-ები (HAR), Q13 event code, Q14 ⚖ compat-ის ლეგალურობა,
-Q15 ⚖ bet slip tax, Q16 `bet_slip.status`.
+Q15 ⚖ bet slip tax, Q16 `bet_slip.status`, Q17 Change parent პლატფორმაზე, Q18 Display as მხოლოდ ჩვენება.
 
 ## 5. შემდეგი ნაბიჯი: BO-1-ის დარჩენილი ნაწილი (CLAUDE.md „Next“ 1)
 
