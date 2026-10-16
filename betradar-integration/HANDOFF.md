@@ -123,7 +123,7 @@ Auth-ის გარეშე მომხმარებელი platform sup
 გადაწყვეტილება D# ან რეკომენდაცია R# docs/12-ში → commit + push → ClickUp-ის შესაბამისი გვერდის განახლება.
 
 **სად არის ყველაფერი**
-- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.5): D1–D36, R1–R17, Q1–Q18, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories.
+- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.5): D1–D38, R1–R17, Q1–Q18, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories.
   docs/09 §2 პუნქტები 17–18 მასზე მიუთითებს.
 - **ClickUp** (workspace 1100320000015036, space „Space“): დოკუმენტი „Odds და Game types — სპეციფიკაცია (BO-1c)“,
   `document_id = z8qgvbuynw-318`, გვერდები 01–11 (page id-ები: 01 `z8qgvbuynw-38`, 02 `-58`, 03 `-78`, 04 `-98`, 05 `-118`,
@@ -152,7 +152,7 @@ Disallowed (By event, By category, Game by event) → Lives (Events, Match statu
 → Add games → Odds list → BetGenius Categories. Categories-ზე შესამოწმებელი: Code ranges = event code (Q13, D10-ის გასწორება),
 Default factor = მარჟის default, category-ის default alert/liability, Top leagues, `category_aggregator`.
 
-**Categories walkthrough (2026-10-13 … 10-16):** Manage გავლილია და ჩაწერილია docs/12 §20-ში (D31–D36, R14–R17, Q17–Q18, WP-10;
+**Categories walkthrough (2026-10-13 … 10-16):** Manage გავლილია და ჩაწერილია docs/12 §20-ში (D31–D38, R14–R17, WP-10; Q17/Q18 დადასტურდა → D37/D38;
 ClickUp-ის გვერდი 11). მოკლედ: დონეები = sport / ქვეყანა / ლიგა; Offline = დამალვა; Display as = გაერთიანება (`aggregateCategoryId`) →
 `bo.catalog_node.display_as_*`; Live curtain = live bet delay პროვაიდერის მიხედვით → CFG qualifier `pv`; Change parent = პლატფორმის
 შესწორება Feed Ops-ში (`sb.tournament_parent_override`); Game limits = CFG `mt` row-ები `c`/`t`-ზე. **შემდეგი:** Add sport / Add category
@@ -167,7 +167,7 @@ ClickUp-ის გვერდი 11). მოკლედ: დონეები
 **ღია კითხვები მომხმარებლისთვის (docs/12 §17):** Q1 preview, Q2 ტაბის visible, Q3 un-cancel, Q4 „1 in event“
 (ჰიპოთეზა `combinationType = 1`), Q6 re-map, Q7 პროვაიდერის პრიორიტეტი, Q8 four-eyes პლატფორმაზე, Q10 ქვეტაბი ⇒ ტაბი,
 Q11 awaiting approval ავტომატურად, Q12 ფრონტის endpoint-ები (HAR), Q13 event code, Q14 ⚖ compat-ის ლეგალურობა,
-Q15 ⚖ bet slip tax, Q16 `bet_slip.status`, Q17 Change parent პლატფორმაზე, Q18 Display as მხოლოდ ჩვენება.
+Q15 ⚖ bet slip tax, Q16 `bet_slip.status`.
 
 ## 5. შემდეგი ნაბიჯი: BO-1-ის დარჩენილი ნაწილი (CLAUDE.md „Next“ 1)
 
