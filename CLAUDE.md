@@ -68,7 +68,7 @@ Keycloak `bo` login is identity-first (username, then password); invited users m
 
 ## Next (in order)
 0. **BO-1c Odds (docs/12 §18)**: WP-1 CFG (four-eyes off by default) → WP-2 game type layer (`sb.game_type`, prematch/live separate, binding per sport) + provider mapping → WP-3 visibility chain ‖ WP-5 Manage + Results/`Settle.Core` → WP-4 Game types page. Reference-admin walkthrough continues with **Categories** (then Participants, Events mapping, Disallowed, Lives, Add games…): analysis only, no code; extend docs/12 + ClickUp. Start from HANDOFF §5a.
-1. **BO-1 rest**: custom groups, manual events (+ result entry); then P1 market groups / display order, `market.max_lines`.
+1. **BO-1 rest**: custom groups (**P0**, docs/12 D39), manual events (+ result entry); then P1 market groups / display order, `market.max_lines`.
 2. **SB-0/SB-1**: Player API skeleton (`/v1` catalog/events/event, OpenAPI, tenant via API key/brand host) on top of the
    same overlay and `Offer.Core` (docs/11); messages bundle endpoint for CMS.
 3. BO-2: PAM simulator + INT contract, bet engine (uses `Offer.Core` + `CmsMessages`), manual settlement, LIM/liability,

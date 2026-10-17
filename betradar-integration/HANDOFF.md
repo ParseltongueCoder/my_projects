@@ -123,7 +123,7 @@ Auth-ის გარეშე მომხმარებელი platform sup
 გადაწყვეტილება D# ან რეკომენდაცია R# docs/12-ში → commit + push → ClickUp-ის შესაბამისი გვერდის განახლება.
 
 **სად არის ყველაფერი**
-- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.6): D1–D38, R1–R20, Q1–Q23, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories.
+- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.6): D1–D39, R1–R21, Q1–Q23, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories.
   docs/09 §2 პუნქტები 17–18 მასზე მიუთითებს.
 - **ClickUp** (workspace 1100320000015036, space „Space“): დოკუმენტი „Odds და Game types — სპეციფიკაცია (BO-1c)“,
   `document_id = z8qgvbuynw-318`, გვერდები 01–11 (page id-ები: 01 `z8qgvbuynw-38`, 02 `-58`, 03 `-78`, 04 `-98`, 05 `-118`,
@@ -160,8 +160,8 @@ ClickUp-ის გვერდი 11). მოკლედ: დონეები
 
 **DWH:** dictionary-ები და 5 query-ის შედეგი მიღებულია (docs/12 §19.5, §20.10–20.11; ნედლი ფაილები repo-ში არ ინახება).
 `bet_slip.status`: 0 pending, 1 open, 2 settled, 5 cash-out, 10 cancelled; `event_type`: 1 prematch, 2 live (ცალკე ივენთი), 3 outright;
-გამოყენებული game type-ები 1 757 / 10 054; `game_group` 2 / 3 = two / three-way, 4 = outright, 0 / 1 = სია / მრავალ-outcome-იანი; Code ranges = ტურის მატჩების მოკლე კოდები (R18, Q19, D10 გასასწორებელია); `category_type = 2` = „Outrights“ კონტეინერი ქვეყნის ქვეშ (R19: ჩვენთან outright ტურნირშია); `treat_as_sport` = სპორტის ID, ანუ რომელი სპორტის მენიუში ჩანს კატეგორია (−500 = zzzOutrights; R20: Outrights = R19, „Support The Georgians“ = custom groups → P0?, Q21). **მოლოდინში:**
-query-ები 8–13 + Level 4-ის ცალკე query (Q20–Q23);
+გამოყენებული game type-ები 1 757 / 10 054; `game_group` 2 / 3 = two / three-way, 4 = outright, 0 / 1 = სია / მრავალ-outcome-იანი; Code ranges = ტურის მატჩების მოკლე კოდები (R18, Q19, D10 გასასწორებელია); `category_type = 2` = „Outrights“ კონტეინერი ქვეყნის ქვეშ (R19: ჩვენთან outright ტურნირშია); `treat_as_sport` = სპორტის ID, ანუ რომელი სპორტის მენიუში ჩანს კატეგორია (−500 = zzzOutrights; R20: Outrights = R19, „Support The Georgians“ = custom groups, **D39: custom groups P0**); Level 4 = ეტაპი / ვარიანტი / outright (R21: არ კეთდება). **მოლოდინში:**
+query-ები 10–13 (Q20, Q23);
 replica DWH-ის დიაგრამა. შემდეგ: SBS → ჩვენი სქემის მიგრაციის რუკა (WP-9).
 
 **ღია კითხვები მომხმარებლისთვის (docs/12 §17):** Q1 preview, Q2 ტაბის visible, Q3 un-cancel, Q4 „1 in event“
