@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18, Q19–Q23)
+> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R19, Q19–Q23)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories › Manage (§20). დანარჩენი სექციები (Register, Lives, Disallowed, Categories-ის სხვა ტაბები, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -134,6 +134,7 @@
 | R16 | Display as მხოლოდ **ჩვენებაა**: CFG, settlement და რეპორტინგი ორიგინალ კატეგორიას მიჰყვება. ჯაჭვი არ იქმნება, მხოლოდ იმავე სპორტში და დონეზე. ✅ D38 | §20.6 |
 | R17 | Treat as sport და ენის მიხედვით Visible არ კეთდება, სანამ use case არ გამოჩნდება. თუ დაგვჭირდება, ხილვადობა ბრენდით იმართება. | §20.7 |
 | R18 | Event code: ოპერატორის Code range-ები ლიგაზე / ქვეყანაზე / სპორტზე, ავტომატური მინიჭება და გათავისუფლება, უნიკალური აქტიურ ივენთებს შორის, ბილეთზე ფიქსირდება. P1 (retail). ⚠ | §20.11 |
+| R19 | „Outrights“ ცალკე კატეგორიად არ იქმნება: outright ივენთი თავის ტურნირშია, ფრონტის „Outrights“ სია გამოთვლითია, compat კი ვირტუალურ კატეგორიას აჩვენებს. | §20.10 |
 
 ---
 
@@ -1135,7 +1136,10 @@ Feed Ops (Admin.Api): `POST /api/tournaments/{id}/move {categoryId, reason}`, `D
 
 - **არსებობს Level 4** (33 კატეგორია) და Level −1 (1, root). D31 სამ დონეს აღწერს, ამიტომ ⚠ Q22: რა არის Level 4 (ჯგუფი / ეტაპი / outright ლიგის ქვეშ?). ჩვენთან ახალი დონის ნაცვლად, სავარაუდოდ, ცალკე ლიგა იქნება + Display as (D33).
 - **`status` 0–3:** 1 ≈ online, 0 ≈ offline. 2 ≈ 24.5 ათასი ლიგა, 3 = 95 სპორტი. ⚠ Q23: რას ნიშნავს 2 და 3 (archived / finished / deleted?). Category status dropdown-ის სკრინი ამას პირდაპირ აჩვენებს.
-- **`category_type`:** 1 თითქმის ყველგან, 2 მხოლოდ ლიგის დონეზე (~310), უმეტესად `treat_as_sport`-ით. ⚠ Q21-ის ნაწილი.
+- **`category_type = 2` = „Outrights“ კონტეინერი** (query 7, 80 მაგალითი): Level 3-ის კვანძია სახელით „Outrights“ ქვეყნის ქვეშ (Spain › Outrights, UFC › Outrights, Formula 1 › Outrights). ამ ქვეყნის ყველა outright ივენთს აერთიანებს. გამონაკლისი: „Eurovision“ (Specials › Music). `category_type = 1` = ჩვეულებრივი კატეგორია. უმეტესად `treat_as_sport` აქვს შევსებული (Q21 ღიაა).
+- **არასპორტული ხე:** სპორტი „Specials“ ქვეყნებით Religion, Awards, Music, Sports; „Olympic Games“ სპორტად, დისციპლინები (Judo, Fencing) კი Level 2-ზე. „zzz“ პრეფიქსი კატეგორიებზეც გაუქმებულს ნიშნავს (zzzPesapallo).
+
+**Outrights ჩვენთან (R19):** ცალკე „Outrights“ კატეგორია არ იქმნება. Outright ივენთი თავისი ტურნირის ქვეშ რჩება (Premier League › „Winner 2026/27“), როგორც Betradar-ის მოდელშია (season / stage outright). ფრონტზე ის ჩანს ფილტრით Event type = Outright (D7, R10), ტურნირის გვერდზე ცალკე ბლოკად და სპორტის „Outrights“ სიაში, რომელიც გამოთვლითია (ყველა outright სპორტში, ქვეყნების მიხედვით). Compat ფენა SBS-ის ფრონტს ვირტუალურ „Outrights“ კატეგორიას აჩვენებს თითო ქვეყანაზე, `compat.id_map(kind = category, mode = outright)`-ით. მიგრაციისას SBS-ის Outrights კატეგორიის ივენთი თავის ტურნირს ებმება, თუ პროვაიდერის mapping ამას აჩვენებს. თუ არა, ის ქვეყნის manual ტურნირში „Outrights“ ხვდება.
 - **`include_in_odds_feed`:** ~5.6 ათას კატეგორიაზე true, მაგრამ მფლობელის თქმით არ გამოიყენება (D32). ისტორიული ველია.
 - **Code ranges:** სპორტი 5, ქვეყანა 142, ლიგა 51. §20.11.
 
