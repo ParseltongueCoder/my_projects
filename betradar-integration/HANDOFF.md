@@ -123,7 +123,7 @@ Auth-ის გარეშე მომხმარებელი platform sup
 გადაწყვეტილება D# ან რეკომენდაცია R# docs/12-ში → commit + push → ClickUp-ის შესაბამისი გვერდის განახლება.
 
 **სად არის ყველაფერი**
-- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.6): D1–D41, R1–R24, Q1–Q24, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories.
+- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.6): D1–D43, R1–R25, Q1–Q25, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories.
   docs/09 §2 პუნქტები 17–18 მასზე მიუთითებს.
 - **ClickUp** (workspace 1100320000015036, space „Space“): დოკუმენტი „Odds და Game types — სპეციფიკაცია (BO-1c)“,
   `document_id = z8qgvbuynw-318`, გვერდები 01–11 (page id-ები: 01 `z8qgvbuynw-38`, 02 `-58`, 03 `-78`, 04 `-98`, 05 `-118`,
@@ -155,13 +155,13 @@ Default factor = მარჟის default, category-ის default alert/liabi
 **Categories walkthrough (2026-10-13 … 10-16):** Manage გავლილია და ჩაწერილია docs/12 §20-ში (D31–D38, R14–R17, WP-10; Q17/Q18 დადასტურდა → D37/D38;
 ClickUp-ის გვერდი 11). მოკლედ: დონეები = sport / ქვეყანა / ლიგა; Offline = დამალვა; Display as = გაერთიანება (`aggregateCategoryId`) →
 `bo.catalog_node.display_as_*`; Live curtain = live bet delay პროვაიდერის მიხედვით → CFG qualifier `pv`; Change parent = პლატფორმის
-შესწორება Feed Ops-ში (`sb.tournament_parent_override`); Game limits = CFG `mt` row-ები `c`/`t`-ზე. **შემდეგი:** (Add sport / category = R23, Order = R24 + D40: live-ის ცალკე რიგი, Default factor = D41: არ გამოიყენება)
-Categories-ის ტაბები ( Code ranges, Flags, Top leagues, Icons), მერე Participants.
+შესწორება Feed Ops-ში (`sb.tournament_parent_override`); Game limits = CFG `mt` row-ები `c`/`t`-ზე. **შემდეგი:** (Add sport / category = R23, Order = R24 + D40: live-ის ცალკე რიგი, Default factor = D41: არ გამოიყენება, Code ranges / Flags = D42 / D43: არ კეთდება, Top leagues = R25 + Q25)
+Categories-ის ბოლო ტაბი Icons, მერე Participants.
 
 **DWH:** dictionary-ები და 5 query-ის შედეგი მიღებულია (docs/12 §19.5, §20.10–20.11; ნედლი ფაილები repo-ში არ ინახება).
 `bet_slip.status`: 0 pending, 1 open, 2 settled, 5 cash-out, 10 cancelled; `event_type`: 1 prematch, 2 live (ცალკე ივენთი), 3 outright, 5–19 ვირტუალები (შეწყვეტილი);
 გამოყენებული game type-ები 1 757 / 10 054; `game_group` 2 / 3 = two / three-way, 4 = outright, 0 / 1 = სია / მრავალ-outcome-იანი; Code ranges = ტურის მატჩების მოკლე კოდები (R18, Q19, D10 გასასწორებელია); `category_type = 2` = „Outrights“ კონტეინერი ქვეყნის ქვეშ (R19: ჩვენთან outright ტურნირშია); `treat_as_sport` = სპორტის ID, ანუ რომელი სპორტის მენიუში ჩანს კატეგორია (−500 = zzzOutrights; R20: Outrights = R19, „Support The Georgians“ = custom groups, **D39: custom groups P0**); Level 4 = ეტაპი / ვარიანტი / outright (R21: არ კეთდება). **მოლოდინში:**
-Q19 (retail ახლაც საჭიროა? `gameCode`); D10 შესწორდა: event code = betting shop-ის კოდი; category status 2 = დაარქივებული, მიგრაციით ~14.4 ათასი ლიგა (R22);
+D10 შესწორდა: event code = betting shop-ის კოდი; category status 2 = დაარქივებული, მიგრაციით ~14.4 ათასი ლიგა (R22);
 replica DWH-ის დიაგრამა. შემდეგ: SBS → ჩვენი სქემის მიგრაციის რუკა (WP-9).
 
 **ღია კითხვები მომხმარებლისთვის (docs/12 §17):** Q1 preview, Q2 ტაბის visible, Q3 un-cancel, Q4 „1 in event“

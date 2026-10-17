@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R24, D39–D41, D10 შესწორება, Q19–Q24)
+> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D43, D10 შესწორება, Q19–Q25)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories › Manage (§20). დანარჩენი სექციები (Register, Lives, Disallowed, Categories-ის სხვა ტაბები, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -114,6 +114,8 @@
 | D39 | **Custom groups P0-ია** (docs/06 §2.2-ის P1-ის ნაცვლად): Treat as sport-ის შემცვლელი („Support The Georgians“, „Transfers“), R20 დადასტურდა. | §20.10 |
 | D40 | Order-ში **live-ს ცალკე რიგი აქვს** (რეფერენსის სვეტი LV = Live). ჩვენთან `mode` prematch / live. | §20.13 |
 | D41 | **Default factor** (კოეფიციენტის მამრავლი კატეგორია × game type) Europebet-ში **არ გამოიყენება**. ცალკე არ კეთდება; საჭიროებისას CFG `margin.*` (`c`/`t` + `mt`). | §20.14 |
+| D42 | **Code ranges გამოვტოვეთ**: event code-ები (R18) არ კეთდება და არ მიგრირდება retail-მდე. | §20.15 |
+| D43 | **Flags ცალკე არ კეთდება**: ხატულა / დროშა / ლოგო კატეგორიაზე, ლიგაზე და მონაწილეზე იტვირთება (`bo.media_link`). | §20.15 |
 
 ### 2.2 ჩვენი რეკომენდაციები (default დიზაინი)
 
@@ -136,13 +138,14 @@
 | R15 | Live delay პროვაიდერის მიხედვით = CFG-ის ახალი qualifier `pv` `betdelay.live_sec`-ზე. ბილეთის delay = max legs-ზე, თითო leg-ისთვის მისი მარკეტის პროვაიდერის მნიშვნელობით. ⚠ | §20.4 |
 | R16 | Display as მხოლოდ **ჩვენებაა**: CFG, settlement და რეპორტინგი ორიგინალ კატეგორიას მიჰყვება. ჯაჭვი არ იქმნება, მხოლოდ იმავე სპორტში და დონეზე. ✅ D38 | §20.6 |
 | R17 | Treat as sport და ენის მიხედვით Visible არ კეთდება, სანამ use case არ გამოჩნდება. თუ დაგვჭირდება, ხილვადობა ბრენდით იმართება. | §20.7 |
-| R18 | Event code: ოპერატორის Code range-ები ლიგაზე / ქვეყანაზე / სპორტზე, ავტომატური მინიჭება და გათავისუფლება, უნიკალური აქტიურ ივენთებს შორის, ბილეთზე ფიქსირდება. P1 (retail). ⚠ | §20.11 |
+| R18 | Event code: ოპერატორის Code range-ები ლიგაზე / ქვეყანაზე / სპორტზე, ავტომატური მინიჭება და გათავისუფლება, უნიკალური აქტიურ ივენთებს შორის, ბილეთზე ფიქსირდება. **გადადებულია (D42)**, retail-მდე. | §20.11 |
 | R19 | „Outrights“ ცალკე კატეგორიად არ იქმნება: outright ივენთი თავის ტურნირშია, ფრონტის „Outrights“ სია გამოთვლითია, compat კი ვირტუალურ კატეგორიას აჩვენებს. | §20.10 |
 | R20 | Treat as sport (= რომელი სპორტის მენიუში ჩანს კატეგორია) ზოგად ველად არ კეთდება: „Outrights“ = გამოთვლითი სია (R19), დანარჩენი („Support The Georgians“, „Transfers“) = custom groups (docs/06 §2.2), რომლებიც P0-ში გადავიდა (D39). ✅ | §20.10 |
 | R21 | Level 4 არ კეთდება: ეტაპი / ვარიანტი = ცალკე ტურნირი + Display as (D33), outright = R19. მიგრაციისას 33 კატეგორია ხელით. | §20.10 |
 | R22 | კატეგორიის სტატუსი = მხოლოდ Online / Offline. SBS-ის სისტემური 2 (დაარქივებული) / 3 არ გადმოდის; მიგრაციით მხოლოდ ლიგები ივენთებით ბოლო 12 თვეში ან მომავალში (~14.4 ათასი). | §20.10 |
 | R23 | Add sport / category / league = ერთი dialog, manual entity (`provider_id = 0` + `bo.manual_entity`, RLS), ოპერატორის ან პლატფორმის; დუბლიკატის გაფრთხილება feed კვანძზე; მოგვიანებით feed-თან მიბმა. | §20.12 |
 | R24 | Order: `bo.catalog_node.sort_order` სიის პოზიციით (დუბლიკატი შეუძლებელია), განზომილებები `mode` (prematch / live, D40) და `brand_id` (betting shop = ბრენდი, თუ retail საჭიროა); ენის მიხედვით რიგი არ არის; თარგმანზე დამოკიდებული არ არის; drag & drop + preview. | §20.13 |
+| R25 | Top leagues = ცალკე `bo.top_league` (არხი web / mobile, ბრენდი, რიგი, Show / Hide, სურათი, ვადა), ელემენტი = ლიგა ან custom group; ფრონტზე ჩანს მხოლოდ ღია ივენთებით (სეზონგარეშე თავისით ქრება). ⚠ | §20.16 |
 
 ---
 
@@ -903,12 +906,13 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q16 | ✅ მონაცემებით (§19.5): 0 pending, 1 open, 2 settled, 5 cash-out, 10 cancelled | — | — |
 | Q17 | ✅ გადაწყდა (D37): Change parent პლატფორმის შესწორებაა, CFG ახალ მშობელს მიჰყვება | — | — |
 | Q18 | ✅ გადაწყდა (D38): Display as მხოლოდ ჩვენებაა | — | — |
-| Q19 | Event code ✅ betting shop-ების კოდია (მფლობელი). ღიაა: retail ახლაც საჭიროა? (თუ არა, R18 და Code ranges-ის მიგრაცია არ კეთდება). `gameCode` (226140) რა არის? | მფლობელი | P1 (retail) |
+| Q19 | ✅ დაიხურა (D42): event code = betting shop-ის კოდი, Code ranges გამოვტოვეთ, R18 გადადებულია retail-მდე | — | — |
 | Q20 | ✅ მონაცემებით (§19.5): `event_type` 5–19 = ვირტუალური სპორტები (2019–2022, შეწყვეტილი), არ გადმოდის | — | — |
 | Q21 | ✅ გადაწყდა: `category_type = 2` = Outrights (R19), `treat_as_sport` = მენიუს სპორტი → custom groups P0 (D39) | — | — |
 | Q22 | ✅ მონაცემებით (R21): Level 4 = ეტაპი / ვარიანტი / outright / სტატისტიკა, ჩვენთან ცალკე ტურნირი + Display as | — | — |
 | Q23 | ✅ UI-ში 0 Offline / 1 Online; 2 = სისტემური „დაარქივებული“ (ივენთები 1+ წელია არ აქვს), 3 = სისტემური, მხოლოდ სპორტებზე (R22) | — | — |
 | Q24 | ✅ LV = Live (D40), BS ≈ betting shop (→ Q19), KA / EN / RU / TR = ენები | — | — |
+| Q25 | Top leagues-ის Reg. method-ში რა ვარიანტებია (Mobile, Web, …)? სია და რიგი არხებზე განსხვავდება? Hide-ს ხელით იყენებთ სეზონგარეშე ლიგებისთვის (R25-ში ეს ავტომატურია)? | მფლობელი | WP-10 |
 
 ---
 
@@ -1243,8 +1247,33 @@ DWH-ის მაგალითები: Premier League **101–110**, FA Cup 
 
 **UX შენიშვნა:** რეფერენსის ხეში პროვაიდერის ფილტრი („All providers“) სასარგებლოა. §20.9-ის ხეს ემატება ფილტრი provider-ის მიხედვით (B / G / L / M).
 
-### 20.15 დარჩენილი (შემდეგი walkthrough)
+### 20.15 Code ranges და Flags (D42, D43)
+
+- **D42: Code ranges გამოვტოვეთ** (მფლობელი, 2026-10-17). R18 (event code-ები) **გადადებულია**: არ კეთდება და არ მიგრირდება, სანამ retail (betting shop-ები) დღის წესრიგში არ დადგება. Q19 ამით იხურება.
+- **D43: Flags ცალკე ტაბად არ კეთდება.** ხატულები და დროშები უშუალოდ კატეგორიაზე, ლიგაზე და მონაწილეზე იტვირთება. ჩვენთან ეს უკვე არსებობს: `bo.media_link (entity_type: sport | category | tournament | competitor …, role: icon | flag | logo | banner)` BO-1a-დან, ხის პანელიდან და მონაწილის გვერდიდან (`features/cat/participants.ts`).
+
+### 20.16 Top leagues
+
+**დანიშნულება (მფლობელი):** ბუკმეკერი განსაზღვრავს ლიგების სიას, ფრონტი კი მას იღებს, რომ მთავარ გვერდზე „ტოპ ლიგების“ ბლოკში შესაბამისი ივენთები აჩვენოს.
+
+**რეფერენსი (`/admin-console/category/topLeagues`):** მარცხნივ ხეა (provider ფილტრით). მარჯვნივ ზემოთ ველია Category ID + **Add at top / Add at bottom**, ქვემოთ ფილტრი **Reg. method** (Mobile …) და Refresh. ცხრილის სვეტებია Parent category, Category name, Category ID, Status, Reg. method, მოქმედებები **preview, Upload image, Show / Hide, Remove**. ნაცრისფერი row-ები დამალულია (ღილაკი „Show“). ხილულია მხოლოდ Premier League, LaLiga, Serie A, Bundesliga, Ligue 1 და Erovnuli Liga; UCL, UEL, UECL, Championship, თასები სიაშია, მაგრამ დამალულია. სიის ელემენტები ლიგებია (Level 3), საკუთარი რიგით, სურათით და არხით.
+
+**ჩვენთან (R25 ⚠ Q25):**
+- `bo.catalog_node.is_top / top_order` (BO-1a) ამისთვის საკმარისი არ არის: საჭიროა არხი, დამალვა წაშლის გარეშე, სურათი და ვადა. ამიტომ ცალკე ცხრილი:
+  `bo.top_league(id, operator_id, brand_id NULL, channel text CHECK (channel IN ('all','web','mobile')), node_type ('tournament' | 'custom_group'), node_id, position, is_visible, media_id NULL → bo.media_asset, visible_from, visible_to, updated_by, updated_at, version)`, unique `(operator_id, brand_id, channel, node_type, node_id)` NULLS NOT DISTINCT. RLS V006-ის ნიმუშით + იზოლაციის ტესტი. audit + outbox (`bo.changed.{op}.cat`). `catalog_node.is_top / top_order` მიგრაციით გადადის და შემდეგ იშლება (ერთი წყარო).
+- **ელემენტი:** ლიგა (`sb.tournament`, მათ შორის manual) ან custom group (D39). Display as-ით გაერთიანებული ლიგა (D33) სამიზნის სახელით ჩანს და ორიგინალის ივენთებსაც მოიცავს.
+- **ფრონტზე ჩვენება:** ჩანს მხოლოდ ის ელემენტი, რომელიც `is_visible`-ია, ვადაშია **და აქვს ღია ივენთი** (ფანჯარა CFG-ით: `display.top_leagues_window_days`, default 7). ასე სეზონგარეშე ლიგა ხელით დამალვის გარეშე ქრება და სეზონზე თავად ბრუნდება. Show / Hide რჩება ხელით კონტროლისთვის. რაოდენობის ზღვარი: არსებული `display.top_leagues_limit`.
+- **Player API:** `/v1/featured?placement=home` და `/v1/catalog/tree`-ის `topLeagues` (docs/11 §2) აბრუნებს სიას რიგით, სურათით (`/api/media/{id}` ვარიანტებით), არხის მიხედვით. compat ფენა იგივე სიას SBS-ის ფორმატში აჩვენებს.
+
+**UX (`/cat/top`, docs/06-ის გეგმიდან):**
+- ლიგის დამატება ძებნით ან ხიდან გადმოთრევით (ID-ის აკრეფის ნაცვლად); „თავში“ / „ბოლოში“ რჩება, რიგი drag & drop-ით;
+- ერთი სია არხების სვეტებით (Web / Mobile მონიშვნები) ცალ-ცალკე სიების ნაცვლად. თუ არხების რიგი უნდა განსხვავდებოდეს, „არხისთვის ცალკე რიგი“ ჩაირთვება;
+- თითო row-ზე სტატუსის badge: „ჩანს“, „დამალულია ხელით“, „ივენთი არ აქვს (N დღე)“, „ვადა ამოიწურა“;
+- სურათის ატვირთვა row-იდან (crop + ვარიანტები, არსებული media), preview = მთავარი გვერდის ბლოკის მინი-ხედი არჩეული არხით და ბრენდით;
+- ვადა (from / to) დიდი ტურნირებისთვის (მსოფლიო ჩემპიონატი, ევრო).
+
+### 20.17 დარჩენილი (შემდეგი walkthrough)
 
 - **Add sport / Add category:** ფორმა. ხეში ჩანს „Oscar (1)“, ანუ არასპორტული special-ის ხელით შექმნილი სპორტი. ჩვენთან ესაა `bo.manual_entity` (`sport` / `category` / `tournament`), CLAUDE.md „Next“ 1-ის manual ივენთების ნაწილი.
 - Level 3-ის ფორმა (თუ Level 2-ისგან განსხვავდება).
-- ტაბები: Order (`bo.catalog_node.sort_order`), Default factor (მარჟა `c` / `t`), Code ranges (Q13), Flags, Top leagues (`is_top`), Icons (`bo.media_link`).
+- ტაბი Icons (`bo.media_link`). Order (§20.13), Default factor (§20.14), Code ranges, Flags (§20.15) და Top leagues (§20.16) გავლილია.
