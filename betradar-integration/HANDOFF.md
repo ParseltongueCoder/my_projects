@@ -160,8 +160,8 @@ ClickUp-ის გვერდი 11). მოკლედ: დონეები
 
 **DWH:** dictionary-ები და 5 query-ის შედეგი მიღებულია (docs/12 §19.5, §20.10–20.11; ნედლი ფაილები repo-ში არ ინახება).
 `bet_slip.status`: 0 pending, 1 open, 2 settled, 5 cash-out, 10 cancelled; `event_type`: 1 prematch, 2 live (ცალკე ივენთი), 3 outright;
-გამოყენებული game type-ები 1 757 / 10 054; Code ranges = ტურის მატჩების მოკლე კოდები (R18, Q19, D10 გასასწორებელია). **მოლოდინში:**
-query 2 (`game_group`) არ დაბრუნებულა; ახალი query-ები Q20–Q23-ისთვის (Level 4, status 2/3, treat_as_sport, event_type 5–19);
+გამოყენებული game type-ები 1 757 / 10 054; `game_group` 2 / 3 = two / three-way, 4 = outright, 0 / 1 = სია / მრავალ-outcome-იანი; Code ranges = ტურის მატჩების მოკლე კოდები (R18, Q19, D10 გასასწორებელია). **მოლოდინში:**
+ახალი query-ები Q20–Q23-ისთვის (Level 4, status 2/3, treat_as_sport, event_type 5–19);
 replica DWH-ის დიაგრამა. შემდეგ: SBS → ჩვენი სქემის მიგრაციის რუკა (WP-9).
 
 **ღია კითხვები მომხმარებლისთვის (docs/12 §17):** Q1 preview, Q2 ტაბის visible, Q3 un-cancel, Q4 „1 in event“

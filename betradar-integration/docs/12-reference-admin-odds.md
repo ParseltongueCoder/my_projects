@@ -987,7 +987,17 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 - **ID-ის ბლოკები პროვაიდერის მიხედვით.** ბლოკს მარკერ-row-ი იწყებს (`BETRADAR PREMATCH` −8000, `BETGENIUS LIVE` 6000, `LSPORT LIVE` 15000, `Start of manual PREMATCH game types` −30000, `Start of manual LIVE game types` 20000 და სხვ.). ისტორიულად ნახსენებია 10 პროვაიდერი: Betradar, Betgenius, LSports, Odds&More, Playtech, RTSmunity, BetConstruct, Bayes/Bodex, Betbazar, SIS. ⇒ SBS-ში game type **პროვაიდერზეა მიბმული**. ჩვენთან ის წყაროსგან დამოუკიდებელია (D20), ამიტომ მიგრაციის რუკა (WP-9) ასეთია: `SBS game_type_id → (პროვაიდერი, რეჟიმი, პროვაიდერის market id) → ჩვენი canonical მარკეტი + game type`. ერთ ჩვენს game type-ს რამდენიმე SBS ID შეესაბამება, `compat.id_map(kind = game_type)` ორივე მიმართულებით.
 - **Manual ტიპები:** prematch ≈ 1 600 (≤ −30000), live ≈ 100 (≥ 20000). ბევრი მათგანი ერთჯერადი special-ია: გუნდის ან სპორტსმენის სახელი, „World Cup 2014 (Winner)“, ტემპერატურა. **R13:** special-ისთვის ახალი game type არ იქმნება. ესაა manual მარკეტი თავისუფალი სახელით ერთ ზოგად custom ტიპზე (`custom:{op}:special`, P1 „custom manual markets“, HANDOFF §3.3). ასე კატალოგი არ ივსება ერთჯერადი ტიპებით. მიგრაციისას გადმოდის მხოლოდ ის ტიპები, რომლებიც ბოლო N თვეში გამოიყენებოდა (N ⚠ მიგრაციის გეგმაში).
 - **ერთი სახელი, ბევრი ტიპი:** „Match Winner“ 9-ჯერაა, „1st Half Handicap“ 8-ჯერ. ესაა სპორტების და რეჟიმების ასლები, რაც **D21-ს ადასტურებს**.
-- **`game_group`** (0–4, −1 = მარკერი) = outcome-ების სტრუქტურა. 3 = three-way (1X2, Double chance, Next team to score), 2 = two-way (Under/Over, Odd/Even, 1 2), 4 = outright/winner (League winner, Racing, medal) — ეს სამი თვალით ჩანს და §9.3-ის „Group“-ს ემთხვევა. ⚠ ჰიპოთეზა: 0 = სია (მოთამაშეები, correct score), 1 = კომბინირებული/მრავალ-outcome-იანი (HT/FT, Matchbet + Totals). ჩვენთან ეს outcome-ების რაოდენობიდან და layout hint-იდან გამოითვლება (§9.3), ცალკე ველი არ სჭირდება.
+- **`game_group`** (0–4, −1 = მარკერი) = outcome-ების სტრუქტურა / layout. DWH-ში შემოწმდა ბოლო 200 000 მარკეტზე:
+
+  | group | მარკეტი | outcome-ები: საშ. (min–max) | მნიშვნელობა |
+  |---|---|---|---|
+  | 2 | 123 878 | 2.0 (2–6) | two-way |
+  | 3 | 17 605 | 3.0 (2–7) | three-way |
+  | 0 | 49 419 | 4.7 (1–82) | სია (მოთამაშეები, correct score) |
+  | 1 | 9 038 | 7.1 (1–46) | მრავალ-outcome-იანი / კომბინირებული (HT/FT, Matchbet + Totals) |
+  | 4 | 60 | 8.8 (2–136) | outright / winner |
+
+  ⇒ ჩვენთან ცალკე ველი არ გვჭირდება: სტრუქტურა outcome-ების რაოდენობიდან და layout hint-იდან (§9.3) გამოითვლება. Compat ფენისთვის group ინახება game type-ის mapping-ში: მიგრირებულ ტიპებს SBS-ის მნიშვნელობა მიჰყვება, ახლებისთვის ის ავტომატურად ითვლება (2 outcome → 2, 3 → 3, outright → 4, დანარჩენი → 0). 0-სა და 1-ს შორის ზუსტი განსხვავება (სავარაუდოდ, სია vs ბადე) ფრონტის layout-ს ეხება და WP-9-ში Q12-თან ერთად დაზუსტდება.
 - **Pattern:** `{0}` = ერთი პოზიციური არგუმენტი (§19.1-ის დადასტურება, 3 122 ტიპი). `{1}`/`{2}` = გუნდების სახელები („{2} - To Win At Least One Half“). ~900 ტიპში Betradar UOF-ის სინტაქსია (`{!mapnr}`, `{$competitor1}`, `{%player}`, `{+-0}`), ანუ UOF-ის template-ებია გადმოწერილი. ჩვენი name template-ები UOF-ს პირდაპირ კითხულობს, ამიტომ compat ფენამ named → `{0}` უნდა გარდაქმნას.
 - **„zzz“ პრეფიქსი** (19) და „Test x“ = გაუქმებული/სატესტო ჩანაწერები. ჩვენთან ამისთვის `sb.game_type.is_active` გვაქვს, პრეფიქსი არ არის საჭირო.
 
