@@ -2,9 +2,9 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D46, D10 შესწორება, Q19–Q25)
+> **სტატუსი:** spec v1.7, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.7: §21 Participants, R26, Q26–Q28; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D46, D10 შესწორება, Q19–Q25)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
-> **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories (§20). დანარჩენი სექციები (Register, Lives, Disallowed, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
+> **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories (§20), Participants › Manage (§21). დანარჩენი სექციები (Register, Lives, Disallowed, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
 >
 > ნიშნები: **[D#]** = პროდუქტის მფლობელის გადაწყვეტილება (სავალდებულო). **[R#]** = ჩვენი რეკომენდაცია, რომელსაც მფლობელი არ შეწინააღმდეგებია; ⚠ ნიშნიანი R-ები §17-ში დასადასტურებლად რჩება. „რეფერენსი“ = ოპერატორის ამჟამინდელი ადმინი.
@@ -32,6 +32,7 @@
 18. [სამუშაო პაკეტები, თანმიმდევრობა, შეფასება](#18-სამუშაო-პაკეტები-თანმიმდევრობა-შეფასება)
 19. [SB Software API-ის ანალიზი და თავსებადობის ფენა](#19-sb-software-api-ის-ანალიზი-და-თავსებადობის-ფენა)
 20. [Categories (კატეგორიების ხე)](#20-categories-კატეგორიების-ხე)
+21. [Participants (მონაწილეები)](#21-participants-მონაწილეები)
 
 ---
 
@@ -149,6 +150,7 @@
 | R23 | Add sport / category / league = ერთი dialog, manual entity (`provider_id = 0` + `bo.manual_entity`, RLS), ოპერატორის ან პლატფორმის; დუბლიკატის გაფრთხილება feed კვანძზე; მოგვიანებით feed-თან მიბმა. | §20.12 |
 | R24 | Order: `bo.catalog_node.sort_order` სიის პოზიციით (დუბლიკატი შეუძლებელია), განზომილებები `mode` (prematch / live, D40) და `brand_id` (betting shop = ბრენდი, თუ retail საჭიროა); ენის მიხედვით რიგი არ არის; თარგმანზე დამოკიდებული არ არის; drag & drop + preview. | §20.13 |
 | R25 | Top leagues = ცალკე `bo.top_league` (არხი web / mobile, ბრენდი, რიგი, Show / Hide, სურათი, ვადა, დაგეგმილი ჩვენება), ელემენტი = ლიგა ან custom group. ჩვენებას ბუკმეკერი წყვეტს (D44), სისტემა მხოლოდ ცარიელ ბლოკს მალავს და აქტივობის მონაცემებით ეხმარება. ⚠ | §20.16 |
+| R26 | Participants: feed მონაწილეზე ოპერატორი ცვლის მხოლოდ თარგმანს / short name-ს / ლოგოს; „In categories“ გამოთვლილია; manual მონაწილე / player = manual entity (Add, Bulk add ჩასმით, დუბლიკატის კონტროლი); Remove მხოლოდ გამოუყენებელ manual-ზე. ⚠ | §21.3 |
 
 ---
 
@@ -916,6 +918,9 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q23 | ✅ UI-ში 0 Offline / 1 Online; 2 = სისტემური „დაარქივებული“ (ივენთები 1+ წელია არ აქვს), 3 = სისტემური, მხოლოდ სპორტებზე (R22) | — | — |
 | Q24 | ✅ LV = Live (D40), BS ≈ betting shop (→ Q19), KA / EN / RU / TR = ენები | — | — |
 | Q25 | ✅ Reg. method = Mobile / Web / Both; ამჟამად მხოლოდ Mobile-ის სია გამოიყენება; სია არხების მიხედვით შეიძლება განსხვავდებოდეს (D45) | — | — |
+| Q26 | Participants: სახელის წინ „Team“ რას ნიშნავს (ტიპი? რატომ აკლია ზოგს)? „In categories“-ს რისთვის იყენებთ (manual ივენთის შექმნისას გუნდის არჩევა? mapping?) | მფლობელი | WP-10 / manual events |
+| Q27 | Participant-ის Remove და კატეგორიის Remove როდის გამოიყენება (დუბლიკატები? შეცდომები?) | მფლობელი | არა |
+| Q28 | Add / Bulk add და Add player: რისთვის ქმნით მონაწილეებს ხელით (special-ები, manual ივენთები)? სხვა ოპერატორს უნდა უჩანდეს (პლატფორმის) თუ მხოლოდ თქვენ? | მფლობელი | manual events |
 
 ---
 
@@ -1298,3 +1303,53 @@ DWH-ის მაგალითები: Premier League **101–110**, FA Cup 
 WP-10-ის შეფასება (~2.5 დკ) იზრდება: + Order (`mode`, `brand_id`, UI) 0.5, + Top leagues (`bo.top_league`, UI, აქტივობის მონაცემები) 1, + manual sport / category / league (R23) 0.5 ⇒ **~4.5 დკ** (+0.5 WP-1 `pv`). Custom groups (D39) ცალკე, BO-1 rest-ში.
 
 **შემდეგი walkthrough:** Participants (Manage, Mapping, LSport).
+
+---
+
+## 21. Participants (მონაწილეები)
+
+წყარო: რეფერენსის Odds › Participants › Manage, Participant editor, Add participant, Bulk add (2026-10-17). Mapping და LSport ტაბები შემდეგია (§21.6).
+
+### 21.1 რეფერენსი
+
+- **Manage (`/admin-console/odds/participant`):** მარცხნივ კატეგორიების ხეა (provider ფილტრით), მარჯვნივ არჩეული კატეგორიის მონაწილეები, ძებნით სახელის მიხედვით და გვერდებად. სვეტები: Participant ID, სახელი (ზოგს წინ აწერია **„Team“**, მაგ. Royale Union SG-ს არა), provider badge (**B**), **In categories** (რამდენ კატეგორიაშია, 13–36), მოქმედებები ⓘ, **Edit, History, Remove**. ღილაკები: **Add participant, Bulk add**.
+- **Participant editor:** ID, სახელი, Created by (`system`), **icon** (Upload / Remove, მაგ. Red Bull Salzburg-ის ლოგო), **Name translations** (RU, KA, EN, TR + Copy from Name), **Categories** (მონაწილის კატეგორიების სია, Add / Remove; შიგ ძველი და `zzz` კატეგორიებიცაა: T-Mobile Bundesliga, zzzUEFA Europa League Qualification, UEFA Europa League Group A / C / F / G), **Players** (შემადგენლობა, Add / Remove: Alexander Zickler, Niko Kovac …).
+- **Add participant:** მხოლოდ სახელი.
+- **Bulk add:** სახელები ხაზ-ხაზ, სვეტებად: Participant name, Georgian, English, Russian, Turkish + „Copy name(s) to all languages“.
+- ზედა ზოლში ტიკერი ჩანს: `01:34:09 USA - Italy [100/200]` (ალერტი / ლიმიტი, §6.3-ის დადასტურება).
+
+### 21.2 ჩვენი მოდელი
+
+| რეფერენსი | ჩვენთან |
+|---|---|
+| Participant | `sb.competitor` (sport, სახელი, abbreviation, country, gender), feed-ის სიმართლე. BO მას არ ცვლის |
+| Players | `sb.player` (`competitor_id`), feed-იდან (Betradar competitor profile), player მარკეტებისთვის |
+| სახელი / თარგმანი | `bo.translation` (BO-1a, `features/cat/participants.ts`): ოპერატორის / ბრენდის override, short name |
+| Icon | `bo.media_link (entity_type = 'competitor', role = 'logo')` (BO-1a) |
+| In categories | **გამოთვლილი**: ტურნირები, სადაც მონაწილეს ივენთი ჰქონდა / აქვს (`sb.event_competitor` → `sb.event.tournament_id`) + სეზონის მონაწილეები feed-იდან. ხელით მიბმა feed მონაწილეზე არ არის |
+| Provider badge | `sb.provider_mapping (entity = competitor)`: ერთ canonical მონაწილეზე რამდენიმე პროვაიდერი (B / G / L), mapping-ს პლატფორმა აკეთებს (D29, §21.6) |
+| History | audit (BO ცვლილებები) + feed-ის ცვლილებების ლოგი (§7, D9) |
+| Add / Bulk add | **manual მონაწილე**: `sb.competitor` `provider_id = 0` + `bo.manual_entity (entity_type = 'competitor' / 'player')`, RLS (R23-ის ნიმუში) |
+| Remove | feed მონაწილეზე **არ არის** (მხოლოდ დამალვა / mapping-ით გაერთიანება). Manual მონაწილე იშლება მხოლოდ მაშინ, თუ ივენთში არ მონაწილეობს |
+
+### 21.3 რეკომენდაცია (R26 ⚠ Q26–Q28)
+
+- **Feed მონაწილე:** ოპერატორი ცვლის მხოლოდ თარგმანს, მოკლე სახელს და ლოგოს (არსებული BO-1a). „In categories“, Players და provider badge-ები მხოლოდ ჩვენებაა.
+- **Manual მონაწილე** manual ივენთებისა და special-ებისთვის (Ballon d'Or-ის კანდიდატები, Eurovision-ის ქვეყნები): Add + Bulk add, ოპერატორის ან პლატფორმის (R23-ის მსგავსად). Bulk add = ცხრილი ჩასმით Excel-იდან (სახელი + ოპერატორის ენების სვეტები), „სახელის კოპირება ყველა ენაზე“, არჩევითი მიბმა manual ლიგაზე.
+- **დუბლიკატის კონტროლი:** შენახვამდე ერთ სპორტში მსგავსი სახელის (fuzzy) feed / manual მონაწილე მოიძებნება, „არსებულის გამოყენების“ შეთავაზებით. Bulk add-ში ეს თითო ხაზზე ჩანს.
+- **Manual player-ები** (manual player მარკეტებისთვის) ემატება მონაწილეს: feed-ის შემადგენლობა read-only, manual player-ები ცალკე ნიშნით.
+
+### 21.4 UX (`/cat/participants`, არსებულის გაფართოება)
+
+- ძებნა ყველა მონაწილეში (არა მხოლოდ არჩეულ კატეგორიაში) + ფილტრები: სპორტი / კატეგორია / ლიგა ხიდან, provider (B / G / L / M), **„თარგმანი აკლია“**, **„ლოგო აკლია“**, „მომავალი ივენთით“;
+- თარგმანების რედაქტირება პირდაპირ ცხრილში (Excel-ის მსგავსად, ენები სვეტებად) + CSV import / export (BO-1a-ში უკვე არის translations CSV);
+- ლოგოების მასობრივი ატვირთვა (ფაილის სახელით მატჩი, P1);
+- მონაწილის გვერდზე: მომავალი და ბოლო ივენთები, ლიგები, provider ID-ები (B / G / L), ცვლილებების ისტორია.
+
+### 21.5 Player API
+
+`/v1/events*` მონაწილეს აბრუნებს `{id, name (ოპერატორის თარგმანით), shortName, logoUrl}`-ით. compat ფენა SBS-ის `participantId`-ს `compat.id_map(kind = participant)`-ით აჩვენებს.
+
+### 21.6 დარჩენილი
+
+Participants › **Mapping** (პროვაიდერების მონაწილეების გაერთიანება; §19.3-ის ივენთების ავტომატური mapping-ის წინაპირობა) და **LSport**.
