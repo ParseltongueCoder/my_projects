@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D44, D10 შესწორება, Q19–Q25)
+> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D45, D10 შესწორება, Q19–Q25)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories › Manage (§20). დანარჩენი სექციები (Register, Lives, Disallowed, Categories-ის სხვა ტაბები, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -117,6 +117,7 @@
 | D42 | **Code ranges გამოვტოვეთ**: event code-ები (R18) არ კეთდება და არ მიგრირდება retail-მდე. | §20.15 |
 | D43 | **Flags ცალკე არ კეთდება**: ხატულა / დროშა / ლოგო კატეგორიაზე, ლიგაზე და მონაწილეზე იტვირთება (`bo.media_link`). | §20.15 |
 | D44 | Top leagues-ის ჩვენება **ბუკმეკერის ხელით გადაწყვეტილებაა** (დინამიკური: დღის / შაბათ-კვირის მიხედვით). სისტემა ლიგას თავისით არ აჩენს, მხოლოდ ცარიელ ბლოკს არ აჩვენებს. | §20.16 |
+| D45 | Top leagues-ის სია **არხის მიხედვით** (Mobile / Web / Both) შეიძლება განსხვავდებოდეს. Europebet ამჟამად მხოლოდ Mobile-ის სიას იყენებს. | §20.16 |
 
 ### 2.2 ჩვენი რეკომენდაციები (default დიზაინი)
 
@@ -913,7 +914,7 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q22 | ✅ მონაცემებით (R21): Level 4 = ეტაპი / ვარიანტი / outright / სტატისტიკა, ჩვენთან ცალკე ტურნირი + Display as | — | — |
 | Q23 | ✅ UI-ში 0 Offline / 1 Online; 2 = სისტემური „დაარქივებული“ (ივენთები 1+ წელია არ აქვს), 3 = სისტემური, მხოლოდ სპორტებზე (R22) | — | — |
 | Q24 | ✅ LV = Live (D40), BS ≈ betting shop (→ Q19), KA / EN / RU / TR = ენები | — | — |
-| Q25 | Top leagues-ის Reg. method-ში რა ვარიანტებია (Mobile, Web, …)? სია და რიგი არხებზე განსხვავდება? Hide-ს ხელით იყენებთ სეზონგარეშე ლიგებისთვის (R25-ში ეს ავტომატურია)? | მფლობელი | WP-10 |
+| Q25 | ✅ Reg. method = Mobile / Web / Both; ამჟამად მხოლოდ Mobile-ის სია გამოიყენება; სია არხების მიხედვით შეიძლება განსხვავდებოდეს (D45) | — | — |
 
 ---
 
@@ -1262,6 +1263,7 @@ DWH-ის მაგალითები: Premier League **101–110**, FA Cup 
 **ჩვენთან (R25 ⚠ Q25):**
 - `bo.catalog_node.is_top / top_order` (BO-1a) ამისთვის საკმარისი არ არის: საჭიროა არხი, დამალვა წაშლის გარეშე, სურათი და ვადა. ამიტომ ცალკე ცხრილი:
   `bo.top_league(id, operator_id, brand_id NULL, channel text CHECK (channel IN ('all','web','mobile')), node_type ('tournament' | 'custom_group'), node_id, position, is_visible, media_id NULL → bo.media_asset, visible_from, visible_to, updated_by, updated_at, version)`, unique `(operator_id, brand_id, channel, node_type, node_id)` NULLS NOT DISTINCT. RLS V006-ის ნიმუშით + იზოლაციის ტესტი. audit + outbox (`bo.changed.{op}.cat`). `catalog_node.is_top / top_order` მიგრაციით გადადის და შემდეგ იშლება (ერთი წყარო).
+- **არხი (D45):** `channel` = `all` (Both) | `web` | `mobile`; ფრონტი იღებს `all` + საკუთარი არხის row-ებს. მიგრაცია: Europebet-ის Mobile-ის სია → `mobile` (Web-ისთვის ცალკე სია ამჟამად არ გამოიყენება).
 - **ელემენტი:** ლიგა (`sb.tournament`, მათ შორის manual) ან custom group (D39). Display as-ით გაერთიანებული ლიგა (D33) სამიზნის სახელით ჩანს და ორიგინალის ივენთებსაც მოიცავს.
 - **D44: ჩვენებას ბუკმეკერი წყვეტს ხელით.** სია დინამიკურია: პარასკევს შეიძლება ავსტრალიის ლიგა იყოს ტოპში, შაბათ-კვირას მხოლოდ ევროპის ტოპ ლიგები. ეს ივენთებზე და აქტივობაზეა დამოკიდებული, ამიტომ **სისტემა ლიგას თავისით არასდროს აჩენს**. ერთადერთი წესი: ხილულ (`is_visible`) ლიგას, რომელსაც არხზე ღია ივენთი არ აქვს, ფრონტი ცარიელ ბლოკად არ აჩვენებს. ბუკმეკერის არჩევანი ამით არ იცვლება, და როცა ივენთი გაჩნდება, ლიგა ისევ გამოჩნდება, ოღონდ მხოლოდ თუ ხილულად დარჩა. რაოდენობის ზღვარი: არსებული `display.top_leagues_limit`.
 - **Player API:** `/v1/featured?placement=home` და `/v1/catalog/tree`-ის `topLeagues` (docs/11 §2) აბრუნებს სიას რიგით, სურათით (`/api/media/{id}` ვარიანტებით), არხის მიხედვით. compat ფენა იგივე სიას SBS-ის ფორმატში აჩვენებს.
