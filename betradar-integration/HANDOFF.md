@@ -126,8 +126,8 @@ Auth-ის გარეშე მომხმარებელი platform sup
 - **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.7): D1–D46, R1–R26, Q1–Q28, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories, §21 = Participants.
   docs/09 §2 პუნქტები 17–18 მასზე მიუთითებს.
 - **ClickUp** (workspace 1100320000015036, space „Space“): დოკუმენტი „Odds და Game types — სპეციფიკაცია (BO-1c)“,
-  `document_id = z8qgvbuynw-318`, გვერდები 01–11 (page id-ები: 01 `z8qgvbuynw-38`, 02 `-58`, 03 `-78`, 04 `-98`, 05 `-118`,
-  06 `-138`, 07 `-158`, 08 `-178`, 09 `-198`, 10 `-218`, 11 `-238`). ClickUp = ასლი; მთავარი ვერსია repo-შია. ახალი სექცია → ახალი გვერდი.
+  `document_id = z8qgvbuynw-318`, გვერდები 01–12 (page id-ები: 01 `z8qgvbuynw-38`, 02 `-58`, 03 `-78`, 04 `-98`, 05 `-118`,
+  06 `-138`, 07 `-158`, 08 `-178`, 09 `-198`, 10 `-218`, 11 `-238`, 12 `-258`). ClickUp = ასლი; მთავარი ვერსია repo-შია. ახალი სექცია → ახალი გვერდი.
 - **SB Software-ის დოკუმენტები** (ODDS API v1.20, Admin Console API v1.4, prematch Radar / live Genius mapping) იყო სესიის
   upload-ებში და ახალ სესიაში აღარ იქნება. Restricted-ია: repo-ში **არ** ინახება, მხოლოდ ჩვენი დასკვნები (docs/12 §19).
   საჭიროების შემთხვევაში მომხმარებელს ხელახლა სთხოვე.
