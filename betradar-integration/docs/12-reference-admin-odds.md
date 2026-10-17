@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R21, D39, Q19–Q23)
+> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R22, D39, Q19–Q23)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories › Manage (§20). დანარჩენი სექციები (Register, Lives, Disallowed, Categories-ის სხვა ტაბები, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -138,6 +138,7 @@
 | R19 | „Outrights“ ცალკე კატეგორიად არ იქმნება: outright ივენთი თავის ტურნირშია, ფრონტის „Outrights“ სია გამოთვლითია, compat კი ვირტუალურ კატეგორიას აჩვენებს. | §20.10 |
 | R20 | Treat as sport (= რომელი სპორტის მენიუში ჩანს კატეგორია) ზოგად ველად არ კეთდება: „Outrights“ = გამოთვლითი სია (R19), დანარჩენი („Support The Georgians“, „Transfers“) = custom groups (docs/06 §2.2), რომლებიც P0-ში გადავიდა (D39). ✅ | §20.10 |
 | R21 | Level 4 არ კეთდება: ეტაპი / ვარიანტი = ცალკე ტურნირი + Display as (D33), outright = R19. მიგრაციისას 33 კატეგორია ხელით. | §20.10 |
+| R22 | კატეგორიის სტატუსი = მხოლოდ Online / Offline. SBS-ის სისტემური 2 / 3 ცალკე სტატუსად არ გადმოდის: mapping-ის მდგომარეობა და „ღია ივენთები“ ფარავს. ⚠ | §20.10 |
 
 ---
 
@@ -902,7 +903,7 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q20 | `event.event_type` 5, 6, 8, 13, 15, 17, 19 (2019–2022) — რა პროდუქტებია? | მფლობელი (DWH) | არა |
 | Q21 | ✅ გადაწყდა: `category_type = 2` = Outrights (R19), `treat_as_sport` = მენიუს სპორტი → custom groups P0 (D39) | — | — |
 | Q22 | ✅ მონაცემებით (R21): Level 4 = ეტაპი / ვარიანტი / outright / სტატისტიკა, ჩვენთან ცალკე ტურნირი + Display as | — | — |
-| Q23 | Category status 2 და 3 — რას ნიშნავს? | მფლობელი (dropdown სკრინი) | WP-10 |
+| Q23 | UI-ში მხოლოდ 0 Offline / 1 Online ✅. 2 და 3 სისტემურია, მნიშვნელობა query 11-ით (R22) | DWH | მიგრაცია |
 
 ---
 
@@ -1147,7 +1148,8 @@ Feed Ops (Admin.Api): `POST /api/tournaments/{id}/move {categoryId, reason}`, `D
   უმეტესობა ძველია (დაბალი ID-ები), ზოგი აშკარად არასწორ მშობელზეა („Beach Soccer - Russia“ ფრენბურთის ლიგის ქვეშ).
   **R21:** მეოთხე დონე არ კეთდება, D31 ძალაში რჩება. ეტაპი ან ვარიანტი = ცალკე ტურნირი იმავე ქვეყანაში, საჭიროებისას Display as-ით მშობელში გაერთიანებული (D33). Outright = ივენთის ტიპი (R19). სტატისტიკის / H2H მარკეტები = მშობელი ლიგის ივენთები ან manual მარკეტები. მიგრაციისას 33 კატეგორია ხელით გადაიხედება, ძველები და ცარიელები არ გადმოდის.
 - **`status` 0–3:** 1 ≈ online, 0 ≈ offline. 2 ≈ 24.5 ათასი ლიგა, 3 = 95 სპორტი. ⚠ Q23: რას ნიშნავს 2 და 3 (archived / finished / deleted?). Category status dropdown-ის სკრინი ამას პირდაპირ აჩვენებს.
-  მაგალითები (query 10): status 2 = „Football 80“ (სპორტი), „Gamma Ethniki (group_stage,Promotion Round, Group 1)“ (ლიგა, ნედლი პროვაიდერის სახელით); status 3 = „ESport Motorsport“ (სპორტი); status 0 = „zzzDivision 1, Women“, „SoccerSpecials“. ⚠ ჰიპოთეზა: 2 = feed-ის მიერ ავტომატურად შექმნილი, ჯერ გადაუხედავი კატეგორია; 3 = სპორტი, რომელიც ცალკე ჩვენების რეჟიმშია (მაგ. ესპორტი). დადასტურება: dropdown-ის სკრინი ან query 11.
+  მაგალითები (query 10): status 2 = „Football 80“ (სპორტი), „Gamma Ethniki (group_stage,Promotion Round, Group 1)“ (ლიგა, ნედლი პროვაიდერის სახელით); status 3 = „ESport Motorsport“ (სპორტი); status 0 = „zzzDivision 1, Women“, „SoccerSpecials“. მფლობელი (2026-10-17): UI-ის dropdown-ში მხოლოდ **0 = Offline და 1 = Online** არის, 2 და 3 იქ არ ჩანს. ⇒ 2 და 3 **სისტემური** სტატუსებია (ხელით არ ისმება). ⚠ ჰიპოთეზა: 2 = feed-ის მიერ ავტომატურად შექმნილი ან დასრულებული / დაარქივებული; 3 = სპორტის სპეციალური რეჟიმი. შემოწმება: query 11 (მომავალი ივენთები სტატუსის მიხედვით).
+  **R22:** ჩვენთან კატეგორიას ოპერატორული სტატუსი მხოლოდ Online / Offline აქვს (`offer.visible`). „ავტომატურად შექმნილი / გადაუხედავი“ = Feed Ops-ის mapping-ის მდგომარეობა (D36), „დასრულებული“ = ღია ივენთების არქონა (ხეში ფილტრი „მხოლოდ ივენთებით“, §20.9). მიგრაცია: 0 → Offline, 1 → Online, 2 / 3 → query 11-ის შედეგით (ღია ივენთით → Online, უამისოდ → არ გადმოდის).
 - **`category_type = 2` = „Outrights“ კონტეინერი** (query 7, 80 მაგალითი): Level 3-ის კვანძია სახელით „Outrights“ ქვეყნის ქვეშ (Spain › Outrights, UFC › Outrights, Formula 1 › Outrights). ამ ქვეყნის ყველა outright ივენთს აერთიანებს. გამონაკლისი: „Eurovision“ (Specials › Music). `category_type = 1` = ჩვეულებრივი კატეგორია. უმეტესად `treat_as_sport` აქვს შევსებული (Q21 ღიაა).
 - **არასპორტული ხე:** სპორტი „Specials“ ქვეყნებით Religion, Awards, Music, Sports; „Olympic Games“ სპორტად, დისციპლინები (Judo, Fencing) კი Level 2-ზე. „zzz“ პრეფიქსი კატეგორიებზეც გაუქმებულს ნიშნავს (zzzPesapallo).
 
