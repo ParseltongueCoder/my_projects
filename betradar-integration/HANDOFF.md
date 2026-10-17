@@ -123,7 +123,7 @@ Auth-ის გარეშე მომხმარებელი platform sup
 გადაწყვეტილება D# ან რეკომენდაცია R# docs/12-ში → commit + push → ClickUp-ის შესაბამისი გვერდის განახლება.
 
 **სად არის ყველაფერი**
-- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.6): D1–D39, R1–R24, Q1–Q24, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories.
+- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.6): D1–D40, R1–R24, Q1–Q24, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories.
   docs/09 §2 პუნქტები 17–18 მასზე მიუთითებს.
 - **ClickUp** (workspace 1100320000015036, space „Space“): დოკუმენტი „Odds და Game types — სპეციფიკაცია (BO-1c)“,
   `document_id = z8qgvbuynw-318`, გვერდები 01–11 (page id-ები: 01 `z8qgvbuynw-38`, 02 `-58`, 03 `-78`, 04 `-98`, 05 `-118`,
@@ -155,7 +155,7 @@ Default factor = მარჟის default, category-ის default alert/liabi
 **Categories walkthrough (2026-10-13 … 10-16):** Manage გავლილია და ჩაწერილია docs/12 §20-ში (D31–D38, R14–R17, WP-10; Q17/Q18 დადასტურდა → D37/D38;
 ClickUp-ის გვერდი 11). მოკლედ: დონეები = sport / ქვეყანა / ლიგა; Offline = დამალვა; Display as = გაერთიანება (`aggregateCategoryId`) →
 `bo.catalog_node.display_as_*`; Live curtain = live bet delay პროვაიდერის მიხედვით → CFG qualifier `pv`; Change parent = პლატფორმის
-შესწორება Feed Ops-ში (`sb.tournament_parent_override`); Game limits = CFG `mt` row-ები `c`/`t`-ზე. **შემდეგი:** (Add sport / category = R23, Order = R24 + Q24)
+შესწორება Feed Ops-ში (`sb.tournament_parent_override`); Game limits = CFG `mt` row-ები `c`/`t`-ზე. **შემდეგი:** (Add sport / category = R23, Order = R24 + D40: live-ის ცალკე რიგი)
 Categories-ის ტაბები (Default factor, Code ranges, Flags, Top leagues, Icons), მერე Participants.
 
 **DWH:** dictionary-ები და 5 query-ის შედეგი მიღებულია (docs/12 §19.5, §20.10–20.11; ნედლი ფაილები repo-ში არ ინახება).
