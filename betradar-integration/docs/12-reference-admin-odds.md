@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R24, D39–D40, D10 შესწორება, Q19–Q24)
+> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R24, D39–D41, D10 შესწორება, Q19–Q24)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories › Manage (§20). დანარჩენი სექციები (Register, Lives, Disallowed, Categories-ის სხვა ტაბები, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -113,6 +113,7 @@
 | D38 | Display as **მხოლოდ ჩვენებაა**: ლიმიტები, მარჟა, settlement და რეპორტინგი ორიგინალ კატეგორიას რჩება (R16 დადასტურდა, Q18). | §20.6 |
 | D39 | **Custom groups P0-ია** (docs/06 §2.2-ის P1-ის ნაცვლად): Treat as sport-ის შემცვლელი („Support The Georgians“, „Transfers“), R20 დადასტურდა. | §20.10 |
 | D40 | Order-ში **live-ს ცალკე რიგი აქვს** (რეფერენსის სვეტი LV = Live). ჩვენთან `mode` prematch / live. | §20.13 |
+| D41 | **Default factor** (კოეფიციენტის მამრავლი კატეგორია × game type) Europebet-ში **არ გამოიყენება**. ცალკე არ კეთდება; საჭიროებისას CFG `margin.*` (`c`/`t` + `mt`). | §20.14 |
 
 ### 2.2 ჩვენი რეკომენდაციები (default დიზაინი)
 
@@ -1232,7 +1233,17 @@ DWH-ის მაგალითები: Premier League **101–110**, FA Cup 
 - ახალი (ჯერ დაულაგებელი) კვანძი ჩანს **ბოლოში, სახელით** და მონიშნულია „ახალი“, რომ ტრეიდერმა დაინახოს. P1: დაულაგებლების ავტომატური რიგი ბრუნვის (turnover) მიხედვით;
 - preview: მარჯვნივ ფრონტის მენიუს მინი-ხედი არჩეული ბრენდით.
 
-### 20.14 დარჩენილი (შემდეგი walkthrough)
+### 20.14 Default factor (D41)
+
+**რეფერენსი (`/admin-console/category/defaultOddsFactor`):** მარცხნივ კატეგორიების ხეა, პროვაიდერის ფილტრით („All providers“) და ძებნით. მარჯვნივ არჩეული კვანძის game type-ების სიაა სვეტით **Odds factor** (კოეფიციენტის მამრავლი / მარჟა game type-ის დონეზე). **მფლობელი: ყველა დონეზე ცარიელია, Europebet ამას არ იყენებს (D41).**
+
+ხეში კიდევ ერთხელ ჩანს D36-ის პრობლემა: **Syria (5) და Syria (4), Tanzania (3) და Tanzania (9)** ორ-ორჯერაა (სხვადასხვა პროვაიდერის ჩანაწერები), არის „Test Region“, UEFA-ში კი 34 ლიგაა Champions League-ის ბევრი ვარიანტით.
+
+**ჩვენთან:** ცალკე ფუნქცია არ კეთდება. იგივე შესაძლებლობა უკვე არსებობს CFG-ში: `margin.mode / margin.pct / margin.delta_pct` scope `c` / `t`-ზე `mt` qualifier-ით (BO-1b, `Offer.Core`), four-eyes-ის მექანიზმით (D1-ით default off). UI: §20.3-ის Game limits dialog-ში P1-ად ემატება ჩანართი „მარჟა“, იმავე მემკვიდრეობის ჩვენებით. ცალკე გვერდი არ კეთდება.
+
+**UX შენიშვნა:** რეფერენსის ხეში პროვაიდერის ფილტრი („All providers“) სასარგებლოა. §20.9-ის ხეს ემატება ფილტრი provider-ის მიხედვით (B / G / L / M).
+
+### 20.15 დარჩენილი (შემდეგი walkthrough)
 
 - **Add sport / Add category:** ფორმა. ხეში ჩანს „Oscar (1)“, ანუ არასპორტული special-ის ხელით შექმნილი სპორტი. ჩვენთან ესაა `bo.manual_entity` (`sport` / `category` / `tournament`), CLAUDE.md „Next“ 1-ის manual ივენთების ნაწილი.
 - Level 3-ის ფორმა (თუ Level 2-ისგან განსხვავდება).
