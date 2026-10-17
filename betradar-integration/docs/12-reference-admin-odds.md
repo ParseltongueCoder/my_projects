@@ -2,9 +2,9 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D45, D10 შესწორება, Q19–Q25)
+> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D46, D10 შესწორება, Q19–Q25)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
-> **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories › Manage (§20). დანარჩენი სექციები (Register, Lives, Disallowed, Categories-ის სხვა ტაბები, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
+> **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories (§20). დანარჩენი სექციები (Register, Lives, Disallowed, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
 >
 > ნიშნები: **[D#]** = პროდუქტის მფლობელის გადაწყვეტილება (სავალდებულო). **[R#]** = ჩვენი რეკომენდაცია, რომელსაც მფლობელი არ შეწინააღმდეგებია; ⚠ ნიშნიანი R-ები §17-ში დასადასტურებლად რჩება. „რეფერენსი“ = ოპერატორის ამჟამინდელი ადმინი.
@@ -118,6 +118,7 @@
 | D43 | **Flags ცალკე არ კეთდება**: ხატულა / დროშა / ლოგო კატეგორიაზე, ლიგაზე და მონაწილეზე იტვირთება (`bo.media_link`). | §20.15 |
 | D44 | Top leagues-ის ჩვენება **ბუკმეკერის ხელით გადაწყვეტილებაა** (დინამიკური: დღის / შაბათ-კვირის მიხედვით). სისტემა ლიგას თავისით არ აჩენს, მხოლოდ ცარიელ ბლოკს არ აჩვენებს. | §20.16 |
 | D45 | Top leagues-ის სია **არხის მიხედვით** (Mobile / Web / Both) შეიძლება განსხვავდებოდეს. Europebet ამჟამად მხოლოდ Mobile-ის სიას იყენებს. | §20.16 |
+| D46 | **Icons ცალკე ტაბად არ კეთდება** (როგორც Flags, D43): ხატულა კატეგორიის / ლიგის / მონაწილის პანელიდან. | §20.17 |
 
 ### 2.2 ჩვენი რეკომენდაციები (default დიზაინი)
 
@@ -933,7 +934,7 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | **WP-7 Player API** | tabs/subTabs/conflictTags/layout, ხილვადობა, invalidation | WP-3, SB-0 | SB-1 | 1.5 |
 | **WP-8 Multi-provider** | Genius adapter, LSports adapter (enrichment), event matching (§19.3), provider პრიორიტეტი | WP-2, შემდეგი walkthrough | BO-2/3 პარალელურად | 8–10 |
 | **WP-9 SB-compat ფენა** | §19.4: ID mapping, endpoint-ების ქვესიმრავლე (Q12), კოდების ცხრილები, session bridge, contract ტესტები | SB-1, BO-2 (place bet, cash-out) | SB-2 / pilot-მდე | 5–7 (Q12-ზე დამოკიდებული) |
-| **WP-10 Categories** | §20: ხე + პანელი (status, limits, live delay, Display as, history), Game limits dialog, Display as + Player API, Feed Ops-ის „Move to category“ + adapter, `pv` qualifier (WP-1-ში) | WP-1, WP-2 | BO-1c | 2.5 (+0.5 WP-1) |
+| **WP-10 Categories** | §20: ხე + პანელი (status, limits, live delay, Display as, history), Game limits dialog, Display as + Player API, Feed Ops-ის „Move to category“ + adapter, Order (`mode`, `brand_id`), Top leagues (`bo.top_league`), manual sport / category / league, `pv` qualifier (WP-1-ში) | WP-1, WP-2 | BO-1c | 4.5 (+0.5 WP-1) |
 
 **თანმიმდევრობა:** WP-1 → WP-2 → (WP-3 ‖ WP-5) → WP-4 → WP-7; WP-6 BO-2-თან ერთად; WP-8 ცალკე ნაკადი.
 
@@ -1277,8 +1278,23 @@ DWH-ის მაგალითები: Premier League **101–110**, FA Cup 
 - **გადაწყვეტილების დასახმარებლად** თითო row-ზე ჩანს: ღია ივენთები დღეს / 24 სთ-ში / შაბათ-კვირას, live ახლა, ფსონების რაოდენობა და ბრუნვა ბოლო საათში. გვერდზე ასევე ჩანს **„შეთავაზებები“**: ლიგები, რომლებიც სიაში არ არის, მაგრამ ახლა აქტიურია (ბევრი ფსონი ან ივენთი). ამის ჩართვას ბუკმეკერი თავად წყვეტს ერთი დაჭერით;
 - Show / Hide ერთი დაჭერით სიიდანვე და მასობრივად (მაგ. „დამალე ყველა, გარდა ევროპის ტოპ-5-ისა“).
 
-### 20.17 დარჩენილი (შემდეგი walkthrough)
+### 20.17 Icons (D46) და Categories-ის დასრულება
 
-- **Add sport / Add category:** ფორმა. ხეში ჩანს „Oscar (1)“, ანუ არასპორტული special-ის ხელით შექმნილი სპორტი. ჩვენთან ესაა `bo.manual_entity` (`sport` / `category` / `tournament`), CLAUDE.md „Next“ 1-ის manual ივენთების ნაწილი.
-- Level 3-ის ფორმა (თუ Level 2-ისგან განსხვავდება).
-- ტაბი Icons (`bo.media_link`). Order (§20.13), Default factor (§20.14), Code ranges, Flags (§20.15) და Top leagues (§20.16) გავლილია.
+**D46: Icons ცალკე ტაბად არ კეთდება** (Flags-ის მსგავსად, D43). ხატულები კატეგორიის, ლიგისა და მონაწილის პანელიდან იტვირთება (`bo.media_link`, role `icon`).
+
+**Categories walkthrough დასრულდა (2026-10-17).** შეჯამება:
+
+| ტაბი / ფუნქცია | შედეგი |
+|---|---|
+| Manage (ფორმა, Game limits, Live curtain, Change parent, Display as) | §20.2–20.6, WP-10 |
+| Add sport / Add category | R23 (manual entity) |
+| Order | R24, D40 (live-ის ცალკე რიგი) |
+| Default factor | D41: არ კეთდება (CFG margin) |
+| Code ranges | D42: გადადებულია retail-მდე |
+| Flags, Icons | D43, D46: ტაბი არ კეთდება, media კვანძზე |
+| Top leagues | R25, D44 (ჩვენება ხელით), D45 (არხი) |
+| DWH-ის დასკვნები | §20.10 (Outrights, Treat as sport → custom groups P0 D39, Level 4, სტატუსები, მიგრაციის მოცულობა ~14.4 ათასი ლიგა) |
+
+WP-10-ის შეფასება (~2.5 დკ) იზრდება: + Order (`mode`, `brand_id`, UI) 0.5, + Top leagues (`bo.top_league`, UI, აქტივობის მონაცემები) 1, + manual sport / category / league (R23) 0.5 ⇒ **~4.5 დკ** (+0.5 WP-1 `pv`). Custom groups (D39) ცალკე, BO-1 rest-ში.
+
+**შემდეგი walkthrough:** Participants (Manage, Mapping, LSport).
