@@ -161,7 +161,7 @@ ClickUp-ის გვერდი 11). მოკლედ: დონეები
 **DWH:** dictionary-ები და 5 query-ის შედეგი მიღებულია (docs/12 §19.5, §20.10–20.11; ნედლი ფაილები repo-ში არ ინახება).
 `bet_slip.status`: 0 pending, 1 open, 2 settled, 5 cash-out, 10 cancelled; `event_type`: 1 prematch, 2 live (ცალკე ივენთი), 3 outright, 5–19 ვირტუალები (შეწყვეტილი);
 გამოყენებული game type-ები 1 757 / 10 054; `game_group` 2 / 3 = two / three-way, 4 = outright, 0 / 1 = სია / მრავალ-outcome-იანი; Code ranges = ტურის მატჩების მოკლე კოდები (R18, Q19, D10 გასასწორებელია); `category_type = 2` = „Outrights“ კონტეინერი ქვეყნის ქვეშ (R19: ჩვენთან outright ტურნირშია); `treat_as_sport` = სპორტის ID, ანუ რომელი სპორტის მენიუში ჩანს კატეგორია (−500 = zzzOutrights; R20: Outrights = R19, „Support The Georgians“ = custom groups, **D39: custom groups P0**); Level 4 = ეტაპი / ვარიანტი / outright (R21: არ კეთდება). **მოლოდინში:**
-Q19-ის დადასტურება (event code-ის გამოყენება, `gameCode`); ClickUp-ის გვერდ 11-ს §20.11-ის ქვეყნის ბლოკების აბზაცი შეიძლება აკლდეს (MCP გაითიშა) — შეამოწმე; category status 2 = დაარქივებული, მიგრაციით ~14.4 ათასი ლიგა (R22);
+Q19-ის დადასტურება (event code-ის გამოყენება, `gameCode`); category status 2 = დაარქივებული, მიგრაციით ~14.4 ათასი ლიგა (R22);
 replica DWH-ის დიაგრამა. შემდეგ: SBS → ჩვენი სქემის მიგრაციის რუკა (WP-9).
 
 **ღია კითხვები მომხმარებლისთვის (docs/12 §17):** Q1 preview, Q2 ტაბის visible, Q3 un-cancel, Q4 „1 in event“
