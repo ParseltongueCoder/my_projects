@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R22, D39, Q19–Q23)
+> **სტატუსი:** spec v1.6, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R23, D39, D10 შესწორება, Q19–Q23)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories › Manage (§20). დანარჩენი სექციები (Register, Lives, Disallowed, Categories-ის სხვა ტაბები, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -82,7 +82,7 @@
 | D7 | Outright პრემატჩის ქვეტიპია; ფილტრი შეიძლება გაუმჯობესდეს. | §4.2 |
 | D8 | **Multi-provider საჭიროა.** Genius = სრული პროვაიდერი (ივენთები, მარკეტები, კოეფიციენტები; ITF-ისა და ლაივისთვის). LSports = გამამდიდრებელი: არსებულ Radar/Genius ივენთს ებმება და მარკეტებს ამატებს (კუთხურები, ბარათები…), ჯერ ლაივში. | §13, §14 |
 | D9 | Changelog აჩვენებს ბუკმეკერის **და** სისტემის/პროვაიდერის ცვლილებებს (თვისების დონეზე, IP-ით). | §7 |
-| D10 | Event code id = პროვაიდერის ID. ⚠ DWH-ის მონაცემები ეწინააღმდეგება: ეს ლიგის Code range-იდან მინიჭებული მოკლე კოდია (§20.11, Q19). | §1 |
+| D10 | ~~Event code id = პროვაიდერის ID~~ → **შესწორდა (2026-10-17):** event code = მოკლე კოდი ლიგის / ქვეყნის Code range-იდან, betting shop-ებისთვის (§20.11). პროვაიდერის ID ცალკე ჩანს (`sb.provider_mapping`). | §1, §20.11 |
 | D11 | ხელით რეზალტი **ძირითადი ფუნქციაა**: manual მარკეტები feed ივენთის შიგნით ჩვეულებრივია. | §8 |
 | D12 | ხელით შეიძლება დარეზალტდეს **ნებისმიერი** მარკეტი (პროვაიდერისაც): ივენთის შიგნიდან (outcome-ის არჩევით) ან Register popup-იდან (სტატისტიკით). | §8 |
 | D13 | Popup-ის შენახვა არეზალტებს ივენთის **ყველა ჯერ დაურეზალტებელ** მარკეტს (პროვაიდერისაც და manual-საც). უკვე დარეზალტებულს არ ეხება. | §8.5 |
@@ -139,6 +139,7 @@
 | R20 | Treat as sport (= რომელი სპორტის მენიუში ჩანს კატეგორია) ზოგად ველად არ კეთდება: „Outrights“ = გამოთვლითი სია (R19), დანარჩენი („Support The Georgians“, „Transfers“) = custom groups (docs/06 §2.2), რომლებიც P0-ში გადავიდა (D39). ✅ | §20.10 |
 | R21 | Level 4 არ კეთდება: ეტაპი / ვარიანტი = ცალკე ტურნირი + Display as (D33), outright = R19. მიგრაციისას 33 კატეგორია ხელით. | §20.10 |
 | R22 | კატეგორიის სტატუსი = მხოლოდ Online / Offline. SBS-ის სისტემური 2 (დაარქივებული) / 3 არ გადმოდის; მიგრაციით მხოლოდ ლიგები ივენთებით ბოლო 12 თვეში ან მომავალში (~14.4 ათასი). | §20.10 |
+| R23 | Add sport / category / league = ერთი dialog, manual entity (`provider_id = 0` + `bo.manual_entity`, RLS), ოპერატორის ან პლატფორმის; დუბლიკატის გაფრთხილება feed კვანძზე; მოგვიანებით feed-თან მიბმა. | §20.12 |
 
 ---
 
@@ -899,7 +900,7 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q16 | ✅ მონაცემებით (§19.5): 0 pending, 1 open, 2 settled, 5 cash-out, 10 cancelled | — | — |
 | Q17 | ✅ გადაწყდა (D37): Change parent პლატფორმის შესწორებაა, CFG ახალ მშობელს მიჰყვება | — | — |
 | Q18 | ✅ გადაწყდა (D38): Display as მხოლოდ ჩვენებაა | — | — |
-| Q19 | Event code = ლიგის Code range-იდან მინიჭებული მოკლე კოდი, ყოველ ტურზე თავიდან (§20.11)? სად გამოიყენება (მაღაზია, ტელეფონი, ძებნა)? `gameCode` რა არის? | მფლობელი | P1 (retail) |
+| Q19 | Event code ✅ betting shop-ების კოდია (მფლობელი). ღიაა: retail ახლაც საჭიროა? (თუ არა, R18 და Code ranges-ის მიგრაცია არ კეთდება). `gameCode` (226140) რა არის? | მფლობელი | P1 (retail) |
 | Q20 | ✅ მონაცემებით (§19.5): `event_type` 5–19 = ვირტუალური სპორტები (2019–2022, შეწყვეტილი), არ გადმოდის | — | — |
 | Q21 | ✅ გადაწყდა: `category_type = 2` = Outrights (R19), `treat_as_sport` = მენიუს სპორტი → custom groups P0 (D39) | — | — |
 | Q22 | ✅ მონაცემებით (R21): Level 4 = ეტაპი / ვარიანტი / outright / სტატისტიკა, ჩვენთან ცალკე ტურნირი + Display as | — | — |
@@ -1031,7 +1032,7 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 
 ## 20. Categories (კატეგორიების ხე)
 
-წყარო: რეფერენსის Odds › Categories › Manage (Africa, Level 2, ფეხბურთი) და მისი სამი dialog-ი: Game limits, Live curtain, Change parent category; walkthrough 2026-10-13 … 10-16. Categories-ის დანარჩენი ტაბები (Order, Default factor, Code ranges, Flags, Top leagues, Icons) და Add sport / Add category ფორმა ჯერ არ გავლილა (§20.12).
+წყარო: რეფერენსის Odds › Categories › Manage (Africa, Level 2, ფეხბურთი) და მისი სამი dialog-ი: Game limits, Live curtain, Change parent category; walkthrough 2026-10-13 … 10-16. Categories-ის დანარჩენი ტაბები (Order, Default factor, Code ranges, Flags, Top leagues, Icons) და Add sport / Add category ფორმა გავლილია §20.12-ში; ტაბები §20.13.
 
 ### 20.1 იერარქია (D31)
 
@@ -1185,7 +1186,7 @@ DWH-ის მაგალითები: Premier League **101–110**, FA Cup 
 
 **ქვეყნის დონე (query 13, 40 მაგალითი):** ქვეყნებს უფრო დიდი ბლოკები აქვთ, ლიგების დიაპაზონების მიღმა: Cyprus 1454–1469, Brazil 1586–1615 (30), Argentina 1650–1679 (30), USA 1700–1715, China 1863–1877, South Africa 2029–2045, International 2080–2109, International Clubs 2150–2179, International Youth 2250–2269. ბლოკები რეგიონებით არის დალაგებული (ევროპა → სამხრეთ ამერიკა → ცენტრალური ამერიკა → აზია / ოკეანეთი → ახლო აღმოსავლეთი / აფრიკა → International) და ერთმანეთს არ ფარავს. ⇒ **ჰიერარქიული fallback დადასტურდა:** top ლიგას საკუთარი პატარა დიაპაზონი აქვს (PL 101–110), დანარჩენი ლიგების მატჩები ქვეყნის ბლოკიდან იღებს კოდს. ბლოკის ზომა = ამ ქვეყნის ერთდროული მატჩების მოსალოდნელი რაოდენობა. კოდები ოპერატორის მთელ სივრცეში უნიკალურია (სპორტების მიუხედავად).
 
-**დასკვნა (⚠ Q19):** event code = მოკლე რიცხვი, რომელიც ივენთს ენიჭება მისი ლიგის (ან მშობლის) დიაპაზონიდან და ყოველ ტურზე **ხელახლა გამოიყენება**. სავარაუდო მიზანი: retail (მაღაზიის კუპონი, მოლარე / ტერმინალი, ტელეფონით ფსონი) და სწრაფი ძებნა. ეს **არ არის** პროვაიდერის ID, ამიტომ D10 გასასწორებელია.
+**დასკვნა (მფლობელმა დაადასტურა, რომ betting shop-ებში გამოიყენებოდა; დღევანდელი საჭიროება ⚠ Q19):** event code = მოკლე რიცხვი, რომელიც ივენთს ენიჭება მისი ლიგის (ან მშობლის) დიაპაზონიდან და ყოველ ტურზე **ხელახლა გამოიყენება**. სავარაუდო მიზანი: retail (მაღაზიის კუპონი, მოლარე / ტერმინალი, ტელეფონით ფსონი) და სწრაფი ძებნა. ეს **არ არის** პროვაიდერის ID, ამიტომ D10 გასასწორებელია.
 
 **ჩვენთან (R18, P1, retail-ის გაჩენამდე არ ბლოკავს):**
 - `bo.code_range(operator_id, node_type, node_id, code_from, code_to)`: ოპერატორის დონეზე, RLS. დიაპაზონები ერთი ოპერატორის შიგნით არ უნდა გადაიფაროს (exclusion constraint).
@@ -1194,7 +1195,19 @@ DWH-ის მაგალითები: Premier League **101–110**, FA Cup 
 - Player API და compat: `eventCode` ივენთზე, ძებნა კოდით (`/v1/events?code=`). ბილეთზე ფიქსირდება მიღების მომენტის კოდი, რადგან კოდი მერე სხვა ივენთს გადაეცემა.
 - `gameCode` (226140) ჯერ გაურკვეველია, სავარაუდოდ მარკეტის / outcome-ის მოკლე კოდი retail-ისთვის. Q19-ის ნაწილი.
 
-### 20.12 დარჩენილი (შემდეგი walkthrough)
+### 20.12 Add sport / Add category
+
+**რეფერენსი:** ერთი და იგივე popup-ია. **Add sport** მშობლის გარეშე იხსნება, **Add category** კი არჩეული კვანძის ქვეშ (Parent ID 85083, Parent category „Archery“), ანუ დონე მშობლიდან გამოდის. ველები: Category name (სავალდებულო), Category status (ყოველთვის Online, ფორმაში არ იცვლება), Alert, Market liability, Include in the odds feed (default გამორთული), Display as, Treat as sport, Local names (ახალ ფორმაში KA, EN, RU, TR, + Copy from Name და Visible). ძველ კატეგორიებს (Africa) BS და LV-იც აქვს, ანუ ენების სია დროთა განმავლობაში შეიცვალა.
+
+**ჩვენთან (R23):**
+- ერთი dialog „ახალი სპორტი / ქვეყანა / ლიგა“. დონე მშობლიდან გამოდის, მშობელი ძებნით ირჩევა (არა ID-ით). შექმნილი კვანძი = **manual entity**: `sb.sport` / `sb.category` / `sb.tournament` row `provider_id = 0`-ით + `bo.manual_entity(operator_id, entity_type, entity_id)`. `bo.manual_entity`-ის CHECK-ს ემატება `sport`, `category`, `tournament`. `sb`-ის ამ ცხრილებზე `bo_app`-ის RLS V007-ის ნიმუშით მუშაობს: INSERT / UPDATE მხოლოდ საკუთარ manual row-ზე. სხვა ოპერატორი მას ვერ ხედავს (`VisibleMarketSql`-ის ანალოგი ხეზე, `cfg/scopes`-ზე და `cat/events`-ზე). ტესტები: RLS + იზოლაცია.
+- **პლატფორმის manual კვანძი** (`operator_id IS NULL`, მხოლოდ პლატფორმის staff-ი ქმნის) ყველა ოპერატორს უჩანს. მაგალითად, საერთო „Specials“ სპორტი, რომ ყველა ოპერატორმა თავისი არ შექმნას.
+- ფორმის ველები: სახელი + თარგმანი ოპერატორის ენებზე (`i18n.required_langs` სავალდებულოა, ცარიელები „Copy from name“-ით ივსება); სტატუსი default-ად Online (ცარიელი კვანძი ფრონტზე მაინც არ ჩანს); Alert / Market liability = CFG row-ები ახალ კვანძზე (არასავალდებულო, ცარიელი = მემკვიდრეობა); Display as (D33). Include in the odds feed და Treat as sport არ არის (D32, R20).
+- **დუბლიკატის გაფრთხილება:** შენახვამდე იმავე მშობლის ქვეშ მსგავსი სახელის feed კვანძი მოიძებნება (D36) და ჩნდება შეკითხვა „გსურთ არსებულის გამოყენება?“.
+- მოგვიანებით manual ლიგა feed ლიგას ებმება, როცა პროვაიდერი მას დაფარავს (docs/06 §2.5, manual → feed link, P1). ღია ივენთები მაშინ ხელით ან ავტომატურად გადადის.
+- ესაა CLAUDE.md „Next“ 1-ის manual events-ის ნაწილი (BO-1 rest).
+
+### 20.13 დარჩენილი (შემდეგი walkthrough)
 
 - **Add sport / Add category:** ფორმა. ხეში ჩანს „Oscar (1)“, ანუ არასპორტული special-ის ხელით შექმნილი სპორტი. ჩვენთან ესაა `bo.manual_entity` (`sport` / `category` / `tournament`), CLAUDE.md „Next“ 1-ის manual ივენთების ნაწილი.
 - Level 3-ის ფორმა (თუ Level 2-ისგან განსხვავდება).
