@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.8, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.8: §22 პროვაიდერის კატეგორიების mapping, R29, Q33–Q34; v1.7: §21 Participants (Manage, Mapping, LSport), R26–R28, D47, Q26–Q32; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D46, D10 შესწორება, Q19–Q25)
+> **სტატუსი:** spec v1.8, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.8: §22 პროვაიდერის კატეგორიების და ივენთების mapping, R29–R30, Q33–Q36; v1.7: §21 Participants (Manage, Mapping, LSport), R26–R28, D47, Q26–Q32; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D46, D10 შესწორება, Q19–Q25)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories (§20), Participants (§21), BetGenius Categories (§22). დანარჩენი სექციები (Register, Lives, Disallowed, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -156,6 +156,7 @@
 | R27 | Participants mapping = პლატფორმა (Feed Ops): `sb.provider_mapping`, დაუმეპავების რიგი მომავალი ივენთებით, top-3 შეთავაზება ქულით (სახელი, სპორტი, ქვეყანა, სქესი / ასაკი, თანხვედრილი ივენთები), ავტომატური მხოლოდ ძალიან მაღალ ქულაზე, შეცდომის დაცვა, unmap / merge ზეგავლენის ჩვენებით. ⚠ | §21.6 |
 | R28 | LSport-ის ცალკე გვერდი არ კეთდება: LSports = ერთი პროვაიდერი საერთო Mapping-ში (R27); League ↔ Category ტაქსონომიის განსხვავებას adapter-ი ნორმალიზებს. | §21.7 |
 | R29 | პროვაიდერის კატეგორიების / ლიგების mapping = პლატფორმა (Feed Ops), ერთი UI ყველა პროვაიდერისთვის: ქვეყნები ავტომატურად ISO კოდით / ცნობარით, ლიგები შეთავაზებით (სახელი, საერთო მონაწილეები, თანხვედრილი ივენთები), დაუმეპავის მრიცხველი ხეში მშობლებამდე, დუბლიკატის აკრძალვა, დაუმეპავი კატეგორიის ივენთი დამალულია. ⚠ | §22.2 |
+| R30 | Events mapping: ერთი canonical ივენთი + პროვაიდერების ივენთები (`sb.provider_mapping`), prematch / live წყარო ივენთზე. ავტომატური mapping §19.3-ით + რიგი შეთავაზებებით (მათ შორის ერთი დამეპილი მონაწილით, მეორის mapping-ის ერთად შექმნით), Add pairing ავტომატური ფილტრით, დაცვა და split ზეგავლენით. ⚠ | §22.4 |
 
 ---
 
@@ -904,7 +905,7 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q4 | „1 in event“ რეალურად რას აკეთებს რეფერენსში? ჰიპოთეზა (§19.2): `combinationType = 1` = ერთი ივენთიდან ბილეთში ერთი არჩევანი. შემოწმება: ერთ ბილეთში ერთი ივენთის 1X2 + ჰანდიკაპი | მფლობელი | არა (P1) |
 | Q5 | ✅ გადაწყდა (D29): საწყისად პლატფორმა; ოპერატორის override იზოლირებულია და მოგვიანებით ოპერატორსაც შეიძლება მიეცეს | — | — |
 | Q6 | Re-map ღია მარკეტებზე: ახალი ტიპით ხელახლა შექმნა თუ მხოლოდ ახალ ივენთებზე? | ტექნიკური | WP-2 |
-| Q7 | პროვაიდერის პრიორიტეტი (prematch Radar / live Genius) — სად და რა დონეზე? | მფლობელი (შემდეგი walkthrough) | WP-8 |
+| Q7 | → Q35 (Events mapping-ის walkthrough-ზე დაზუსტდა) | — | — |
 | Q8 | Four-eyes პლატფორმის staff-ის (`P` scope) ცვლილებებზე — ჩართული დარჩეს? | მფლობელი | WP-1 |
 | Q9 | ✅ გადაწყდა (D28): prematch და live game type-ები ცალ-ცალკე | — | — |
 | Q10 | R4 (ქვეტაბი ⇒ ტაბი ავტომატურად) — საბოლოო დადასტურება | მფლობელი | WP-3 |
@@ -932,6 +933,8 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q32 | LSports-ის მონაწილეების წყვილები SBS-ში როგორ იქმნება: ავტომატურად თუ ხელით (Events mapping › LSport map)? | მფლობელი (შემდეგი walkthrough) | WP-8 |
 | Q33 | ✅ SBS: ადრე არ შემოდიოდა, ახლა „ნედლად“ შემოდის. ჩვენთან CFG `mapping.unmapped_category_policy` = `hidden` (default) / `auto_create` (§22.2) | — | — |
 | Q34 | ✅ მიზეზი უცნობია; მიგრაციისას ნაგვიანი სახელები იწმინდება და გადასახედად ინიშნება | — | — |
+| Q35 | პროვაიდერის პრიორიტეტი: რომელ სპორტში / ლიგაში რომელია live წყარო (Radar live თუ Genius live) და ვინ წყვეტს? ოპერატორის ლიცენზიაზეა დამოკიდებული (ზოგ ოპერატორს Genius-ის ლიცენზია შეიძლება არ ჰქონდეს)? | მფლობელი | WP-8 |
+| Q36 | Live ივენთი წყვილის გარეშე (მხოლოდ Genius live, prematch-ის გარეშე) SBS-ში ჩანს ფრონტზე? | მფლობელი | WP-8 |
 
 ---
 
@@ -1446,6 +1449,32 @@ POST /api/feedops/mapping/categories            {provider, providerEntityId, int
 DELETE /api/feedops/mapping/categories/{provider}/{providerEntityId}?reason=
 ```
 
-### 22.4 დარჩენილი
+### 22.4 Events mapping (ივენთების წყვილები)
 
-Events mapping და LSport map (ივენთების წყვილები, პროვაიდერის პრიორიტეტი prematch / live, Q7, Q32).
+**რეფერენსი:** ფონზე **არსებული წყვილების სია**: მარცხნივ prematch ივენთი (თარიღი, სპორტი / ქვეყანა / ლიგა, provider, event ID, სახელი), მარჯვნივ მწვანე ფონზე მისი **live წყვილი** (იგივე ველები, სახელის ბოლოს „(live)“) და **Remove pairing**. მაგალითები: Ice Hockey / USA / NHL · Betradar 44826024 „Vegas Golden Knights - Tampa Bay Lightning“ ↔ Betradar 44825127 „… (live)“ (**Radar + Radar**); Volleyball / Russia / Superliga · „Belogorie **Belgorod** - VC Yenisey Krasnoyarsk“ ↔ „Belogorie **Metalloinvest** - VC Yenisey Krasnoyarsk (live)“ (ერთი მატჩი, სხვადასხვა სახელით).
+
+**Add pairing** dialog: ფილტრები Event start from / To, Event name, Sport, **Left provider** (Betradar) / **Right provider** (Betgenius), Search. ორი სია გვერდიგვერდ (LEFT / RIGHT: Event ID, Event name, Provider, Event start, **Select**). ორივე მხარეს ერთის არჩევა = წყვილი. შეთავაზება არ არის. სიაში ასეთი შემთხვევებიც ჩანს: Betradar · „Independiente **Valle Del Cauca** - Boca Juniors de Cali“ 00:00 ↔ Betgenius · „Independiente **Yumbo** - Boca Juniors de Cali (live)“ 00:00: ერთი და იგივე მატჩი, ერთი გუნდის სხვა სახელით, დრო და მეტოქე კი ემთხვევა. ასეთ წყვილს სისტემამ თავად უნდა მიაგნოს.
+
+**როგორ ესადაგება ჩვენს მოდელს:** SBS-ში prematch და live **ორი ცალკე ივენთია** (§19.2) და pairing მათ აკავშირებს (`liveEventId`). ჩვენთან ივენთი **ერთი canonical-ია** (`sb.event`), პროვაიდერების ივენთები მას `sb.provider_mapping (entity = event)`-ით ებმება, და თითო ივენთზე ცნობილია **prematch წყარო** და **live წყარო** (Q7 / Q35). ამიტომ „Remove pairing“ ჩვენთან = პროვაიდერის ივენთის მოხსნა canonical ივენთიდან (split).
+
+**ჩვენთან (R30 ⚠ Q35–Q36):**
+- **ავტომატური mapping** §19.3-ის ალგორითმით (job ყოველ 2 წთ-ში): ორივე მონაწილე დამეპილია (R27), start-ის სხვაობა ≤ 60 წთ (CFG, სპორტის მიხედვით), ერთი ლიგა / ქვეყანა (R29). **გაფართოება:** თუ მხოლოდ **ერთი** მონაწილეა დამეპილი, მაგრამ დრო, ლიგა და მეორე გუნდის სახელის მსგავსება ემთხვევა („Valle Del Cauca“ / „Yumbo“), ივენთი შეთავაზებად ჩადის რიგში, დადასტურებისას კი **მონაწილის mapping-იც ერთად** იქმნება.
+- **რიგი „დაუწყვილებელი“:** პროვაიდერის ივენთები canonical-ის გარეშე, start time-ით დალაგებული (ახლო ივენთები პირველია). თითოს აქვს top-3 კანდიდატი ქულით და მიზეზით („დრო ±5 წთ, მასპინძელი დამეპილია, სტუმრის სახელი 82 %“). დადასტურება ერთი დაჭერით ან კლავიატურით.
+- **Add pairing ხელით** რჩება: ორი სვეტი, მაგრამ მარჯვენა სვეტი **ავტომატურად იფილტრება** მარცხნივ არჩეულის მიხედვით (იგივე სპორტი, ±2 სთ, მსგავსი სახელები თავში), რომ 5 გვერდის გადაფურცვლა არ დაგჭირდეს.
+- **დაცვა:** სხვა სპორტი აკრძალულია; დროის სხვაობა > CFG-ის ზღვარზე, სხვა ლიგა / ქვეყანა, ან ერთი პროვაიდერის ორი ივენთი ერთ canonical-ზე → გაფრთხილება. Split / merge აჩვენებს ზეგავლენას ღია ბილეთებზე (ბილეთი canonical ივენთზეა, ამიტომ split-ისას ბილეთი რჩება იმ მხარეს, რომლის მარკეტზეც დაიდო).
+- **Live წყაროს არჩევა** წყვილის ბარათზე ჩანს და იცვლება (Q35-ის წესით default, ხელით override ივენთზე), cash-out-ის template map-ი (D27, §14) ამ წყვილზე დგას.
+
+**UI:** Feed Ops `/mapping/events`: ზემოთ რიგი (დაუწყვილებელი, შეთავაზებებით), ქვემოთ წყვილების სია (prematch წყარო | live წყარო | სტატუსი | Split), ფილტრები სპორტით / თარიღით / provider-ით, „Add pairing“ dialog ავტომატური ფილტრით.
+
+**API (Admin.Api):**
+```
+GET  /api/feedops/mapping/events?state=unpaired|paired|auto&provider=&sportId=&from=&to=&q=
+GET  /api/feedops/mapping/events/suggest?provider=&providerEventId=
+POST /api/feedops/mapping/events             {provider, providerEventId, eventId | createNew, alsoMapCompetitor?, reason}
+DELETE /api/feedops/mapping/events/{provider}/{providerEventId}?reason=     (split)
+PUT  /api/feedops/events/{id}/sources         {prematchProvider, liveProvider, reason}
+```
+
+### 22.5 დარჩენილი
+
+LSport map (Q32) და პროვაიდერის პრიორიტეტის წესი (Q35).
