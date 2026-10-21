@@ -2,9 +2,9 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.7, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.7: §21 Participants (Manage, Mapping), R26–R27, D47, Q26–Q31; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D46, D10 შესწორება, Q19–Q25)
+> **სტატუსი:** spec v1.7, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.7: §21 Participants (Manage, Mapping, LSport), R26–R28, D47, Q26–Q32; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D46, D10 შესწორება, Q19–Q25)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
-> **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories (§20), Participants › Manage (§21). დანარჩენი სექციები (Register, Lives, Disallowed, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
+> **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories (§20), Participants (§21). დანარჩენი სექციები (Register, Lives, Disallowed, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
 >
 > ნიშნები: **[D#]** = პროდუქტის მფლობელის გადაწყვეტილება (სავალდებულო). **[R#]** = ჩვენი რეკომენდაცია, რომელსაც მფლობელი არ შეწინააღმდეგებია; ⚠ ნიშნიანი R-ები §17-ში დასადასტურებლად რჩება. „რეფერენსი“ = ოპერატორის ამჟამინდელი ადმინი.
@@ -153,6 +153,7 @@
 | R25 | Top leagues = ცალკე `bo.top_league` (არხი web / mobile, ბრენდი, რიგი, Show / Hide, სურათი, ვადა, დაგეგმილი ჩვენება), ელემენტი = ლიგა ან custom group. ჩვენებას ბუკმეკერი წყვეტს (D44), სისტემა მხოლოდ ცარიელ ბლოკს მალავს და აქტივობის მონაცემებით ეხმარება. ⚠ | §20.16 |
 | R26 | Participants: feed მონაწილეზე ოპერატორი ცვლის მხოლოდ თარგმანს / short name-ს / ლოგოს; „In categories“ გამოთვლილია; manual მონაწილე / player = manual entity (Add, Bulk add ჩასმით, დუბლიკატის კონტროლი); Remove მხოლოდ გამოუყენებელ manual-ზე. ⚠ | §21.3 |
 | R27 | Participants mapping = პლატფორმა (Feed Ops): `sb.provider_mapping`, დაუმეპავების რიგი მომავალი ივენთებით, top-3 შეთავაზება ქულით (სახელი, სპორტი, ქვეყანა, სქესი / ასაკი, თანხვედრილი ივენთები), ავტომატური მხოლოდ ძალიან მაღალ ქულაზე, შეცდომის დაცვა, unmap / merge ზეგავლენის ჩვენებით. ⚠ | §21.6 |
+| R28 | LSport-ის ცალკე გვერდი არ კეთდება: LSports = ერთი პროვაიდერი საერთო Mapping-ში (R27); League ↔ Category ტაქსონომიის განსხვავებას adapter-ი ნორმალიზებს. | §21.7 |
 
 ---
 
@@ -925,7 +926,8 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q28 | Add / Bulk add და Add player: რისთვის ქმნით მონაწილეებს ხელით (special-ები, manual ივენთები)? სხვა ოპერატორს უნდა უჩანდეს (პლატფორმის) თუ მხოლოდ თქვენ? | მფლობელი | manual events |
 | Q29 | ✅ SBS-ში ავტომატური mapping არ არის, ყველაფერი ხელით (D47) | — | — |
 | Q30 | ✅ Connection ID ენიჭება დამეპვის შემდეგ; „Participant name + Save“ = დამეპილი წყვილების ძებნა; Details = კავშირის წევრები ლიგებით | — | — |
-| Q31 | SBS-ის participant connection-ების ცხრილი (Connection ID → პროვაიდერების მონაწილეები) DWH-ში ან SBS-ის ბაზაში სად არის? მიგრაციისთვის საჭიროა | მფლობელი / SBS | WP-9 |
+| Q31 | ზოგი ცხრილი მხოლოდ SBS-ის ბაზაშია (DWH-ში არა). მიგრაციისთვის ვინ მოგვცემს SBS-ის ბაზიდან ექსპორტს (participant connection-ები, LSports-ის წყვილები, კატეგორიების / game type-ების mapping-ი)? SB Software თუ Europebet-ის DBA? | მფლობელი | WP-9 |
+| Q32 | LSports-ის მონაწილეების წყვილები SBS-ში როგორ იქმნება: ავტომატურად თუ ხელით (Events mapping › LSport map)? | მფლობელი (შემდეგი walkthrough) | WP-8 |
 
 ---
 
@@ -1385,6 +1387,22 @@ POST /api/feedops/competitors/{id}/merge         {intoCompetitorId, reason}   �
 ```
 ეს WP-8-ის (multi-provider) ნაწილია. იმავე ნიმუშით კეთდება ლიგების mapping-იც (D36).
 
-### 21.7 დარჩენილი
+### 21.7 LSport
 
-Participants › **LSport**.
+**რეფერენსი (Participants › LSport):** ფილტრები **Sport** (Football), **League** (Netherlands), **Category** (Eredivisie), ცხრილი: **Participant ID** (SBS-ის ლოკალური ID, 103618), **Remote name** (LSports-ის სახელი: ADO Den Haag, SC Cambuur, Excelsior Rotterdam), **Local name** (SBS-ის სახელი: Den Haag, Cambuur, Excelsior) და **Unmap**. გვერდზე მხოლოდ უკვე დამეპილი წყვილების ნახვა და მოხსნაა.
+- LSports-ის ტერმინოლოგია ჩვენსას ეწინააღმდეგება: მათთან **League = ქვეყანა**, **Category = ლიგა** (ჩვენთან პირიქით, D31). ამიტომ adapter-ი ტაქსონომიას შესვლისთანავე ნორმალიზებს.
+- LSports გამამდიდრებელი პროვაიდერია (D8): მისი მონაწილე და ივენთი არსებულ Radar / Genius-ის ჩანაწერს ებმება. ⚠ Q32: სად და როგორ იქმნება ეს წყვილები (ავტომატურად? Events mapping › LSport map-ში?).
+
+**ჩვენთან (R28):** LSports-ისთვის ცალკე გვერდი არ კეთდება. LSports ერთი პროვაიდერია საერთო Mapping-ის გვერდზე (R27, provider ფილტრი = L), იმავე რიგით, შეთავაზებებით და დაცვით. ჩვენი „Remote name / Local name“ = პროვაიდერის სახელი / canonical სახელი, რომლებიც კავშირის ბარათზე ჩანს. ტაქსონომიის განსხვავება (League ↔ Category) adapter-ის mapping-ის კონფიგურაციაა (WP-8) და მომხმარებელს არ ეჩვენება.
+
+### 21.8 Participants-ის დასრულება
+
+| ტაბი | შედეგი |
+|---|---|
+| Manage (სია, editor, Add, Bulk add) | R26: feed მონაწილეზე მხოლოდ თარგმანი / short name / ლოგო; manual მონაწილე / player; დუბლიკატის კონტროლი; „In categories“ გამოთვლილია |
+| Mapping (+ Details) | R27, D47: Feed Ops-ში, დაუმეპავების რიგი, ავტომატური შეთავაზება ქულით, შეცდომის დაცვა, merge / split, მიგრაციით SBS-ის connection-ები |
+| LSport | R28: ცალკე გვერდი არა, საერთო Mapping-ის ნაწილი |
+
+**მიგრაციის შენიშვნა (Q31):** ზოგი ცხრილი მხოლოდ SBS-ის ბაზაშია და DWH-ში არ არის (მათ შორის participant connection-ები). WP-9-ისთვის საჭიროა SBS-ის ბაზიდან ექსპორტი: მონაწილეების connection-ები, LSports-ის წყვილები, კატეგორიების / ლიგების mapping-ი, game type-ების mapping-ი.
+
+**შემდეგი walkthrough:** Events mapping / LSport map (პროვაიდერის პრიორიტეტი prematch / live, Q7).
