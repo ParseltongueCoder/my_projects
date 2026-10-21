@@ -71,6 +71,7 @@ Permission-ები: `odds.view`, `odds.override`, `odds.suspend`, `cat.market.
 
 ## 3. ღია კითხვები და ცნობილი ხარვეზები
 
+0. **არქიტექტურული (2026-10-21):** ოპერატორს საკუთარი feed ანგარიში აქვს (docs/12 D50). [ADR-003](docs/adr/ADR-003-operator-provider-accounts.md) შეთავაზებულია და ცვლის docs/04 §3-ის „ერთი ანგარიში“ ვარაუდს. ამჟამინდელი `Uof.Adapter` ერთ ანგარიშზეა; WP-8-მდე უნდა გადაწყდეს Q-A (odds ანგარიშზე განსხვავდება?) და Q-B…Q-D.
 1. **მომხმარებლისთვის (ჯერ არ უპასუხია):** feed-ის `bet_stop` feed ივენთზე manual მარკეტსაც აჩერებს. ამის შემდეგ ტრეიდერს
    ის ხელით უნდა გახსნას, რადგან feed მას `odds_change`-ით ვერ გახსნის. გინდათ ავტომატური გახსნა? ამისთვის adapter-მა
    `bet_stop`-ის წყარო უნდა დაიმახსოვროს.
@@ -123,7 +124,7 @@ Auth-ის გარეშე მომხმარებელი platform sup
 გადაწყვეტილება D# ან რეკომენდაცია R# docs/12-ში → commit + push → ClickUp-ის შესაბამისი გვერდის განახლება.
 
 **სად არის ყველაფერი**
-- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.8): D1–D49, R1–R31, Q1–Q38, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories, §21 = Participants, §22 = პროვაიდერის კატეგორიების mapping.
+- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.8): D1–D50, R1–R32, Q1–Q38, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories, §21 = Participants, §22 = პროვაიდერის კატეგორიების mapping.
   docs/09 §2 პუნქტები 17–18 მასზე მიუთითებს.
 - **ClickUp** (workspace 1100320000015036, space „Space“): დოკუმენტი „Odds და Game types — სპეციფიკაცია (BO-1c)“,
   `document_id = z8qgvbuynw-318`, გვერდები 01–13 (page id-ები: 01 `z8qgvbuynw-38`, 02 `-58`, 03 `-78`, 04 `-98`, 05 `-118`,
@@ -156,7 +157,7 @@ Default factor = მარჟის default, category-ის default alert/liabi
 ClickUp-ის გვერდი 11). მოკლედ: დონეები = sport / ქვეყანა / ლიგა; Offline = დამალვა; Display as = გაერთიანება (`aggregateCategoryId`) →
 `bo.catalog_node.display_as_*`; Live curtain = live bet delay პროვაიდერის მიხედვით → CFG qualifier `pv`; Change parent = პლატფორმის
 შესწორება Feed Ops-ში (`sb.tournament_parent_override`); Game limits = CFG `mt` row-ები `c`/`t`-ზე. **შემდეგი:** (Add sport / category = R23, Order = R24 + D40: live-ის ცალკე რიგი, Default factor = D41: არ გამოიყენება, Code ranges / Flags = D42 / D43: არ კეთდება, Top leagues = R25 + D44: ჩვენება ხელით + D45: სია არხის მიხედვით)
-Icons = D46 (ტაბი არ კეთდება). **Participants (2026-10-17 … 10-21) დასრულდა** (§21.8): R26–R28, D47 (auto-შეთავაზება); ღიაა Q26–Q28, Q31 (SBS-ის ბაზის ექსპორტი მიგრაციისთვის), Q32. **BetGenius Categories (2026-10-21):** §22, R29 (დაუმეპავი კატეგორია: CFG `mapping.unmapped_category_policy` hidden / auto_create); Events mapping = §22.4, R30 (UOF-ში Radar + Radar pairing აღარ სჭირდება); live წყარო = დაბუქული პროვაიდერი (D48, §22.5, R31), booking-ს ოპერატორი აკეთებს (D49: `bo.live_booking`, live მხოლოდ დაბუქულ ოპერატორს); Q36, Q37 (ვინ იხდის), **Q38 (ოპერატორის საკუთარი Betradar / Genius ანგარიში თუ პლატფორმის — არქიტექტურული)**; ClickUp გვერდი 13. **შემდეგი: LSport map** (Q32), შემდეგ Disallowed (ClickUp გვერდი 12).
+Icons = D46 (ტაბი არ კეთდება). **Participants (2026-10-17 … 10-21) დასრულდა** (§21.8): R26–R28, D47 (auto-შეთავაზება); ღიაა Q26–Q28, Q31 (SBS-ის ბაზის ექსპორტი მიგრაციისთვის), Q32. **BetGenius Categories (2026-10-21):** §22, R29 (დაუმეპავი კატეგორია: CFG `mapping.unmapped_category_policy` hidden / auto_create); Events mapping = §22.4, R30 (UOF-ში Radar + Radar pairing აღარ სჭირდება); live წყარო = დაბუქული პროვაიდერი (D48, §22.5, R31), booking-ს ოპერატორი აკეთებს (D49: `bo.live_booking`, live მხოლოდ დაბუქულ ოპერატორს); Q36, Q37 (ვინ იხდის), **D50: ოპერატორს საკუთარი Betradar / Genius ანგარიში აქვს → ADR-003 (შეთავაზებული: multi-account adapter, გაზიარებული სტრუქტურა, entitlement gate; ღია Q-A…Q-D)**; LSport map = R32 (საერთო რიგი); ClickUp გვერდი 13. **შემდეგი walkthrough: Disallowed** (By event, By category, Game by event) (ClickUp გვერდი 12).
 
 **DWH:** dictionary-ები და 5 query-ის შედეგი მიღებულია (docs/12 §19.5, §20.10–20.11; ნედლი ფაილები repo-ში არ ინახება).
 `bet_slip.status`: 0 pending, 1 open, 2 settled, 5 cash-out, 10 cancelled; `event_type`: 1 prematch, 2 live (ცალკე ივენთი), 3 outright, 5–19 ვირტუალები (შეწყვეტილი);

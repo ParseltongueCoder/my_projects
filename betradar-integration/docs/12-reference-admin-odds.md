@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.8, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.8: §22 პროვაიდერის კატეგორიების და ივენთების mapping, R29–R31, D48–D49, Q33–Q38; v1.7: §21 Participants (Manage, Mapping, LSport), R26–R28, D47, Q26–Q32; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D46, D10 შესწორება, Q19–Q25)
+> **სტატუსი:** spec v1.8, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.8: §22 პროვაიდერის კატეგორიების და ივენთების mapping, R29–R32, D48–D50, ADR-003, Q33–Q38; v1.7: §21 Participants (Manage, Mapping, LSport), R26–R28, D47, Q26–Q32; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D46, D10 შესწორება, Q19–Q25)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories (§20), Participants (§21), BetGenius Categories (§22). დანარჩენი სექციები (Register, Lives, Disallowed, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -124,6 +124,7 @@
 | D47 | SBS-ში მონაწილეების mapping მხოლოდ ხელით კეთდება. ჩვენთან **ავტომატური შეთავაზება სავალდებულოა** (ქულით, ერთი დაჭერით დადასტურება). | §21.6 |
 | D48 | **Live წყარო = პროვაიდერი, რომლიდანაც ბუკმეკერმა ივენთი დაბუქა** (Betradar ან Genius), ივენთის მიხედვით. ფიქსირებული პრიორიტეტი სპორტით / ლიგით არ არის. | §22.5 |
 | D49 | **Live booking-ს ოპერატორი აკეთებს.** ჩვენთან booking ოპერატორის დონეზეა (`bo.live_booking`), live მარკეტები მხოლოდ დაბუქულ ოპერატორს უჩანს, live წყარო ოპერატორის booking-ით განისაზღვრება. | §22.5 |
+| D50 | **ოპერატორს საკუთარი ანგარიში აქვს** Betradar-თან და Genius-თან (არა პლატფორმის reseller ანგარიში). არქიტექტურა: ADR-003. | §22.5 |
 
 ### 2.2 ჩვენი რეკომენდაციები (default დიზაინი)
 
@@ -160,6 +161,7 @@
 | R29 | პროვაიდერის კატეგორიების / ლიგების mapping = პლატფორმა (Feed Ops), ერთი UI ყველა პროვაიდერისთვის: ქვეყნები ავტომატურად ISO კოდით / ცნობარით, ლიგები შეთავაზებით (სახელი, საერთო მონაწილეები, თანხვედრილი ივენთები), დაუმეპავის მრიცხველი ხეში მშობლებამდე, დუბლიკატის აკრძალვა, დაუმეპავი კატეგორიის ივენთი დამალულია. ⚠ | §22.2 |
 | R30 | Events mapping: ერთი canonical ივენთი + პროვაიდერების ივენთები (`sb.provider_mapping`), prematch / live წყარო ივენთზე. ავტომატური mapping §19.3-ით + რიგი შეთავაზებებით (მათ შორის ერთი დამეპილი მონაწილით, მეორის mapping-ის ერთად შექმნით), Add pairing ავტომატური ფილტრით, დაცვა და split ზეგავლენით. ⚠ | §22.4 |
 | R31 | Live booking: ოპერატორის გვერდი BO-ში (`bo.live_booking`, D49) + პლატფორმის book API, live მარკეტები მხოლოდ დაბუქულ ოპერატორს (`live:not_booked` gate), live წყარო ოპერატორის booking-ით, ორივესთან დაბუქვისას CFG პრიორიტეტი + override; მასობრივი / ავტომატური booking, ალერტი, ბილინგის ანგარიში. ⚠ | §22.5 |
+| R32 | LSport map-ის ცალკე გვერდი არ კეთდება: LSports-ის ივენთები საერთო Events mapping-ის რიგშია (R30), ავტომატური mapping-ით; დაუმეპავი LSports ივენთი არ ჩანს (D8). | §22.6 |
 
 ---
 
@@ -933,13 +935,13 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q29 | ✅ SBS-ში ავტომატური mapping არ არის, ყველაფერი ხელით (D47) | — | — |
 | Q30 | ✅ Connection ID ენიჭება დამეპვის შემდეგ; „Participant name + Save“ = დამეპილი წყვილების ძებნა; Details = კავშირის წევრები ლიგებით | — | — |
 | Q31 | ზოგი ცხრილი მხოლოდ SBS-ის ბაზაშია (DWH-ში არა). მიგრაციისთვის ვინ მოგვცემს SBS-ის ბაზიდან ექსპორტს (participant connection-ები, LSports-ის წყვილები, კატეგორიების / game type-ების mapping-ი)? SB Software თუ Europebet-ის DBA? | მფლობელი | WP-9 |
-| Q32 | LSports-ის მონაწილეების წყვილები SBS-ში როგორ იქმნება: ავტომატურად თუ ხელით (Events mapping › LSport map)? | მფლობელი (შემდეგი walkthrough) | WP-8 |
+| Q32 | ✅ LSports-ის ივენთები ხელით ებმება LSport map-ში (Add mapping), შეთავაზების გარეშე (§22.6) | — | — |
 | Q33 | ✅ SBS: ადრე არ შემოდიოდა, ახლა „ნედლად“ შემოდის. ჩვენთან CFG `mapping.unmapped_category_policy` = `hidden` (default) / `auto_create` (§22.2) | — | — |
 | Q34 | ✅ მიზეზი უცნობია; მიგრაციისას ნაგვიანი სახელები იწმინდება და გადასახედად ინიშნება | — | — |
 | Q35 | ✅ live წყარო = დაბუქული პროვაიდერი (D48) | — | — |
 | Q36 | Live ივენთი წყვილის გარეშე (მხოლოდ Genius live, prematch-ის გარეშე) SBS-ში ჩანს ფრონტზე? | მფლობელი | WP-8 |
 | Q37 | ✅ booking-ს ოპერატორი აკეთებს (D49). ღიაა: ვინ იხდის და Europebet-ში ბუქვის წესი (ყველა top ლიგა? ხელით?) | მფლობელი | კომერციული |
-| Q38 | ოპერატორებს Betradar-თან / Genius-თან **საკუთარი კონტრაქტი და ანგარიში** აქვთ, თუ ყველა პლატფორმის (reseller) ანგარიშით მუშაობს? (არქიტექტურა: ერთი თუ ოპერატორზე ცალკე feed კავშირი; docs/04 §8.4) | მფლობელი / იურისტი | WP-8, არქიტექტურა |
+| Q38 | ✅ საკუთარი ანგარიში (D50, ADR-003; მისი ღია კითხვები Q-A…Q-D) | — | — |
 
 ---
 
@@ -1497,9 +1499,15 @@ PUT  /api/feedops/events/{id}/sources         {prematchProvider, liveProvider, r
   - **Offer gate:** live მარკეტები ოპერატორის ოფერში ჩანს **მხოლოდ თუ ამ ოპერატორს აქვს booking** ამ ივენთზე (`Offer.Core` gate `live:not_booked`). სხვა ოპერატორის booking-ით მიღებული live მონაცემი მას არ უჩანს.
   - **live წყარო ოპერატორის მიხედვით:** D48 ოპერატორზე მოქმედებს. ერთ ივენთზე ოპერატორ A-ს Betradar შეიძლება ჰქონდეს, B-ს Genius. canonical ივენთი ორივე პროვაიდერის live მარკეტებს ინახავს, `OfferService` კი ოპერატორის booking-ის მიხედვით ირჩევს.
   - **ბილინგი:** ანგარიში ოპერატორზე (დაბუქული ივენთები × პროვაიდერი × თარიღი), რომ ღირებულება ოპერატორზე გადანაწილდეს (REP).
-  - ⚠ Q38: ოპერატორებს **საკუთარი კონტრაქტი / ანგარიში** აქვთ Betradar-თან და Genius-თან, თუ ყველა ჩვენი (პლატფორმის, reseller) ანგარიშით მუშაობს? ეს არქიტექტურას ცვლის: საკუთარი ანგარიშის შემთხვევაში ოპერატორზე ცალკე AMQP კავშირი და credential-ები დაგვჭირდება.
+  - **D50 (Q38): ოპერატორს საკუთარი ანგარიში აქვს** Betradar-თან და Genius-თან. ⇒ booking ოპერატორის ანგარიშით სრულდება, entitlement ოპერატორის ანგარიშზე მოსული მონაცემია. არქიტექტურა: [ADR-003](adr/ADR-003-operator-provider-accounts.md) (შეთავაზება: multi-account adapter, გაზიარებული სტრუქტურა URN-ით, odds ანგარიშის მიხედვით მხოლოდ განსხვავებისას, entitlement gate).
 - **UX:** booking-ის გვერდზე ფილტრები (სპორტი, ლიგა, თარიღი, „top leagues“, „ბილეთებით prematch-ში“), მასობრივი booking (მაგ. „ყველა NHL-ის მატჩი ამ კვირაში“), ავტომატური booking-ის წესები (CFG: ლიგების სია, რომელიც ყოველთვის იბუქება), ალერტი „დაწყებამდე 2 სთ, ბევრი prematch ფსონი, live არ არის დაბუქული“.
 
-### 22.6 დარჩენილი
+### 22.6 LSport map
 
-LSport map (Q32), Q36 (live ივენთი prematch წყვილის გარეშე), Q37.
+**რეფერენსი:** LSports-ის ივენთების სია: **Remote ID** (LSports, მაგ. 20528268), **Event ID** (ცარიელი = დაუმეპავი), Event name, Start date, **Add mapping**; Per page. მაგალითები: ფუტსალი (Joinville JEC/Krona - Integrado Campo Mourão), ჩოგბურთი (Tomas Machac - Karen Khachanov, Stefanos Tsitsipas - James Duckworth). **Add mapping** dialog: Event start from / To, Event name, Sport, Provider, **Event mapping: Prematch** (ანუ ლოკალური prematch ან live ივენთი), Search → ლოკალური ივენთების სია (Event ID, Event name, Provider, Event start), არჩევა. **Q32-ის პასუხი: LSports-ის ივენთები ხელით ებმება აქ**, შეთავაზების გარეშე.
+
+**ჩვენთან (R32):** ცალკე გვერდი არ კეთდება. LSports-ის ივენთი საერთო Events mapping-ის რიგშია (R30, provider ფილტრი = L) იმავე ავტომატური mapping-ით და შეთავაზებებით (ჩოგბურთში ორივე მოთამაშის სახელი + დრო თითქმის ყოველთვის საკმარისია). LSports ივენთს არ ქმნის (D8): დაუმეპავი LSports ივენთი ოფერში არ ჩანს. „Prematch / Live“-ის არჩევა არ სჭირდება, რადგან ჩვენთან ივენთი ერთია: LSports-ის მარკეტები იმ რეჟიმში ჩნდება, რომელშიც პროვაიდერი მათ აგზავნის.
+
+### 22.7 დარჩენილი
+
+Q36 (live ივენთი prematch წყვილის გარეშე), Q37 (ვინ იხდის booking-ს), ADR-003-ის ღია კითხვები. **შემდეგი walkthrough: Disallowed.**
