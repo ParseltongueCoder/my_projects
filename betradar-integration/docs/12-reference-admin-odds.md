@@ -2,9 +2,9 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.7, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.7: §21 Participants (Manage, Mapping, LSport), R26–R28, D47, Q26–Q32; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D46, D10 შესწორება, Q19–Q25)
+> **სტატუსი:** spec v1.8, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.8: §22 პროვაიდერის კატეგორიების mapping, R29, Q33–Q34; v1.7: §21 Participants (Manage, Mapping, LSport), R26–R28, D47, Q26–Q32; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D46, D10 შესწორება, Q19–Q25)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
-> **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories (§20), Participants (§21). დანარჩენი სექციები (Register, Lives, Disallowed, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
+> **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories (§20), Participants (§21), BetGenius Categories (§22). დანარჩენი სექციები (Register, Lives, Disallowed, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
 >
 > ნიშნები: **[D#]** = პროდუქტის მფლობელის გადაწყვეტილება (სავალდებულო). **[R#]** = ჩვენი რეკომენდაცია, რომელსაც მფლობელი არ შეწინააღმდეგებია; ⚠ ნიშნიანი R-ები §17-ში დასადასტურებლად რჩება. „რეფერენსი“ = ოპერატორის ამჟამინდელი ადმინი.
@@ -33,6 +33,7 @@
 19. [SB Software API-ის ანალიზი და თავსებადობის ფენა](#19-sb-software-api-ის-ანალიზი-და-თავსებადობის-ფენა)
 20. [Categories (კატეგორიების ხე)](#20-categories-კატეგორიების-ხე)
 21. [Participants (მონაწილეები)](#21-participants-მონაწილეები)
+22. [პროვაიდერის კატეგორიების mapping (BetGenius Categories)](#22-პროვაიდერის-კატეგორიების-mapping-betgenius-categories)
 
 ---
 
@@ -154,6 +155,7 @@
 | R26 | Participants: feed მონაწილეზე ოპერატორი ცვლის მხოლოდ თარგმანს / short name-ს / ლოგოს; „In categories“ გამოთვლილია; manual მონაწილე / player = manual entity (Add, Bulk add ჩასმით, დუბლიკატის კონტროლი); Remove მხოლოდ გამოუყენებელ manual-ზე. ⚠ | §21.3 |
 | R27 | Participants mapping = პლატფორმა (Feed Ops): `sb.provider_mapping`, დაუმეპავების რიგი მომავალი ივენთებით, top-3 შეთავაზება ქულით (სახელი, სპორტი, ქვეყანა, სქესი / ასაკი, თანხვედრილი ივენთები), ავტომატური მხოლოდ ძალიან მაღალ ქულაზე, შეცდომის დაცვა, unmap / merge ზეგავლენის ჩვენებით. ⚠ | §21.6 |
 | R28 | LSport-ის ცალკე გვერდი არ კეთდება: LSports = ერთი პროვაიდერი საერთო Mapping-ში (R27); League ↔ Category ტაქსონომიის განსხვავებას adapter-ი ნორმალიზებს. | §21.7 |
+| R29 | პროვაიდერის კატეგორიების / ლიგების mapping = პლატფორმა (Feed Ops), ერთი UI ყველა პროვაიდერისთვის: ქვეყნები ავტომატურად ISO კოდით / ცნობარით, ლიგები შეთავაზებით (სახელი, საერთო მონაწილეები, თანხვედრილი ივენთები), დაუმეპავის მრიცხველი ხეში მშობლებამდე, დუბლიკატის აკრძალვა, დაუმეპავი კატეგორიის ივენთი დამალულია. ⚠ | §22.2 |
 
 ---
 
@@ -928,6 +930,8 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q30 | ✅ Connection ID ენიჭება დამეპვის შემდეგ; „Participant name + Save“ = დამეპილი წყვილების ძებნა; Details = კავშირის წევრები ლიგებით | — | — |
 | Q31 | ზოგი ცხრილი მხოლოდ SBS-ის ბაზაშია (DWH-ში არა). მიგრაციისთვის ვინ მოგვცემს SBS-ის ბაზიდან ექსპორტს (participant connection-ები, LSports-ის წყვილები, კატეგორიების / game type-ების mapping-ი)? SB Software თუ Europebet-ის DBA? | მფლობელი | WP-9 |
 | Q32 | LSports-ის მონაწილეების წყვილები SBS-ში როგორ იქმნება: ავტომატურად თუ ხელით (Events mapping › LSport map)? | მფლობელი (შემდეგი walkthrough) | WP-8 |
+| Q33 | დაუმეპავი Genius-ის კატეგორიის ივენთები SBS-ში რა მდგომარეობაშია: არ შემოდის, შემოდის და დამალულია, თუ ჩანს „ნედლად“? | მფლობელი | WP-8 |
+| Q34 | ლოკალურ სახელებში „Canada,,,“, „Chinese Taipeiiiii“: რატომ? (ერთნაირი სახელის აკრძალვის გვერდის ავლა? დუბლიკატები?) | მფლობელი | მიგრაცია |
 
 ---
 
@@ -1406,3 +1410,42 @@ POST /api/feedops/competitors/{id}/merge         {intoCompetitorId, reason}   �
 **მიგრაციის შენიშვნა (Q31):** ზოგი ცხრილი მხოლოდ SBS-ის ბაზაშია და DWH-ში არ არის (მათ შორის participant connection-ები). WP-9-ისთვის საჭიროა SBS-ის ბაზიდან ექსპორტი: მონაწილეების connection-ები, LSports-ის წყვილები, კატეგორიების / ლიგების mapping-ი, game type-ების mapping-ი.
 
 **შემდეგი walkthrough:** Events mapping / LSport map (პროვაიდერის პრიორიტეტი prematch / live, Q7).
+
+---
+
+## 22. პროვაიდერის კატეგორიების mapping (BetGenius Categories)
+
+წყარო: რეფერენსის BetGenius Categories (კალათბურთის ქვეყნები), 2026-10-21. Events mapping და LSport map შემდეგია (§22.4).
+
+### 22.1 რეფერენსი
+
+- ცხრილი: **Remote category name** (Genius-ის სახელი, ბმულით ქვედა დონეზე) | **Category name** (SBS-ის ლოკალური კატეგორია) | **Mapping actions**. ზემოთ **Go to parent category**: სპორტი → ქვეყანა → ლიგა, დონე-დონე.
+- დამეპილ row-ზე: **Remove mapping**. დაუმეპავი row **ფერით გამოიყოფა** (ვარდისფერი, მაგ. Azerbaijan) და აქვს **Add new category** / **Select existing category**.
+- **დაუმეპავის ძებნა:** მშობელი სპორტი / ქვეყანაც მუქდება, თუ შიგნით დაუმეპავი კატეგორიაა, რომ ხეში ადვილად მიაგნო.
+- ლოკალურ სახელებში **ნაგავია**: „Canada,,,“, „Chinese Taipeiiiii“ (Genius-ის მხარეს „Chinese Taipei,,,“). სავარაუდოდ, ერთნაირი სახელის აკრძალვის გვერდის ავლაა, ანუ D36-ის დუბლიკატების კვალი. ⚠ Q34.
+
+### 22.2 ჩვენთან (R29 ⚠ Q33–Q34)
+
+- **ვინ:** პლატფორმა, Feed Ops-ში (D29, D36). პროვაიდერის category / tournament → canonical `sb.category` / `sb.tournament`, `sb.provider_mapping`-ით (`entity_type = category / tournament`). ერთი UI ყველა პროვაიდერისთვის (Genius, LSports, მომავალში სხვები), provider ფილტრით, ისევე როგორც მონაწილეებზე (R27).
+- **ქვეყნები ავტომატურად:** Level 2 (ქვეყანა) ებმება **ISO ქვეყნის კოდით** (`sb.category.country_code`; Betradar `country_code="SWE"`), თუ პროვაიდერი კოდს იძლევა, ან ქვეყნების სახელების ცნობარით (ka / en / პროვაიდერის სახელი, მაგ. „Chinese Taipei“ = TWN). ზუსტი თანხვედრა = ავტომატური mapping, დანარჩენი = რიგში შეთავაზებით. „International“, „International Clubs“, „UEFA“ და მსგავსი = პლატფორმის ცნობარი.
+- **ლიგები შეთავაზებით:** სახელის ნორმალიზაცია („(regular season)“, „Women“, „U19“, სეზონის წელი), ქვეყანა / მშობელი, **საერთო მონაწილეები** (უკვე დამეპილი მონაწილეები, R27) და **თანხვედრილი ივენთები**. ყველაზე ძლიერი სიგნალი ივენთებია: თუ Genius-ის ლიგის 10 მატჩიდან 9 Betradar-ის ერთი ლიგის მატჩებს ემთხვევა, ეს იგივე ლიგაა.
+- **დაუმეპავის ჩვენება:** ფერის ნაცვლად (ან ფერთან ერთად) **მრიცხველი** თითო კვანძზე („3 დაუმეპავი“), რომელიც ზემოთ, მშობლებზეც ჯამდება, + ფილტრი „მხოლოდ დაუმეპავი“ და სია **მომავალი ივენთების მიხედვით** (რომელი დაუმეპავი ლიგა აჩერებს ყველაზე მეტ ივენთს). ეს ზუსტად იგივე ამოცანაა, რასაც რეფერენსი ფერით აკეთებს.
+- **Add new / Select existing:** „ახალი“ ქმნის canonical კვანძს პროვაიდერის სახელით (ოპერატორის თარგმანი მოგვიანებით); „არსებულის არჩევა“ = ძებნა ქვეყნის / სპორტის შიგნით, შეთავაზებები თავშია. **დუბლიკატის დაცვა:** ერთ მშობელში იგივე ნორმალიზებული სახელის შექმნა აკრძალულია (ასე „Canada,,,“-ის ტიპის გამოსავალი არ დაგვჭირდება) და სისტემა არსებულის დაკავშირებას გვთავაზობს.
+- **Remove mapping:** ზეგავლენით (რამდენი ღია ივენთი / ბილეთი); ივენთები, რომლებიც მხოლოდ ამ პროვაიდერისგან მოდის, დამალულ მდგომარეობაში გადადის და რიგში ბრუნდება.
+- **დაუმეპავი კატეგორიის ივენთები** ⚠ Q33: ჩვენი default: ივენთი შემოდის, მაგრამ ოფერში **არ ჩანს** (`hidden:unmapped_category`), სანამ კატეგორია არ დაიმეპება. ასე mapping-ის შემდეგ ისტორიაც და კოეფიციენტებიც უკვე ადგილზეა.
+
+**UI:** Feed Ops `/mapping/categories` (`/mapping/competitors`-ისა და `/mapping/markets`-ის მსგავსად): მარცხნივ პროვაიდერის ხე მრიცხველებით, მარჯვნივ კანდიდატები ქულით და მიზეზით, კლავიატურით მართვა, ჯგუფური დადასტურება (მაგ. ქვეყნების მთელი სია ერთად).
+
+**მიგრაცია (WP-9, Q31):** SBS-ის კატეგორიების mapping (Genius / LSports → ლოკალური) იმპორტდება `sb.provider_mapping`-ში; ნაგვიანი სახელები („Canada,,,“) იწმინდება და დუბლიკატები ერთიანდება (D36).
+
+### 22.3 API (Admin.Api)
+```
+GET  /api/feedops/mapping/categories?provider=&sportId=&parent=&state=unmapped|mapped|auto&q=
+GET  /api/feedops/mapping/categories/suggest?provider=&providerEntityId=
+POST /api/feedops/mapping/categories            {provider, providerEntityId, internalId | createNew {name, parentId}, reason}
+DELETE /api/feedops/mapping/categories/{provider}/{providerEntityId}?reason=
+```
+
+### 22.4 დარჩენილი
+
+Events mapping და LSport map (ივენთების წყვილები, პროვაიდერის პრიორიტეტი prematch / live, Q7, Q32).
