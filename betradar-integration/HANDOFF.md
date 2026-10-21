@@ -123,7 +123,7 @@ Auth-ის გარეშე მომხმარებელი platform sup
 გადაწყვეტილება D# ან რეკომენდაცია R# docs/12-ში → commit + push → ClickUp-ის შესაბამისი გვერდის განახლება.
 
 **სად არის ყველაფერი**
-- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.7): D1–D46, R1–R26, Q1–Q28, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories, §21 = Participants.
+- **docs/12** (`docs/12-reference-admin-odds.md`, spec v1.7): D1–D46, R1–R27, Q1–Q30, WP-1…WP-10, §19 = SB Software API-ის ანალიზი, §20 = Categories, §21 = Participants.
   docs/09 §2 პუნქტები 17–18 მასზე მიუთითებს.
 - **ClickUp** (workspace 1100320000015036, space „Space“): დოკუმენტი „Odds და Game types — სპეციფიკაცია (BO-1c)“,
   `document_id = z8qgvbuynw-318`, გვერდები 01–12 (page id-ები: 01 `z8qgvbuynw-38`, 02 `-58`, 03 `-78`, 04 `-98`, 05 `-118`,
@@ -156,7 +156,7 @@ Default factor = მარჟის default, category-ის default alert/liabi
 ClickUp-ის გვერდი 11). მოკლედ: დონეები = sport / ქვეყანა / ლიგა; Offline = დამალვა; Display as = გაერთიანება (`aggregateCategoryId`) →
 `bo.catalog_node.display_as_*`; Live curtain = live bet delay პროვაიდერის მიხედვით → CFG qualifier `pv`; Change parent = პლატფორმის
 შესწორება Feed Ops-ში (`sb.tournament_parent_override`); Game limits = CFG `mt` row-ები `c`/`t`-ზე. **შემდეგი:** (Add sport / category = R23, Order = R24 + D40: live-ის ცალკე რიგი, Default factor = D41: არ გამოიყენება, Code ranges / Flags = D42 / D43: არ კეთდება, Top leagues = R25 + D44: ჩვენება ხელით + D45: სია არხის მიხედვით)
-Icons = D46 (ტაბი არ კეთდება). **Participants (2026-10-17, მიმდინარე):** Manage გავლილია (§21, R26), Q26–Q28 ღიაა; შემდეგი Mapping და LSport (ClickUp გვერდი 12).
+Icons = D46 (ტაბი არ კეთდება). **Participants (2026-10-17, მიმდინარე):** Manage და Mapping გავლილია (§21, R26–R27), Q26–Q30 ღიაა; შემდეგი LSport (ClickUp გვერდი 12).
 
 **DWH:** dictionary-ები და 5 query-ის შედეგი მიღებულია (docs/12 §19.5, §20.10–20.11; ნედლი ფაილები repo-ში არ ინახება).
 `bet_slip.status`: 0 pending, 1 open, 2 settled, 5 cash-out, 10 cancelled; `event_type`: 1 prematch, 2 live (ცალკე ივენთი), 3 outright, 5–19 ვირტუალები (შეწყვეტილი);

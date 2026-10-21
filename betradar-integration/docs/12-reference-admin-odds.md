@@ -2,7 +2,7 @@
 
 > ⚠ შეთანხმებული გადაწყვეტილებები: [docs/09 §2](09-backoffice-plan.md#2-სავალდებულო-გადაწყვეტილებები-0508-ის-შეთანხმება) (პუნქტი 17 ამ დოკუმენტზე მიუთითებს). კონფლიქტის შემთხვევაში docs/09 სავალდებულოა. ეს დოკუმენტი **ცვლის** 06-ის, 07-ისა და 09-ის რამდენიმე პუნქტს; ჩამონათვალი §16-შია.
 
-> **სტატუსი:** spec v1.7, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.7: §21 Participants, R26, Q26–Q28; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D46, D10 შესწორება, Q19–Q25)
+> **სტატუსი:** spec v1.7, დეველოპმენტისთვის · **თარიღი:** 2026-10-16 (v1.1: D28 — prematch და live game type-ები ცალ-ცალკე; v1.2: D29 — mapping-ის ფლობა; v1.3: D30 — SB-თავსებადი API, §19 — SBS API-ის ანალიზი; v1.4: §19.5 — EB_DWH-ის dictionary-ები, R13, Q15–Q16; v1.5: §20 — Categories › Manage, D31–D38, R14–R17, Q17–Q18, WP-10; v1.7: §21 Participants (Manage, Mapping), R26–R27, Q26–Q30; v1.6: DWH-ის შედეგები §19.5, §20.10–20.11, R18–R25, D39–D46, D10 შესწორება, Q19–Q25)
 > **წყარო:** პროდუქტის მფლობელთან ერთად გავლილი ოპერატორის ამჟამინდელი ადმინი (SB Software, „Admin Console“), მენიუ **Odds**. ის არის **თამასა**: ჩვენი back office ფუნქციურად მას არ უნდა ჩამოუვარდეს, UX-ში კი უკეთესი უნდა იყოს.
 > **სფერო:** Odds › Odds (Manage, Results), Odds › Game types (Manage, Sport assign, Sort order, Market types, Sub-market, Mapping, Template map) და Odds › Categories (§20), Participants › Manage (§21). დანარჩენი სექციები (Register, Lives, Disallowed, Participants, BetGenius, Events mapping, Add games, Odds list) შემდეგ ვერსიებში დაემატება.
 > **დაკავშირებული:** [02](02-uof-data-model.md) (`sb` DDL) · [04](04-platform-architecture.md) (§9.2 multi-provider) · [06](06-backoffice-catalog-odds-config.md) (CAT, ODDS, CFG §5.8) · [07](07-backoffice-trading-risk-customers.md) (bet engine, settlement, LIM) · [09](09-backoffice-plan.md) (გეგმა, სტატუსი) · [11](11-sportsbook-api-and-whitelabel.md) (Player API).
@@ -151,6 +151,7 @@
 | R24 | Order: `bo.catalog_node.sort_order` სიის პოზიციით (დუბლიკატი შეუძლებელია), განზომილებები `mode` (prematch / live, D40) და `brand_id` (betting shop = ბრენდი, თუ retail საჭიროა); ენის მიხედვით რიგი არ არის; თარგმანზე დამოკიდებული არ არის; drag & drop + preview. | §20.13 |
 | R25 | Top leagues = ცალკე `bo.top_league` (არხი web / mobile, ბრენდი, რიგი, Show / Hide, სურათი, ვადა, დაგეგმილი ჩვენება), ელემენტი = ლიგა ან custom group. ჩვენებას ბუკმეკერი წყვეტს (D44), სისტემა მხოლოდ ცარიელ ბლოკს მალავს და აქტივობის მონაცემებით ეხმარება. ⚠ | §20.16 |
 | R26 | Participants: feed მონაწილეზე ოპერატორი ცვლის მხოლოდ თარგმანს / short name-ს / ლოგოს; „In categories“ გამოთვლილია; manual მონაწილე / player = manual entity (Add, Bulk add ჩასმით, დუბლიკატის კონტროლი); Remove მხოლოდ გამოუყენებელ manual-ზე. ⚠ | §21.3 |
+| R27 | Participants mapping = პლატფორმა (Feed Ops): `sb.provider_mapping`, დაუმეპავების რიგი მომავალი ივენთებით, top-3 შეთავაზება ქულით (სახელი, სპორტი, ქვეყანა, სქესი / ასაკი, თანხვედრილი ივენთები), ავტომატური მხოლოდ ძალიან მაღალ ქულაზე, შეცდომის დაცვა, unmap / merge ზეგავლენის ჩვენებით. ⚠ | §21.6 |
 
 ---
 
@@ -921,6 +922,8 @@ Nav: ჯგუფი „Odds“ — Events, Results, Game types, Sport assign, S
 | Q26 | Participants: სახელის წინ „Team“ რას ნიშნავს (ტიპი? რატომ აკლია ზოგს)? „In categories“-ს რისთვის იყენებთ (manual ივენთის შექმნისას გუნდის არჩევა? mapping?) | მფლობელი | WP-10 / manual events |
 | Q27 | Participant-ის Remove და კატეგორიის Remove როდის გამოიყენება (დუბლიკატები? შეცდომები?) | მფლობელი | არა |
 | Q28 | Add / Bulk add და Add player: რისთვის ქმნით მონაწილეებს ხელით (special-ები, manual ივენთები)? სხვა ოპერატორს უნდა უჩანდეს (პლატფორმის) თუ მხოლოდ თქვენ? | მფლობელი | manual events |
+| Q29 | მონაწილეების mapping-ს ახლა ვინ აკეთებს და დღეში რამდენი? SBS-ში ავტომატური mapping ან შეთავაზება არის, თუ ყველაფერი ხელით? | მფლობელი | WP-8 |
+| Q30 | Mapping-ის ქვედა „Participant name + Save“: კავშირის (საერთო მონაწილის) სახელია? „Connection ID“ = SBS-ის საერთო მონაწილის ID? | მფლობელი | WP-9 (მიგრაცია) |
 
 ---
 
@@ -1350,6 +1353,32 @@ WP-10-ის შეფასება (~2.5 დკ) იზრდება: + Ord
 
 `/v1/events*` მონაწილეს აბრუნებს `{id, name (ოპერატორის თარგმანით), shortName, logoUrl}`-ით. compat ფენა SBS-ის `participantId`-ს `compat.id_map(kind = participant)`-ით აჩვენებს.
 
-### 21.6 დარჩენილი
+### 21.6 Mapping: მონაწილეების გაერთიანება პროვაიდერებს შორის
 
-Participants › **Mapping** (პროვაიდერების მონაწილეების გაერთიანება; §19.3-ის ივენთების ავტომატური mapping-ის წინაპირობა) და **LSport**.
+**რეფერენსი (`/admin-console/odds/participants/mapping`):** მარცხნივ კატეგორიების ხეა. მარჯვნივ **Select provider** (მაგ. Betgenius) + ფილტრი სახელით + Refresh, ქვემოთ ამ პროვაიდერის მონაწილეები (Provider, Participant name, ID, **Add**), გვერდებად. Add-ით მონაწილე გადადის მარჯვენა ბლოკში, „კავშირში“: სკრინზე ერთად დგას **Betradar · Finland · 100014** და **Betgenius · Atlético Bucaramanga · 680853**. X შლის, მწვანე **Add** კავშირს ინახავს. ქვემოთ: **Participant name + Save** (კავშირის / საერთო მონაწილის სახელი) და ცხრილი **Connection ID / Participants** (არსებული კავშირები, ამ შემთხვევაში „No records“).
+
+მონაწილეებს ხელით აწყვილებენ, შეთავაზების ან შემოწმების გარეშე. სკრინის წყვილი (ქვეყნის ნაკრები „Finland“ + კოლუმბიური კლუბი) კარგად აჩვენებს რისკს: ასეთ შეცდომას სისტემა არ აჩერებს.
+
+**ჩვენთან (R27 ⚠ Q29–Q30):**
+- **ვინ:** პლატფორმა, Feed Ops-ში (D29). ერთ canonical მონაწილეზე (`sb.competitor`) რამდენიმე პროვაიდერის ჩანაწერი ებმება: `sb.provider_mapping (provider_id, 'competitor', provider_entity_id → internal_id)`, ცხრილი უკვე არსებობს. „Connection“ = canonical მონაწილე. მისი სახელი პრიორიტეტული პროვაიდერისგან მოდის (Betradar), ოპერატორის თარგმანი კი მას ფარავს (R26).
+- **რიგი („დაუმეპავი“):** Genius / LSports-ის adapter-ი (WP-8) ახალ მონაწილეს `unmapped` მდგომარეობაში ქმნის. რიგი ლაგდება **მომავალი ივენთების რაოდენობით და სიახლოვით**, რადგან სწორედ დაუმეპავი მონაწილე აჩერებს ივენთის ავტომატურ mapping-ს (§19.3).
+- **შეთავაზება:** თითო დაუმეპავზე top-3 კანდიდატი ქულით. ქულა ითვლება ნორმალიზებული სახელით (დიაკრიტიკა, „FC / Club / CD“, „Women / W“, U19 / U21), სპორტით, ქვეყნით, სქესით / ასაკობრივი ჯგუფით და **თანხვედრილი ივენთებით** (ერთსა და იმავე დროს ერთი და იგივე მეტოქე). ერთი დაჭერით დადასტურება. ავტომატური mapping მხოლოდ ძალიან მაღალ ქულაზე (ზუსტი სახელი + სპორტი + ქვეყანა + სქესი / ასაკი), CFG `mapping.competitor_auto_threshold`, ყოველი ავტომატური mapping-ი ჩანს და უქმდება.
+- **დაცვა შეცდომებისგან:** სხვა სპორტი → აკრძალულია. სქესი / ასაკობრივი ჯგუფი არ ემთხვევა → წითელი გაფრთხილება. ქვეყანა არ ემთხვევა, ან ნაკრები + კლუბი, ან სახელის მსგავსება დაბალია → გაფრთხილება და მიზეზის მითითება („Finland“ ↔ „Atlético Bucaramanga“ აქ შეჩერდებოდა). ერთი პროვაიდერის ორი ჩანაწერი ერთ canonical-ზე დასაშვებია (პროვაიდერის დუბლიკატები), ოღონდ გაფრთხილებით.
+- **Unmap / Split და Merge:** კავშირიდან ჩანაწერის მოხსნა ქმნის ახალ canonical მონაწილეს. ორი canonical-ის გაერთიანება (merge) ცალკე ოპერაციაა: `event_competitor`, `player`, mapping-ები გადაბმულია სამიზნეზე, ოპერატორების თარგმანები და ლოგოები ინახება (კონფლიქტზე სამიზნისა რჩება, დანარჩენი ჩანს ისტორიაში). ყველაფერი audit-შია და ბრუნდება.
+- **ზეგავლენა:** mapping-ის შეცვლისას ჩანს, რომელ ღია ივენთებსა და ბილეთებს ეხება. ღია ბილეთის მქონე ივენთის მონაწილე merge-ში ავტომატურად არ გადადის, ჯერ დადასტურებაა საჭირო.
+
+**UI (Feed Ops `/mapping/competitors`, §13.4-ის `/mapping/markets`-ის მსგავსად):** ორი სვეტი (მარცხნივ დაუმეპავები პროვაიდერის მიხედვით, მარჯვნივ კანდიდატები ქულით და მიზეზით), კლავიატურით მართვა (↑↓, Enter = დადასტურება, S = გამოტოვება), ფილტრები სპორტით / ქვეყნით / ლიგით / „მომავალი 3 დღის ივენთით“, ჯგუფური დადასტურება მაღალი ქულისთვის.
+
+**API (Admin.Api):**
+```
+GET  /api/feedops/mapping/competitors?provider=&sportId=&state=unmapped|mapped|auto&q=
+GET  /api/feedops/mapping/competitors/suggest?provider=&providerEntityId=
+POST /api/feedops/mapping/competitors            {provider, providerEntityId, competitorId | createNew, reason}
+DELETE /api/feedops/mapping/competitors/{provider}/{providerEntityId}?reason=
+POST /api/feedops/competitors/{id}/merge         {intoCompetitorId, reason}   → preview + confirm
+```
+ეს WP-8-ის (multi-provider) ნაწილია. იმავე ნიმუშით კეთდება ლიგების mapping-იც (D36).
+
+### 21.7 დარჩენილი
+
+Participants › **LSport**.
