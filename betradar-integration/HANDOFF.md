@@ -156,7 +156,7 @@ Default factor = მარჟის default, category-ის default alert/liabi
 ClickUp-ის გვერდი 11). მოკლედ: დონეები = sport / ქვეყანა / ლიგა; Offline = დამალვა; Display as = გაერთიანება (`aggregateCategoryId`) →
 `bo.catalog_node.display_as_*`; Live curtain = live bet delay პროვაიდერის მიხედვით → CFG qualifier `pv`; Change parent = პლატფორმის
 შესწორება Feed Ops-ში (`sb.tournament_parent_override`); Game limits = CFG `mt` row-ები `c`/`t`-ზე. **შემდეგი:** (Add sport / category = R23, Order = R24 + D40: live-ის ცალკე რიგი, Default factor = D41: არ გამოიყენება, Code ranges / Flags = D42 / D43: არ კეთდება, Top leagues = R25 + D44: ჩვენება ხელით + D45: სია არხის მიხედვით)
-Icons = D46 (ტაბი არ კეთდება). **Participants (2026-10-17 … 10-21) დასრულდა** (§21.8): R26–R28, D47 (auto-შეთავაზება); ღიაა Q26–Q28, Q31 (SBS-ის ბაზის ექსპორტი მიგრაციისთვის), Q32. **BetGenius Categories (2026-10-21):** §22, R29, Q33–Q34; ClickUp გვერდი 13. **შემდეგი: Events mapping / LSport map** (Q7, Q32) (ClickUp გვერდი 12).
+Icons = D46 (ტაბი არ კეთდება). **Participants (2026-10-17 … 10-21) დასრულდა** (§21.8): R26–R28, D47 (auto-შეთავაზება); ღიაა Q26–Q28, Q31 (SBS-ის ბაზის ექსპორტი მიგრაციისთვის), Q32. **BetGenius Categories (2026-10-21):** §22, R29 (დაუმეპავი კატეგორია: CFG `mapping.unmapped_category_policy` hidden / auto_create); ClickUp გვერდი 13. **შემდეგი: Events mapping / LSport map** (Q7, Q32) (ClickUp გვერდი 12).
 
 **DWH:** dictionary-ები და 5 query-ის შედეგი მიღებულია (docs/12 §19.5, §20.10–20.11; ნედლი ფაილები repo-ში არ ინახება).
 `bet_slip.status`: 0 pending, 1 open, 2 settled, 5 cash-out, 10 cancelled; `event_type`: 1 prematch, 2 live (ცალკე ივენთი), 3 outright, 5–19 ვირტუალები (შეწყვეტილი);
