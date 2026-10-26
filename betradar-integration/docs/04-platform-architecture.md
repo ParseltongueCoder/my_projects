@@ -828,7 +828,7 @@ betradar-integration/                 # (მომავალში შეი�
 3. იურიდიული: საქართველოს B2B მომწოდებლის ნებართვა; data residency; retention ვადები; GLI-ის საჭიროება ოპერატორების იურისდიქციებში.
 4. Hetzner/GitHub-ის მიმდინარე ფასები და ლიმიტები (2026 წელს შეიცვალა).
 5. მოცულობის გაზომვა (msg/day, bytes/day) integration env-ში → retention-ისა და VM-ების ზომის დაზუსტება.
-6. **ოპერატორის საკუთარი ანგარიშები** Betradar-თან / Genius-თან (docs/12 D50): adapter multi-account რეჟიმში, entitlement ანგარიშის მიხედვით, booking ოპერატორის ანგარიშით — [ADR-003](adr/ADR-003-operator-provider-accounts.md) (შეთავაზებულია). ცვლის §3-ის „ერთი ანგარიში“ ვარაუდს და §8.4-ის reseller სცენარს.
+6. **ოპერატორის საკუთარი ანგარიშები** Betradar-თან / Genius-თან (docs/12 D50): adapter multi-account რეჟიმში, entitlement ანგარიშის მიხედვით, booking-ს ოპერატორი პროვაიდერის ადმინში აკეთებს — [ADR-003](adr/ADR-003-operator-provider-accounts.md) (შეთავაზებულია). ცვლის §3-ის „ერთი ანგარიში“ ვარაუდს და §8.4-ის reseller სცენარს.
 
 ## დანართი B — წყაროები
 
