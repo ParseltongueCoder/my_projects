@@ -22,6 +22,11 @@ Sportradar-ის ანგარიში **არ არის საჭირ
 
 თუ ლოკალურად უკვე გაქვთ PostgreSQL 5432 პორტზე, გააჩერეთ. სხვა გზაა `platform/docker-compose.yml`-ში `"5432:5432"`-ის შეცვლა, მაგალითად `"55432:5432"`-ით.
 
+### Windows 10 / 11
+- Docker Desktop (WSL 2 backend, default). WSL 2-ზე მეხსიერებას Docker-ის Settings კი არა, `%UserProfile%\.wslconfig` განსაზღვრავს: `[wsl2]` სექციაში `memory=8GB`, შემდეგ PowerShell-ში `wsl --shutdown` და Docker Desktop-ის თავიდან ჩართვა.
+- Git for Windows (https://git-scm.com/download/win): მას მოყვება **Git Bash** და `openssl`. ყველა ბრძანება Git Bash-ში გაუშვით.
+- `.gitattributes` shell სკრიპტებსა და კონფიგებს LF-ით ინახავს, ამიტომ `core.autocrlf`-ის შეცვლა საჭირო არ არის.
+
 ### macOS (მათ შორის Apple Silicon: M1–M4)
 - Docker Desktop: https://www.docker.com/products/docker-desktop/ (ან OrbStack). **Settings → Resources → Memory**-ში მიეცით მინიმუმ 6 GB.
 - Git უკვე არის (`git --version`; თუ არ არის, macOS შემოგთავაზებთ Command Line Tools-ის დაყენებას). `openssl` და `bash` სისტემას თან მოყვება, დამატებით არაფერია საჭირო.
@@ -116,6 +121,7 @@ docker compose up -d
 | ადმინის შესვლის გვერდი არ იხსნება | Keycloak ჯერ იტვირთება; დაელოდეთ 1 წუთი (`docker compose logs keycloak`) |
 | ადმინში ცარიელია | სცენარი ჯერ არ გაგიშვიათ, ან adapter ჯერ არ ჩართულა: `docker compose logs uof-adapter` |
 | `port is already allocated` | სხვა პროგრამა იყენებს პორტს (ხშირად 5432 ან 8080); გააჩერეთ, ან შეცვალეთ პორტი compose-ში |
+| Windows: `gen-tls.sh` ჩუმად წყდება ან `subject name is expected to be in the format /type0=value0` | ძველი ვერსიაა: `git pull` (სკრიპტი Git Bash-ის path-გარდაქმნას თიშავს, `MSYS_NO_PATHCONV=1`) |
 | Windows: `/bin/sh^M` ან `exec format error` | რეპო დაკლონილი იყო `.gitattributes`-მდე: `git rm --cached -r . && git reset --hard` |
 
 ხარვეზი ჩაიწერეთ შემდეგი ინფორმაციით: სცენარი, ნაბიჯი, რას ელოდით, რა მოხდა, screenshot. ასევე დაურთეთ `docker compose logs uof-adapter admin-api > logs.txt`.

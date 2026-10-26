@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Generates a local CA and a server certificate for the simulator's RabbitMQ (dev only).
 set -euo pipefail
+# Git Bash on Windows rewrites "/CN=..." into a Windows path; keep -subj arguments as they are.
+export MSYS_NO_PATHCONV=1
 cd "$(dirname "$0")/.."
 out=config/tls
 if [[ -f "$out/server.pem" && "${1:-}" != "--force" ]]; then
